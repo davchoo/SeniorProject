@@ -1,28 +1,19 @@
-import logo from './logo.svg';
+// App.js
+
+import React from 'react';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <div className='bg-black'>
-          This is a tailwind test
-
-        </div>
-        <p>
-          Hello World
-          Edit  <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-grow">
+        <Home />
+      </div>
+      <Footer />
     </div>
   );
 }
