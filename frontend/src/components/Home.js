@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import test2 from '../images/test2.png';
 
 const Home = () => {
@@ -9,9 +10,11 @@ const Home = () => {
           <h1 className="mb-50 font-courgette">TripEase</h1>
           <p className="font-notosansjp">Simplify Your Journey with Effortless Trip Planning.</p>
           <div className="mt-0">
+          <Link to="/plan" className="hover:underline">
             <button className="bg-custom-green3 border border-custom-green2 rounded-full px-6 py-2 md:px-8 md:py-3 hover:bg-custom-green hover:text-white transition duration-300 ease-in-out">
               Start Planning Your Trip Today!
             </button>
+            </Link>
           </div>
         </div>
         <img

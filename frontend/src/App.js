@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import About from './components/About';
 import Contact from './components/Contact'; 
+import Plan from './components/Plan';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/about' element={<About />} />
           <Route path='/contact' element={<Contact />} />
+          <Route path='/plan' element={<Plan />} />
         </Routes>
         <Footer />
       </Router>
