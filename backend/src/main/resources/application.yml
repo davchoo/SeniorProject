@@ -5,6 +5,16 @@ spring:
     hibernate:
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+      # Set to 'create' to initialize the schema
+      ddl-auto: validate
+  datasource:
+    url: jdbc:postgresql://localhost:5432/travel-planner-local
+    username: admin
+    password: ThisPasswordIsOnlyUsedForDev
+  session:
+    timeout: 24h
+    jdbc:
+      initialize-schema: always
 travel-planner:
   weather:
     national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS

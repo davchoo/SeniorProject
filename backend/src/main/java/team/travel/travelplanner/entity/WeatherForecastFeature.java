@@ -13,6 +13,7 @@ public class WeatherForecastFeature {
     @GeneratedValue
     private long id;
 
+    @Column(name = "forecast_day") // H2 does not like day as an identifier
     private int day;
 
     private String popUpContent;
