@@ -1,14 +1,16 @@
 package team.travel.travelplanner.service.impl;
 
 import org.geotools.api.data.SimpleFeatureSource;
-import org.geotools.api.feature.GeometryAttribute;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.type.Name;
+import org.geotools.api.referencing.ReferenceIdentifier;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.wfs.WFSDataStore;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.impl.WFSDataAccessFactory;
+import org.geotools.metadata.iso.citation.Citations;
+import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,8 @@ import java.util.Map;
 public class WeatherDataServiceImpl implements WeatherDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WeatherDataServiceImpl.class);
+
+    private static final int WGS84_SRID = 4326;
 
     private final WeatherDataConfig weatherDataConfig;
 
@@ -82,7 +86,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
             dataStore.dispose();
         } catch (IOException exception) {
-
+            LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", exception);
         }
     }
 
@@ -99,8 +103,20 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
         weatherForecastFeature.setWeatherFeatureType(featureType);
 
-        GeometryAttribute geometryAttribute = feature.getDefaultGeometryProperty();
-        weatherForecastFeature.setGeometry((Geometry) geometryAttribute.getValue());
+        Geometry geometry = (Geometry) feature.getDefaultGeometryProperty().getValue();
+        // HACK: For some reason the SRID is not set for geometries from WFSFeatureSource, but it is included in the userData
+        if (geometry.getUserData() instanceof AbstractSingleCRS crs) {
+            ReferenceIdentifier identifier = crs.getIdentifier(Citations.EPSG);
+            if (identifier != null) {
+                geometry.setSRID(Integer.parseInt(identifier.getCode()));
+            }
+        }
+        if (geometry.getSRID() == 0) {
+            LOGGER.warn("Failed to find SRID for feature in Day_{}_{}, assuming {}", day, featureType, WGS84_SRID);
+            geometry.setSRID(WGS84_SRID);
+        }
+
+        weatherForecastFeature.setGeometry(geometry);
 
         weatherForecastFeatureRepository.save(weatherForecastFeature);
     }
