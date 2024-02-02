@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @Entity
 public class WeatherForecastFeature {
@@ -21,11 +22,11 @@ public class WeatherForecastFeature {
     @CreationTimestamp
     private Instant retrievalTimestamp;
 
-    private String fileDate; // TODO use Date or some other type
+    private ZonedDateTime fileDate;
 
-    private Instant validStart;
+    private ZonedDateTime validStart;
 
-    private Instant validEnd;
+    private ZonedDateTime validEnd;
 
     @Enumerated(EnumType.STRING)
     private WeatherFeatureType weatherFeatureType;
@@ -67,27 +68,27 @@ public class WeatherForecastFeature {
         this.retrievalTimestamp = retrievalTimestamp;
     }
 
-    public String getFileDate() {
+    public ZonedDateTime getFileDate() {
         return fileDate;
     }
 
-    public void setFileDate(String fileDate) {
+    public void setFileDate(ZonedDateTime fileDate) {
         this.fileDate = fileDate;
     }
 
-    public Instant getValidStart() {
+    public ZonedDateTime getValidStart() {
         return validStart;
     }
 
-    public void setValidStart(Instant validStart) {
+    public void setValidStart(ZonedDateTime validStart) {
         this.validStart = validStart;
     }
 
-    public Instant getValidEnd() {
+    public ZonedDateTime getValidEnd() {
         return validEnd;
     }
 
-    public void setValidEnd(Instant validEnd) {
+    public void setValidEnd(ZonedDateTime validEnd) {
         this.validEnd = validEnd;
     }
 

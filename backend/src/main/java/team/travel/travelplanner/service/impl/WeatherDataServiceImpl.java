@@ -23,13 +23,16 @@ import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.HashMap;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 @Service
 public class WeatherDataServiceImpl implements WeatherDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WeatherDataServiceImpl.class);
+
+    private static final ZoneId EST = ZoneId.of("-05:00");
 
     private static final int WGS84_SRID = 4326;
 
@@ -44,16 +47,20 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         update();
     }
 
+    private Map<String, Object> createWFSParams() {
+        return Map.of(
+                WFSDataAccessFactory.URL.key, weatherDataConfig.getNationalWeatherForecastWfcUrl(),
+                WFSDataAccessFactory.LENIENT.key, true,
+                WFSDataAccessFactory.SCHEMA_CACHE_LOCATION.key, weatherDataConfig.getSchemaCachePath().toAbsolutePath().toString(),
+                WFSDataAccessFactory.PROTOCOL.key, false,
+                WFSDataAccessFactory.TIMEOUT.key, (int) weatherDataConfig.getTimeout().toMillis()
+        );
+    }
+
     private void update() {
         try {
-            Map<String, Object> params = new HashMap<>();
-            params.put(WFSDataAccessFactory.URL.key, weatherDataConfig.getNationalWeatherForecastWfcUrl());
-            params.put(WFSDataAccessFactory.LENIENT.key, true);
-            params.put(WFSDataAccessFactory.SCHEMA_CACHE_LOCATION.key, weatherDataConfig.getSchemaCachePath().toAbsolutePath().toString());
-            params.put(WFSDataAccessFactory.PROTOCOL.key, false);
-
-            WFSDataStore dataStore = new WFSDataStoreFactory().createDataStore(params);
-
+            WFSDataStore dataStore = new WFSDataStoreFactory()
+                    .createDataStore(createWFSParams());
             for (Name name : dataStore.getNames()) {
                 String typeName = name.getLocalPart();
                 int separatorIdx = typeName.indexOf(":");
@@ -94,14 +101,38 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         WeatherForecastFeature weatherForecastFeature = new WeatherForecastFeature();
         weatherForecastFeature.setDay(day);
         weatherForecastFeature.setPopUpContent((String) feature.getAttribute("popupConte"));
-
-        // TODO properly store the fileDate timestamp
-        Timestamp fileDate = (Timestamp) feature.getAttribute("idp_filedate");
-        weatherForecastFeature.setFileDate(String.valueOf(fileDate));
-
-        // TODO determine validStart and validEnd based on day, fileDate, and popUpContent
-
         weatherForecastFeature.setWeatherFeatureType(featureType);
+
+        Timestamp rawFileDate = (Timestamp) feature.getAttribute("idp_filedate");
+        ZonedDateTime fileDate = rawFileDate.toLocalDateTime().atZone(EST); // TODO check if file date is affected by DST
+        weatherForecastFeature.setFileDate(fileDate);
+
+        // https://www.wpc.ncep.noaa.gov/html/about_Gudes.shtml
+        if (day == 1) {
+            // Day 1 is issued by 5 am EST and 5 pm EST
+            if (fileDate.getHour() < 12) {
+                // Morning issuance is valid for 24 hours starting at 7 am EST
+                ZonedDateTime validStart = fileDate.toLocalDate()
+                        .atTime(7, 0)
+                        .atZone(EST);
+                weatherForecastFeature.setValidStart(validStart);
+                weatherForecastFeature.setValidEnd(validStart.plusHours(24));
+            } else {
+                // Afternoon issuance is valid for 12 hours starting at 7 pm EST
+                ZonedDateTime validStart = fileDate.toLocalDate()
+                        .atTime(19, 0)
+                        .atZone(EST);
+                weatherForecastFeature.setValidStart(validStart);
+                weatherForecastFeature.setValidEnd(validStart.plusHours(12));
+            }
+        } else {
+            // Day 2 and 3 are issued by 5 am EST and are valid for 24 hours
+            ZonedDateTime validStart = fileDate.toLocalDate()
+                    .plusDays(day - 1)
+                    .atTime(7, 0).atZone(EST);
+            weatherForecastFeature.setValidStart(validStart);
+            weatherForecastFeature.setValidEnd(validStart.plusHours(24));
+        }
 
         Geometry geometry = (Geometry) feature.getDefaultGeometryProperty().getValue();
         // HACK: For some reason the SRID is not set for geometries from WFSFeatureSource, but it is included in the userData
