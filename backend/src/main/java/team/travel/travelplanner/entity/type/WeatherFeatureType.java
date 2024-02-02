@@ -1,0 +1,13 @@
+package team.travel.travelplanner.entity.type;
+
+public enum WeatherFeatureType {
+    CRITICAL_FIRE_WEATHER_POSSIBLE,
+    FREEZING_RAIN_POSSIBLE,
+    HEAVY_RAIN_FLASH_FLOODING_POSSIBLE,
+    HEAVY_SNOW_POSSIBLE,
+    MIXED_PRECIPITATION,
+    RAIN,
+    RAIN_THUNDERSTORMS,
+    SEVERE_THUNDERSTORMS_POSSIBLE,
+    SNOW
+}

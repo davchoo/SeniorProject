@@ -1,0 +1,10 @@
+server:
+  port: 8080
+spring:
+  jpa:
+    hibernate:
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+travel-planner:
+  weather:
+    national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS
