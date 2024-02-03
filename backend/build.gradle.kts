@@ -23,7 +23,7 @@ dependencies {
     implementation("org.springframework.security:spring-security-crypto")
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
-    implementation("org.bouncycastle:bcpkix-jdk15on") // For Argon2
+    //implementation("org.bouncycastle:bcpkix-jdk15on") // For Argon2
 
     runtimeOnly("org.postgresql:postgresql")
 
