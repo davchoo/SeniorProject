@@ -18,8 +18,8 @@ repositories {
             releasesOnly()
         }
     }
-    mavenCentral()
 
+    mavenCentral()
 }
 
 dependencies {
@@ -30,10 +30,17 @@ dependencies {
     implementation("org.springframework.security:spring-security-crypto")
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
+    implementation("org.hibernate.orm:hibernate-spatial")
+
+    val geotoolsVersion = "30.2"
+    implementation("org.geotools:gt-wms:${geotoolsVersion}")
+    implementation("org.geotools:gt-wfs-ng:${geotoolsVersion}")
+    // Load CRSs from a properties file
+    implementation("org.geotools:gt-epsg-wkt:${geotoolsVersion}")
+    // Use a newer version of Guava, so IntelliJ doesn't complain about the CVEs from the old Guava version used by GeoTools
+    implementation("com.google.guava:guava:33.0.0-jre")
+
     implementation("com.google.maps:google-maps-services:2.2.0")
-    //implementation("org.slf4j:slf4j-simple:2.0.5")
-//    implementation("com.google.appengine:appengine-api-1.0-sdk:2.2.0")
-//    implementation("org.bouncycastle:bcpkix-jdk15on") // For Argon2
 
     runtimeOnly("org.postgresql:postgresql")
 
