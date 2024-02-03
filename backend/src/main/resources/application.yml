@@ -1,20 +1,33 @@
 server:
   port: 8080
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/travel-planner-local
+    username: admin
+    password: ThisPasswordIsOnlyUsedForDev
   jpa:
     hibernate:
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
       # Set to 'create' to initialize the schema
       ddl-auto: validate
-  datasource:
-    url: jdbc:postgresql://localhost:5432/travel-planner-local
-    username: admin
-    password: ThisPasswordIsOnlyUsedForDev
+    # Defer execution of schema.sql and data.sql scripts until the entity tables are created
+    defer-datasource-initialization: true
   session:
     timeout: 24h
     jdbc:
       initialize-schema: always
+  sql:
+    init:
+      # Always run the schema.sql and data.sql scripts
+      mode: always
+      platform: postgres
+  task:
+    scheduling:
+      simple:
+        concurrency-limit: 2
+      pool:
+        size: 2
 travel-planner:
   weather:
     national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS

@@ -16,6 +16,8 @@ public class WeatherDataConfig {
 
     private Duration timeout = Duration.ofSeconds(30);
 
+    private boolean autoUpdate = true;
+
     public URL getNationalWeatherForecastWfcUrl() {
         return nationalWeatherForecastWfcUrl;
     }
@@ -38,5 +40,13 @@ public class WeatherDataConfig {
 
     public void setTimeout(Duration timeout) {
         this.timeout = timeout;
+    }
+
+    public boolean isAutoUpdate() {
+        return autoUpdate;
+    }
+
+    public void setAutoUpdate(boolean autoUpdate) {
+        this.autoUpdate = autoUpdate;
     }
 }

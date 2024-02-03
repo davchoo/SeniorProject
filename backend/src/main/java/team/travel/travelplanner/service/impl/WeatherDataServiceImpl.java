@@ -14,6 +14,10 @@ import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import team.travel.travelplanner.config.WeatherDataConfig;
 import team.travel.travelplanner.entity.WeatherForecastFeature;
@@ -23,6 +27,7 @@ import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -40,11 +45,52 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
     private final WeatherForecastFeatureRepository weatherForecastFeatureRepository;
 
-    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherForecastFeatureRepository weatherForecastFeatureRepository) {
+    private final TaskScheduler taskScheduler;
+
+    private boolean completedLastUpdate = false;
+
+    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherForecastFeatureRepository weatherForecastFeatureRepository, TaskScheduler taskScheduler) {
         this.weatherDataConfig = weatherDataConfig;
         this.weatherForecastFeatureRepository = weatherForecastFeatureRepository;
+        this.taskScheduler = taskScheduler;
 
-        update();
+        if (!weatherDataConfig.isAutoUpdate()) {
+            LOGGER.info("Auto update is disabled.");
+        }
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        taskScheduler.schedule(this::checkForUpdate, Instant.now().plusSeconds(2));
+    }
+
+    @Scheduled(cron = "@hourly")
+    private synchronized void checkForUpdate() {
+        if (!weatherDataConfig.isAutoUpdate()) {
+            return;
+        }
+        if (completedLastUpdate) {
+            ZonedDateTime latestFileDate = weatherForecastFeatureRepository.findLatestFileDate();
+            if (latestFileDate != null) {
+                ZonedDateTime now = Instant.now().atZone(EST);
+                if (latestFileDate.toLocalDate().equals(now.toLocalDate())) {
+                    // Still the same day
+                    if (latestFileDate.getHour() < 12 && now.getHour() < 12) {
+                        // Acquired morning issuance, wait until the afternoon
+                        return;
+                    }
+                    if (latestFileDate.getHour() >= 12 && now.getHour() >= 12) {
+                        // Acquired afternoon issuance, wait until the next morning
+                        return;
+                    }
+                }
+                LOGGER.info("Checking National Weather Forecast Chart for updates. The latest file stored was dated: {}", latestFileDate);
+            }
+        } else {
+            LOGGER.info("Checking National Weather Forecast Chart for updates. Application has just started or the last update was not complete.");
+        }
+        completedLastUpdate = false;
+        updateNow();
     }
 
     private Map<String, Object> createWFSParams() {
@@ -57,7 +103,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         );
     }
 
-    private void update() {
+    private void updateNow() {
         try {
             WFSDataStore dataStore = new WFSDataStoreFactory()
                     .createDataStore(createWFSParams());
@@ -92,6 +138,8 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             }
 
             dataStore.dispose();
+            completedLastUpdate = true;
+            weatherForecastFeatureRepository.deduplicate();
         } catch (IOException exception) {
             LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", exception);
         }
