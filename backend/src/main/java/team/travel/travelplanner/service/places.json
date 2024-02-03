@@ -1,0 +1,1135 @@
+{
+   "html_attributions" : [],
+   "next_page_token" : "AWU5eFh8Qr6oukqnl93tn5Fmqpby-2gDZzlok3wv2qBfW9kdEU1BQyUwGkWvIJilmkLS7ncbJH2KKRbkiS-3f3LsAr7sBHELzgTDV1CpKWfeUtujcOyIzprWwXBVTtXEU9niZTMH5NPsjZUNaVXfdmmWi_ZnuhYK0Uo87yuGHGoMft15kiaXhMfVmMnPxnohvaRJreGDIWiOoIPtolptaMBttSbUNjpV4s4ng8p5YBE56mbAqpMwHafBlWYHE2bdXNJI6fe0uA-WHTwDZ2slUb6YyfeAA6lMQ6TRx5RnarlWnjc9gW9eQayuaQEFLNzKgBIqT-xw8PVwR-adqZhnoP1kUnrjBSsddvNXYYs_wJrsBd5_AjJTbWU_UiT49wMsGBA1Heep7Ko-oIEtih_Jr5Xlhtb-092K8rSbc5bSPQucltEO",
+   "results" : 
+   [
+      {
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.70289229999999,
+               "lng" : -75.1118422
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.73739000269416,
+                  "lng" : -75.05478501326128
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.67858403995984,
+                  "lng" : -75.16826099273436
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/geocode-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Glassboro",
+         "photos" : 
+         [
+            {
+               "height" : 3024,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/107254974965483984878\"\u003eTanay Ved\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFgHzIx4dQzW7WjaJ2MpSkC9vC48SzXhVfAHWGkxyxt5gsIrj7TLGPLLK0h3BCDWsfrFWq_kJorUsel53SUb4vW5iUri1s3vLZ03jg0Av_frJNwBfhdNLsItv9R7G1MGGbRzzSf38sNVxCMoK-gTg538rEm0WojZiGLQC4E8BWJEdZ0g",
+               "width" : 4032
+            }
+         ],
+         "place_id" : "ChIJxV2EravXxokRAgD39USJdls",
+         "reference" : "ChIJxV2EravXxokRAgD39USJdls",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "locality",
+            "political"
+         ],
+         "vicinity" : "Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7067279,
+               "lng" : -75.1138
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.70779873029149,
+                  "lng" : -75.1119003197085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.70510076970849,
+                  "lng" : -75.1145982802915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/lodging-71.png",
+         "icon_background_color" : "#909CE1",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/hotel_pinlet",
+         "name" : "Courtyard by Marriott Glassboro Rowan University",
+         "photos" : 
+         [
+            {
+               "height" : 320,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/117645562508510095975\"\u003eCourtyard by Marriott Glassboro Rowan University\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFjPbUFkwSJcIjLwLZ5Kjhz-iAcF45kHq754km6XLgvpm5uWGeUzpUJYYviq7ZJo4RM5QO-95sY-MAHv0f0lrJprZyC_zbaPiNEStUXDdmDAB-_zkCtKbVA2BjLW2GhRjKTQEA3ldI3VdmFt082egYEcLz3rL9MF6wK9NXxCYdV6B1d-",
+               "width" : 569
+            }
+         ],
+         "place_id" : "ChIJYxjCqmppZIgR3Dk2X91tQrg",
+         "plus_code" : 
+         {
+            "compound_code" : "PV4P+MF Glassboro, NJ, USA",
+            "global_code" : "87F6PV4P+MF"
+         },
+         "rating" : 4.1,
+         "reference" : "ChIJYxjCqmppZIgR3Dk2X91tQrg",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "lodging",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 759,
+         "vicinity" : "325 Rowan Boulevard, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7049913,
+               "lng" : -75.11274349999999
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7062783302915,
+                  "lng" : -75.11160226970848
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7035803697085,
+                  "lng" : -75.11430023029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+         "name" : "Barnes & Noble Rowan University Bookstore",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 1536,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/114848811691127580752\"\u003eSam Poat\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFgSpr04ZdozKfyliuJNRD201MfjSTPH6ugvZTn0GEsuB2zCeAtXZnsUSfAx5d10sn99YlPh4svM2FWBGV1eCtWq2fcOsZf1uQFmrHBBT_VXjPoJZXOsWg7hlr0pm2C1-BRmX5khy5CnS4jcdhWuJGh_rQlekXS4QrAtqBtKNonz4eYb",
+               "width" : 2048
+            }
+         ],
+         "place_id" : "ChIJd-qoEKzXxokR5-F4eOLhTm4",
+         "plus_code" : 
+         {
+            "compound_code" : "PV3P+XW Glassboro, NJ, USA",
+            "global_code" : "87F6PV3P+XW"
+         },
+         "rating" : 4.3,
+         "reference" : "ChIJd-qoEKzXxokR5-F4eOLhTm4",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "book_store",
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 634,
+         "vicinity" : "201 Rowan Boulevard, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7099689,
+               "lng" : -75.1191932
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.71927805000001,
+                  "lng" : -75.1043629
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.70023304999999,
+                  "lng" : -75.13133249999998
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/school_pinlet",
+         "name" : "Rowan University",
+         "photos" : 
+         [
+            {
+               "height" : 3840,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/107142737906938729414\"\u003eRowan University\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFhOxO8TObupQMskC8R6sTcynHhpq92kCK0k0rwShrvmRMgN-D3evVC1HDdBZojfr4XTAfZ0TPDeWWGRO5b55fYLd2ANOVH3CA9WRwPNaWH_F2gVh5P7qSf9zHliiC-l0147evhQp05g59mC68p1-rua4MHvOlJNye9KKCHhfDBLd2Tg",
+               "width" : 5760
+            }
+         ],
+         "place_id" : "ChIJFUBWdKjXxokRC7d5RH8CE1M",
+         "plus_code" : 
+         {
+            "compound_code" : "PV5J+X8 Glassboro, NJ, USA",
+            "global_code" : "87F6PV5J+X8"
+         },
+         "rating" : 4.1,
+         "reference" : "ChIJFUBWdKjXxokRC7d5RH8CE1M",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "university",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 138,
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.71056240000001,
+               "lng" : -75.1202953
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.71127530000001,
+                  "lng" : -75.1193278697085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7084237,
+                  "lng" : -75.12202583029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Dr. Carl L. Schopfer, DO",
+         "place_id" : "ChIJmazWLgjXxokRoMhuSgtmfk4",
+         "plus_code" : 
+         {
+            "compound_code" : "PV6H+6V Glassboro, NJ, USA",
+            "global_code" : "87F6PV6H+6V"
+         },
+         "rating" : 1,
+         "reference" : "ChIJmazWLgjXxokRoMhuSgtmfk4",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "doctor",
+            "health",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 1,
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7055771,
+               "lng" : -75.1133473
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7069902302915,
+                  "lng" : -75.11210366970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7042922697085,
+                  "lng" : -75.1148016302915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/school_pinlet",
+         "name" : "Rowan University, Global Learning & Partnerships",
+         "opening_hours" : 
+         {
+            "open_now" : false
+         },
+         "photos" : 
+         [
+            {
+               "height" : 2736,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/102379652828747706223\"\u003eBen Schumin\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFgZjSZAOM5_WUhRy1J8wQp67bESVovw_geGeMXlK4TvwqZWE78eh9BLpMYR9LXj-O091xotod73DyPWtIhe_3c1QURrgil5bcRyibYAQnQYhdg-y-TOBt4Dto1ly5YNeN3q7FvOww0AZSsvnZY8G9vUH7pu4BlQKh0hg9vBUJm8EHCy",
+               "width" : 3648
+            }
+         ],
+         "place_id" : "ChIJJa_FwqfXxokRqkhdT22VbRA",
+         "plus_code" : 
+         {
+            "compound_code" : "PV4P+6M Glassboro, NJ, USA",
+            "global_code" : "87F6PV4P+6M"
+         },
+         "rating" : 5,
+         "reference" : "ChIJJa_FwqfXxokRqkhdT22VbRA",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "university",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 1,
+         "vicinity" : "225 Rowan Boulevard, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.71056240000001,
+               "lng" : -75.1202953
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.71127530000001,
+                  "lng" : -75.1193278697085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7084237,
+                  "lng" : -75.12202583029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Bozar Ovalle Karen M",
+         "place_id" : "ChIJFUBWdKjXxokRqlsvtiQCEjs",
+         "plus_code" : 
+         {
+            "compound_code" : "PV6H+6V Glassboro, NJ, USA",
+            "global_code" : "87F6PV6H+6V"
+         },
+         "reference" : "ChIJFUBWdKjXxokRqlsvtiQCEjs",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "health",
+            "point_of_interest",
+            "establishment"
+         ],
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7095229,
+               "lng" : -75.1092493
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7107647302915,
+                  "lng" : -75.10797501970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7080667697085,
+                  "lng" : -75.1106729802915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+         "name" : "Bob's Little Sport Shop",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 4032,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/111137963054554953988\"\u003eRWS\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFhXXfp8SyjXcV0nVVAdiHLnvxIQKo6dWW-GJ3ZMDJSpgUPrctXKjDYcIxVRLLruwOZ5zwLBoTRTvGFbdBV6TwDzhOBIeqwVwqWRSmkRtS2d-2-ptJSWVn48skHVY_NntEwdAnF4M99k6A5ZqC_gUw5rPmV9JOgGR6ISvXwVS7LXCz2f",
+               "width" : 3024
+            }
+         ],
+         "place_id" : "ChIJI99zlarXxokRlGSjXzDVPvI",
+         "plus_code" : 
+         {
+            "compound_code" : "PV5R+R8 Glassboro, NJ, USA",
+            "global_code" : "87F6PV5R+R8"
+         },
+         "rating" : 4.7,
+         "reference" : "ChIJI99zlarXxokRlGSjXzDVPvI",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 855,
+         "vicinity" : "316 Delsea Drive, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7082453,
+               "lng" : -75.1170001
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.70942288029151,
+                  "lng" : -75.11574346970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.70672491970851,
+                  "lng" : -75.1184414302915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Rowan University Student Health Center",
+         "opening_hours" : 
+         {
+            "open_now" : false
+         },
+         "place_id" : "ChIJmazWLgjXxokREI4zQphcZS0",
+         "plus_code" : 
+         {
+            "compound_code" : "PV5M+75 Glassboro, NJ, USA",
+            "global_code" : "87F6PV5M+75"
+         },
+         "rating" : 2.7,
+         "reference" : "ChIJmazWLgjXxokREI4zQphcZS0",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "health",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 7,
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7204855,
+               "lng" : -75.1141396
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7218407302915,
+                  "lng" : -75.1129178197085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.71914276970851,
+                  "lng" : -75.11561578029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/bank-71.png",
+         "icon_background_color" : "#909CE1",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/bank-intl_pinlet",
+         "name" : "TD Bank",
+         "opening_hours" : 
+         {
+            "open_now" : false
+         },
+         "photos" : 
+         [
+            {
+               "height" : 4032,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/103181249797904219305\"\u003eOmar Rios\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFhZFKghC3WghJ6CpLPXyMbooZ9jqVy-z2UZ5Gaat3eKcsYn40ln-0vvR7DONxKVQSotiZqqa3d3d-Kywg59owip1g7cy27uU2E0cq0953buINtV7F6DTmMeo96y-3jHzOKTz8ShrJWJlEaKKk76k5c54Fln1V8_q7xf_Eev_Pm457tH",
+               "width" : 3024
+            }
+         ],
+         "place_id" : "ChIJZxn7lwTXxokRU9hul2N34qs",
+         "plus_code" : 
+         {
+            "compound_code" : "PVCP+58 Glassboro, NJ, USA",
+            "global_code" : "87F6PVCP+58"
+         },
+         "rating" : 2.8,
+         "reference" : "ChIJZxn7lwTXxokRU9hul2N34qs",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "bank",
+            "atm",
+            "finance",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 67,
+         "vicinity" : "700 Delsea Drive, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7197942,
+               "lng" : -75.1160661
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7211547802915,
+                  "lng" : -75.11461771970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7184568197085,
+                  "lng" : -75.1173156802915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+         "name" : "Pep Boys",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 271,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/118317285382871482130\"\u003ePep Boys\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFgMZUG33Lk_74rA1BqcUjFTYgY50Ih-ZUiNgMrmu2KEll4OuPiW17XO5kBSp7MTjkjolHHl5bt3RAYtzwJgKWiovRTbRLxRaJrCZ4gNxdMrs16VlE1NhvddsWhuMgdCrIrI3FOJzq0ER412rZ6UGHaBJZ0gBKYMySxV9Ok-CVW77Tql",
+               "width" : 480
+            }
+         ],
+         "place_id" : "ChIJ1UKJKgXXxokRdLoKy9LE1gE",
+         "plus_code" : 
+         {
+            "compound_code" : "PV9M+WH Glassboro, NJ, USA",
+            "global_code" : "87F6PV9M+WH"
+         },
+         "rating" : 4,
+         "reference" : "ChIJ1UKJKgXXxokRdLoKy9LE1gE",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "car_repair",
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 474,
+         "vicinity" : "711 Delsea Drive, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7066891,
+               "lng" : -75.11048009999999
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.70799828029151,
+                  "lng" : -75.10905156970848
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.70530031970851,
+                  "lng" : -75.11174953029149
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png",
+         "icon_background_color" : "#FF9E67",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/restaurant_pinlet",
+         "name" : "Landmark Americana",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 920,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/101551840047149414214\"\u003eLandmark Americana\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFjPPZAwHcHKxvScD9cAsJ5M3DfPFiJYOUXnL0BR51y7rkGTX4ZuJ6Zybn99HborrISiAxN1GJW5252J79TiJD-Y2qj04yphJoQ9DziT_CFZCse6EwXj1eHIIAQrpVIuVMHUQ66uxO3SgFm1VdRuvqQ2jo40c7IOoq8-Fa7vTlLdXf-0",
+               "width" : 1632
+            }
+         ],
+         "place_id" : "ChIJl28aDavXxokRg4iFYc4P0UE",
+         "plus_code" : 
+         {
+            "compound_code" : "PV4Q+MR Glassboro, NJ, USA",
+            "global_code" : "87F6PV4Q+MR"
+         },
+         "price_level" : 2,
+         "rating" : 4.1,
+         "reference" : "ChIJl28aDavXxokRg4iFYc4P0UE",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "night_club",
+            "bar",
+            "restaurant",
+            "food",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 1763,
+         "vicinity" : "1 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.70748379999999,
+               "lng" : -75.1094162
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7087899302915,
+                  "lng" : -75.1079222697085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7060919697085,
+                  "lng" : -75.1106202302915
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Walgreens",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 2268,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/106646388621585030273\"\u003eStefan Battermann\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFgIKn60Jx4jpxbjnJ_9xK7BAeO9fNSj5uTEO82oITe0b5sakcAk1fm97p8TptLhS7HjzEd0ZFTRCg2fJkkXOJdmIshDnFzHMOt8MrTDrlStp9CMSD_RFdQXjE0nr2NudDjGkwDMaP9J7QWCKhMt87DShKZYzRPjx6z2KenXYPBvA_jD",
+               "width" : 4032
+            }
+         ],
+         "place_id" : "ChIJ-VrhPqvXxokReUwBg0qJ6cw",
+         "plus_code" : 
+         {
+            "compound_code" : "PV4R+X6 Glassboro, NJ, USA",
+            "global_code" : "87F6PV4R+X6"
+         },
+         "price_level" : 2,
+         "rating" : 3.4,
+         "reference" : "ChIJ-VrhPqvXxokReUwBg0qJ6cw",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "drugstore",
+            "convenience_store",
+            "clothing_store",
+            "health",
+            "food",
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 60,
+         "vicinity" : "221 Delsea Drive North, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.715591,
+               "lng" : -75.1229773
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7168718302915,
+                  "lng" : -75.1218603197085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7141738697085,
+                  "lng" : -75.12455828029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/school_pinlet",
+         "name" : "Glassboro High School",
+         "photos" : 
+         [
+            {
+               "height" : 3024,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/115420961179277990370\"\u003eNick Felker\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFj_v6DGz7ujPJpKlAh8YOG3IoW31g7_V6_dbUSOUgsJVlLICMg__QZfl6B3Ec87smCO2sya8TcZkm6QzouEv5f03n1tlLCcrpo1Kkxk67R9EaSzOVNWMEuoaa0pQwNkyJ81StdDQXjN2nk3zHrS2jJJFCzUiesceZcgaKuVhHB3P-Pp",
+               "width" : 4032
+            }
+         ],
+         "place_id" : "ChIJLXUJwgjXxokRQdf9O7paiso",
+         "plus_code" : 
+         {
+            "compound_code" : "PV8G+6R Glassboro, NJ, USA",
+            "global_code" : "87F6PV8G+6R"
+         },
+         "rating" : 3.8,
+         "reference" : "ChIJLXUJwgjXxokRQdf9O7paiso",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "secondary_school",
+            "school",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 8,
+         "vicinity" : "550 Joseph Bowe Blvd, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.71056240000001,
+               "lng" : -75.1202953
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.71127530000001,
+                  "lng" : -75.1193278697085
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7084237,
+                  "lng" : -75.12202583029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/school-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/school_pinlet",
+         "name" : "Community Standards",
+         "place_id" : "ChIJmazWLgjXxokRBJ-pgUP3wo8",
+         "plus_code" : 
+         {
+            "compound_code" : "PV6H+6V Glassboro, NJ, USA",
+            "global_code" : "87F6PV6H+6V"
+         },
+         "reference" : "ChIJmazWLgjXxokRBJ-pgUP3wo8",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "university",
+            "point_of_interest",
+            "establishment"
+         ],
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.710538,
+               "lng" : -75.120195
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.71125405000001,
+                  "lng" : -75.11922921970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.70838985,
+                  "lng" : -75.12192718029149
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Nancy M. Pontes, DNSc",
+         "place_id" : "ChIJmazWLgjXxokRyu0Ej0SR7C0",
+         "plus_code" : 
+         {
+            "compound_code" : "PV6H+6W Glassboro, NJ, USA",
+            "global_code" : "87F6PV6H+6W"
+         },
+         "reference" : "ChIJmazWLgjXxokRyu0Ej0SR7C0",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "health",
+            "point_of_interest",
+            "establishment"
+         ],
+         "vicinity" : "201 Mullica Hill Road, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7191863,
+               "lng" : -75.10947539999999
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7208350302915,
+                  "lng" : -75.10838881970851
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7181370697085,
+                  "lng" : -75.11108678029152
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shoppingcart_pinlet",
+         "name" : "ShopRite of Glassboro",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 3024,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/116240533871243684032\"\u003eAnthony Morris\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFiOkEgwT6jIPvjsjwy8BvJzkAjbeLQVqT9af6GEWoX1NodoGL9Ee8s9eTU25Exff3zohaejtcGR_oz-NYD8EnTwuDBKSb-eXIo9xTgHx2phI0Ifde25rJhmBecC_Kcy-LpadIdUBXjOGECZEEWDB7e51DRlpyOx4S_a2meazZ2CYu-A",
+               "width" : 4032
+            }
+         ],
+         "place_id" : "ChIJB0yetgLXxokRtLCwlUfYIdk",
+         "plus_code" : 
+         {
+            "compound_code" : "PV9R+M6 Glassboro, NJ, USA",
+            "global_code" : "87F6PV9R+M6"
+         },
+         "price_level" : 2,
+         "rating" : 4.2,
+         "reference" : "ChIJB0yetgLXxokRtLCwlUfYIdk",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "supermarket",
+            "grocery_or_supermarket",
+            "bakery",
+            "food",
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 2376,
+         "vicinity" : "201 William Dalton Drive, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7134056,
+               "lng" : -75.1119992
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7147518802915,
+                  "lng" : -75.11059326970849
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7120539197085,
+                  "lng" : -75.11329123029151
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/shopping-71.png",
+         "icon_background_color" : "#4B96F3",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/shopping_pinlet",
+         "name" : "Matt Blatt Mitsubishi",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 1286,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/111093816137627242718\"\u003eCathy Nuccio\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFh2B3syNVnPm8mCDgbEHwt5jnQy9vISENvGB4xIxJs-OO0JGeYQTnlZ3TqnMqDALbJSn78mL39j3V8pQcDdea8wG-FerF7eLZ3vKdV2_FYDJoKuo_owg9p0iOhtdDvrEeKFIqOob-SAjCdxNkLa2zl91JCA97dJqhGForQyAXpWtOg-",
+               "width" : 1715
+            }
+         ],
+         "place_id" : "ChIJLy12B6XCwIkRII4iROj8c3c",
+         "plus_code" : 
+         {
+            "compound_code" : "PV7Q+96 Glassboro, NJ, USA",
+            "global_code" : "87F6PV7Q+96"
+         },
+         "rating" : 4.6,
+         "reference" : "ChIJLy12B6XCwIkRII4iROj8c3c",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "finance",
+            "car_dealer",
+            "store",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 885,
+         "vicinity" : "501 Delsea Drive, Glassboro"
+      },
+      {
+         "business_status" : "OPERATIONAL",
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7224449,
+               "lng" : -75.1148125
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.7238418302915,
+                  "lng" : -75.11355911970851
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.7211438697085,
+                  "lng" : -75.11625708029152
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png",
+         "icon_background_color" : "#FF9E67",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/restaurant_pinlet",
+         "name" : "Italian Affair Restaurant",
+         "opening_hours" : 
+         {
+            "open_now" : true
+         },
+         "photos" : 
+         [
+            {
+               "height" : 3024,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/102257806305030649675\"\u003eItalian Affair Restaurant\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFjlB0nynJDsTe9qP2-tgs8RT8iOyb5TRUMpQ_Qe5Y2amZAagOdzt2dUDlAKj8KEPoVeK707X0jnmqgrwkEI1799TKUb-q_ie4VuLLugbweHOrY8-6sYDqXfdtcIqf6RMnt9UquPbfqk99Pa-E93_X6xqzmXby1dVvsQVhmwuGFdOSw",
+               "width" : 4032
+            }
+         ],
+         "place_id" : "ChIJxeJgCBvXxokR4q_rjadUooU",
+         "plus_code" : 
+         {
+            "compound_code" : "PVCP+X3 Glassboro, NJ, USA",
+            "global_code" : "87F6PVCP+X3"
+         },
+         "price_level" : 2,
+         "rating" : 4.3,
+         "reference" : "ChIJxeJgCBvXxokR4q_rjadUooU",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "night_club",
+            "bar",
+            "restaurant",
+            "food",
+            "point_of_interest",
+            "establishment"
+         ],
+         "user_ratings_total" : 1060,
+         "vicinity" : "900 Delsea Drive #1440, Glassboro"
+      },
+      {
+         "geometry" : 
+         {
+            "location" : 
+            {
+               "lat" : 39.7818322,
+               "lng" : -75.1821597
+            },
+            "viewport" : 
+            {
+               "northeast" : 
+               {
+                  "lat" : 39.79880904839025,
+                  "lng" : -75.11381385157482
+               },
+               "southwest" : 
+               {
+                  "lat" : 39.71482103532428,
+                  "lng" : -75.23009801614366
+               }
+            }
+         },
+         "icon" : "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/geocode-71.png",
+         "icon_background_color" : "#7B9EB0",
+         "icon_mask_base_uri" : "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+         "name" : "Mantua Township",
+         "photos" : 
+         [
+            {
+               "height" : 2448,
+               "html_attributions" : 
+               [
+                  "\u003ca href=\"https://maps.google.com/maps/contrib/102582067893231361759\"\u003eChris Wood\u003c/a\u003e"
+               ],
+               "photo_reference" : "AWU5eFj_Cjup4ocw5mwcWhNbtQVjJnCvmlfXwBuSdOC2bBs9bsOdDxJxg73-Ndw0uBQFaT8MNlfg5jiAWRj8o6i-M2UQjOm4G5avkV6G_JR4vFpLVR_ArmwfE0yKejSH9Y4owi90ZrxZ_X7vzB2H3Toj_gf7mUAatz-1qHlQFoySyQdCLng",
+               "width" : 3264
+            }
+         ],
+         "place_id" : "ChIJMXrKePbZxokR-y-IMHvHUTk",
+         "reference" : "ChIJMXrKePbZxokR-y-IMHvHUTk",
+         "scope" : "GOOGLE",
+         "types" : 
+         [
+            "locality",
+            "political"
+         ],
+         "vicinity" : "Mantua Township"
+      }
+   ],
+   "status" : "OK"
+}
