@@ -4,11 +4,27 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
+import team.travel.travelplanner.model.RouteWeatherFeature;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Entity
+@SqlResultSetMapping(name = "RouteWeatherFeature",
+        classes = @ConstructorResult(
+                targetClass = RouteWeatherFeature.class,
+                columns = {
+                        @ColumnResult(name = "i"),
+                        @ColumnResult(name = "weather_feature_type"),
+                        @ColumnResult(name = "forecast_day")
+                }
+        )
+)
+@NamedNativeQuery(
+        name = "WeatherForecastFeature.checkRouteWeather",
+        query = "select i, weather_feature_type, forecast_day from check_route_weather(:route, :durations, :startTime)",
+        resultSetMapping = "RouteWeatherFeature"
+)
 public class WeatherForecastFeature {
     @Id
     @GeneratedValue
