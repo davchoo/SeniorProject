@@ -1,3 +1,4 @@
+// components/Footer.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +13,7 @@ const Footer = () => {
           <Link to="/about" className="hover:underline">
             About
           </Link>
-          <Link to="/privacy-policy" className="hover:underline">
+          <Link to="/policy" className="hover:underline">
             Privacy Policy
           </Link>
           <Link to="/contact" className="hover:underline">
