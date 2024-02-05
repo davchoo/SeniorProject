@@ -12,7 +12,14 @@ java {
 }
 
 repositories {
+    maven {
+        url = uri("https://repo.osgeo.org/repository/release/")
+        mavenContent {
+            releasesOnly()
+        }
+    }
     mavenCentral()
+
 }
 
 dependencies {
@@ -23,7 +30,10 @@ dependencies {
     implementation("org.springframework.security:spring-security-crypto")
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
-    //implementation("org.bouncycastle:bcpkix-jdk15on") // For Argon2
+    implementation("com.google.maps:google-maps-services:2.2.0")
+    //implementation("org.slf4j:slf4j-simple:2.0.5")
+//    implementation("com.google.appengine:appengine-api-1.0-sdk:2.2.0")
+//    implementation("org.bouncycastle:bcpkix-jdk15on") // For Argon2
 
     runtimeOnly("org.postgresql:postgresql")
 
