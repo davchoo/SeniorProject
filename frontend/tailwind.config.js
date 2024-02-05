@@ -16,6 +16,7 @@ module.exports = {
         'custom-green3': '#ebffeb', 
         'white': '#ffffff', 
         'grey': '#808080', 
+        'light-gray': '#D3D3D3'
       },
       textColor: {
         'custom-green': '#9DC183',
@@ -24,10 +25,13 @@ module.exports = {
         'custom-green3': '#131313', 
         'white': '#ffffff', 
         'grey': '#808080', 
+        'light-gray': '#D3D3D3',
+        'custom-white': '#F2F3F4'
       },
       borderColor: {
         'white': '#ffffff', 
         'grey': '#808080', 
+        'light-gray': '#D3D3D3'
       },
     },
   },
