@@ -1,14 +1,12 @@
 package team.travel.travelplanner.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import team.travel.travelplanner.service.impl.GoogleMaps.GoogleMapsApiClientService;
+import team.travel.travelplanner.service.impl.GoogleMaps.GoogleMapsApiClientServiceImpl;
 
 @Configuration
 @ConfigurationProperties(prefix = "googlemaps")
@@ -17,10 +15,10 @@ public class GoogleMapsApiConfig {
     private String googleMapsApiKey;
 
     @Bean
-    public GoogleMapsApiClientService geocodingService() {
+    public GoogleMapsApiClientServiceImpl geocodingService() {
         if (googleMapsApiKey != null) {
             LOGGER.info("Google Maps Api key was supplied. Google geocoder will be used.");
-            return new GoogleMapsApiClientService(googleMapsApiKey);
+            return new GoogleMapsApiClientServiceImpl(googleMapsApiKey);
         }
         else{
             LOGGER.warn("No Google Maps Api key was supplied");
