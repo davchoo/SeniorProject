@@ -2,8 +2,8 @@ package team.travel.travelplanner.repository;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.stereotype.Repository;
 import team.travel.travelplanner.entity.WeatherForecastFeature;
 import team.travel.travelplanner.model.RouteWeatherFeature;
@@ -17,7 +17,8 @@ public interface WeatherForecastFeatureRepository extends JpaRepository<WeatherF
     @Query("select max(f.fileDate) from WeatherForecastFeature f")
     ZonedDateTime findLatestFileDate();
 
-    @Procedure("deduplicate_weather_forecast_features")
+    @Query(value = "CALL deduplicate_weather_forecast_features()", nativeQuery = true) // HACK?: @Modifying only applies to @Query and not @Procedure
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     void deduplicate();
 
     @Query(nativeQuery = true)

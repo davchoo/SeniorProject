@@ -19,6 +19,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import team.travel.travelplanner.config.WeatherDataConfig;
 import team.travel.travelplanner.entity.WeatherForecastFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
@@ -47,12 +51,15 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
     private final TaskScheduler taskScheduler;
 
+    private final TransactionTemplate transactionTemplate;
+
     private boolean completedLastUpdate = false;
 
-    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherForecastFeatureRepository weatherForecastFeatureRepository, TaskScheduler taskScheduler) {
+    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherForecastFeatureRepository weatherForecastFeatureRepository, TaskScheduler taskScheduler, PlatformTransactionManager platformTransactionManager) {
         this.weatherDataConfig = weatherDataConfig;
         this.weatherForecastFeatureRepository = weatherForecastFeatureRepository;
         this.taskScheduler = taskScheduler;
+        this.transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
         if (!weatherDataConfig.isAutoUpdate()) {
             LOGGER.info("Auto update is disabled.");
@@ -61,11 +68,11 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        taskScheduler.schedule(this::checkForUpdate, Instant.now().plusSeconds(2));
+        taskScheduler.schedule(this::checkForUpdates, Instant.now().plusSeconds(2));
     }
 
     @Scheduled(cron = "@hourly")
-    private synchronized void checkForUpdate() {
+    private synchronized void checkForUpdates() {
         if (!weatherDataConfig.isAutoUpdate()) {
             return;
         }
@@ -90,7 +97,17 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             LOGGER.info("Checking National Weather Forecast Chart for updates. Application has just started or the last update was not complete.");
         }
         completedLastUpdate = false;
-        updateNow();
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                try {
+                    updateNow();
+                } catch (IOException e) {
+                    LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", e);
+                    status.setRollbackOnly();
+                }
+            }
+        });
     }
 
     private Map<String, Object> createWFSParams() {
@@ -103,46 +120,46 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         );
     }
 
-    private void updateNow() {
-        try {
-            WFSDataStore dataStore = new WFSDataStoreFactory()
-                    .createDataStore(createWFSParams());
-            for (Name name : dataStore.getNames()) {
-                String typeName = name.getLocalPart();
-                int separatorIdx = typeName.indexOf(":");
-                if (separatorIdx != -1) {
-                    // Remove namespace prefix
-                    typeName = typeName.substring(separatorIdx + 1);
-                }
-                String[] parts = typeName.split("_", 3);
-                if (parts.length != 3 || !parts[0].equals("Day")) {
-                    LOGGER.warn("National Weather Forecast Chart type name is in unexpected format. {}", name);
-                    continue;
-                }
-                int day = Integer.parseInt(parts[1]);
-                WeatherFeatureType featureType = parseFeatureType(parts[2]);
-                if (featureType == null) {
-                    // Skip unknown feature types
-                    continue;
-                }
-
-                SimpleFeatureSource featureSource = dataStore.getFeatureSource(name);
-                SimpleFeatureCollection featureCollection = featureSource.getFeatures();
-
-                SimpleFeatureIterator iterator = featureCollection.features();
-                while (iterator.hasNext()) {
-                    SimpleFeature feature = iterator.next();
-                    saveFeature(day, featureType, feature);
-                }
-                iterator.close();
+    private void updateNow() throws IOException {
+        long initialCount = weatherForecastFeatureRepository.count();
+        WFSDataStore dataStore = new WFSDataStoreFactory()
+                .createDataStore(createWFSParams());
+        for (Name name : dataStore.getNames()) {
+            String typeName = name.getLocalPart();
+            int separatorIdx = typeName.indexOf(":");
+            if (separatorIdx != -1) {
+                // Remove namespace prefix
+                typeName = typeName.substring(separatorIdx + 1);
+            }
+            String[] parts = typeName.split("_", 3);
+            if (parts.length != 3 || !parts[0].equals("Day")) {
+                LOGGER.warn("National Weather Forecast Chart type name is in unexpected format. {}", name);
+                continue;
+            }
+            int day = Integer.parseInt(parts[1]);
+            WeatherFeatureType featureType = parseFeatureType(parts[2]);
+            if (featureType == null) {
+                // Skip unknown feature types
+                continue;
             }
 
-            dataStore.dispose();
-            completedLastUpdate = true;
-            weatherForecastFeatureRepository.deduplicate();
-        } catch (IOException exception) {
-            LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", exception);
+            SimpleFeatureSource featureSource = dataStore.getFeatureSource(name);
+            SimpleFeatureCollection featureCollection = featureSource.getFeatures();
+
+            SimpleFeatureIterator iterator = featureCollection.features();
+            while (iterator.hasNext()) {
+                SimpleFeature feature = iterator.next();
+                saveFeature(day, featureType, feature);
+            }
+            iterator.close();
         }
+
+        dataStore.dispose();
+        completedLastUpdate = true;
+        weatherForecastFeatureRepository.deduplicate();
+
+        long newCount = weatherForecastFeatureRepository.count();
+        LOGGER.info("Fetched National Weather Forecast Chart via WFS and received {} new features", newCount - initialCount);
     }
 
     private void saveFeature(int day, WeatherFeatureType featureType, SimpleFeature feature) {
