@@ -6,11 +6,12 @@ import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import About from './pages/About';
-import Contact from './components/Contact'; 
+import Contact from './pages/Contact'; 
 import Plan from './pages/Plan'; 
 import Policy from './pages/Policy';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import Reset from './pages/Reset';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path='/policy' element={<Policy/>} />
           <Route path='/login' element={<Login/>} />
           <Route path='/signup' element={<SignUp/>} />
+          <Route path='/reset/' element={<Reset/>} />
         </Routes>
         <Footer />
       </Router>
