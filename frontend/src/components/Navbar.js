@@ -1,6 +1,7 @@
 // components/Navbar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { GiCompass } from "react-icons/gi";
 
 const Navbar = () => {
   return (
@@ -8,7 +9,8 @@ const Navbar = () => {
       <div className="w-full mx-auto max-w-screen-xl p-6 flex flex-col md:flex-row md:items-center md:justify-between">
         {/* Left aligned */}
         <div className="md:flex md:items-center">
-          <span className="text-sm font-courgette text-custom-black sm:text-center">
+          <GiCompass className="text-custom-black text-2xl" /> {/* Compass icon */}
+          <span className="ml-2 text-md font-courgette text-custom-black sm:text-center">
             TripEase
           </span>
         </div>
