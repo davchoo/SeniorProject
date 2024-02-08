@@ -41,7 +41,9 @@ public class GasStationServiceImpl implements GasStationService {
 
         // Retrieve directions from departure to arrival
         DirectionsResult directionsResult = apiClient.getDirections(departureLatLng, arrivalLatLng);
-        apiClient.findPlaces(arrival, "gas_station", 1500);
+        //apiClient.findPlaces(arrival, "gas_station", 1500);
+        apiClient.getFuelPrices("ChIJWxxPU6vXxokRbpfNZKA-CbE");
+
 
         return Collections.emptyList();
     }

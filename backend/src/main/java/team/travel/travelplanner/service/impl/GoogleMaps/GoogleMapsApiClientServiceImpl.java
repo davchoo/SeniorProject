@@ -1,29 +1,32 @@
 package team.travel.travelplanner.service.impl.GoogleMaps;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.maps.DirectionsApi;
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.PlacesApi;
+import com.google.maps.*;
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.PlaceType;
-import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.*;
+import team.travel.travelplanner.model.FuelOptions;
 import team.travel.travelplanner.service.GoogleMapsApiClientService;
 import team.travel.travelplanner.type.LatLng;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientService {
 
     private final GeoApiContext context;
 
+    private String apiKey;
+
     public GoogleMapsApiClientServiceImpl(String googleMapsAPIKey) {
         this.context = new GeoApiContext.Builder()
                 .apiKey(googleMapsAPIKey)
                 .build();
+        setApiKey(googleMapsAPIKey);
     }
 
     public void test() throws IOException, InterruptedException, ApiException {
@@ -58,12 +61,54 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
 
             // Process the search response
             for (int i = 0; i < placesResponse.results.length; i++) {
-                System.out.println("Place " + (i + 1) + ": " + placesResponse.results[i].name);
+                System.out.println("Place " + (i + 1) + ": " + placesResponse.results[i]);
             }
         } catch (ApiException | InterruptedException | IOException e) {
             e.printStackTrace();
             // Handle exception
         }
 
+    }
+
+    @Override
+    public void getPlaceDetails(String place){
+        try {
+
+            PlaceDetailsRequest request = new PlaceDetailsRequest(context).placeId(place);
+            PlaceDetails placeDetails = request.await();
+            System.out.println(placeDetails);
+
+
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Google Maps Java Api Client does not have fuel prices so I have to query for fuel_options.
+     * @param placeId
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Override
+    public FuelOptions getFuelPrices(String placeId) throws IOException, InterruptedException {
+        String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=fuel_options", placeId, apiKey);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        ObjectMapper mapper = new ObjectMapper();
+        FuelOptions fuelOptions = mapper.readValue(response.body(), FuelOptions.class);
+        return fuelOptions;
+    }
+
+    private void setApiKey(String apiKey){
+        this.apiKey = apiKey;
     }
 }
