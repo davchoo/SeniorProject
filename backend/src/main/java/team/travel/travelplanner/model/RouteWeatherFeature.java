@@ -1,4 +1,6 @@
 package team.travel.travelplanner.model;
 
-public record RouteWeatherFeature(int i, String weatherFeatureType, int forecastDay) {
+import java.time.Instant;
+
+public record RouteWeatherFeature(int i, String weatherFeatureType, int forecastDay, Instant fileDate, Instant startTimestamp, Instant endTimestamp) {
 }

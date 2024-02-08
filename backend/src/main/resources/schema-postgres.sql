@@ -18,9 +18,12 @@ CREATE OR REPLACE FUNCTION check_route_weather(IN route geometry, IN durations i
                                                IN start_time timestamp with time zone)
     RETURNS TABLE
             (
-                i                           int,
-                weather_feature_type        varchar(255),
-                forecast_day                int
+                i                    int,
+                weather_feature_type varchar(255),
+                forecast_day         int,
+                file_date            timestamp with time zone,
+                start_timestamp      timestamp with time zone,
+                end_timestamp        timestamp with time zone
             )
     LANGUAGE sql
 AS
@@ -35,18 +38,34 @@ WITH route AS (SELECT durations.i,
                         JOIN (SELECT path[1] AS i, geom AS g
                               FROM st_dumpsegments(route)) AS route_segements
                              ON durations.i = route_segements.i),
-     s(latest_valid_end) AS (SELECT max(wxff.valid_end) FROM weather_forecast_feature AS wxff WHERE forecast_day = 1)
+     s(latest_valid_start, latest_valid_end, latest_file_date) AS (SELECT max(wxff.valid_start),
+                                                                          max(wxff.valid_end),
+                                                                          max(wxff.file_date)
+                                                                   FROM weather_forecast_feature AS wxff
+                                                                   WHERE forecast_day = 1)
 SELECT route.i - 1,
        wxff.weather_feature_type,
-       wxff.forecast_day
+       wxff.forecast_day,
+       wxff.file_date,
+       route.start_timestamp,
+       route.end_timestamp
 FROM route
          JOIN s ON TRUE
          INNER JOIN weather_forecast_feature AS wxff
                     ON
+                        (route.start_timestamp, route.end_timestamp) OVERLAPS (wxff.valid_start, wxff.valid_end) AND
                         (
                             forecast_day = greatest(floor(date_part('epoch', route.start_timestamp - s.latest_valid_end) / 86400) + 2, 1) OR
                             forecast_day = greatest(floor(date_part('epoch', route.end_timestamp - s.latest_valid_end) / 86400) + 2, 1)
                         ) AND
-                        (route.start_timestamp, route.end_timestamp) OVERLAPS (wxff.valid_start, wxff.valid_end) AND
+                        (
+                            (forecast_day != 1 AND (s.latest_file_date - wxff.file_date) < interval '1 hour') OR
+                            (forecast_day = 1 AND (
+                                route.end_timestamp - route.start_timestamp > interval '12 hour' OR
+                                date_part('hour', route.start_timestamp AT TIME ZONE 'EST') < 19 OR
+                                date_part('hour', wxff.file_date AT TIME ZONE 'EST') >= 12 OR
+                                ((s.latest_file_date - wxff.file_date) < interval '1 hour' AND date_part('hour', s.latest_valid_start AT TIME ZONE 'EST') = 7)
+                            ))
+                        ) AND
                         st_intersects(route.segment, wxff.geometry)
 $$;
