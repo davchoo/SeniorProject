@@ -16,13 +16,16 @@ import java.time.ZonedDateTime;
                 columns = {
                         @ColumnResult(name = "i"),
                         @ColumnResult(name = "weather_feature_type"),
-                        @ColumnResult(name = "forecast_day")
+                        @ColumnResult(name = "forecast_day"),
+                        @ColumnResult(name = "file_date"),
+                        @ColumnResult(name = "start_timestamp"),
+                        @ColumnResult(name = "end_timestamp"),
                 }
         )
 )
 @NamedNativeQuery(
         name = "WeatherForecastFeature.checkRouteWeather",
-        query = "select i, weather_feature_type, forecast_day from check_route_weather(:route, :durations, :startTime)",
+        query = "select i, weather_feature_type, forecast_day, file_date, start_timestamp, end_timestamp from check_route_weather(:route, :durations, :startTime)",
         resultSetMapping = "RouteWeatherFeature"
 )
 public class WeatherForecastFeature {
