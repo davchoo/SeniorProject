@@ -593,3 +593,13 @@
    ],
    "status" : "OK"
 }
+
+
+
+what is responded in google java client for places:
+Place 1: [PlacesSearchResult: "Sunoco Gas Station", "null", geometry=[Geometry: 39.71239250,-75.11133130 (null) bounds=null, viewport=[39.71371478,-75.11000007, 39.71101682,-75.11269803]], placeId=ChIJz5eQiQDXxokRox4PV8kA0pE, vicinity=341 Delsea Drive, Glassboro, types=[gas_station, convenience_store, car_repair, food, point_of_interest, store, establishment], rating=2.3, icon, openingHours, 1 photos, userRatingsTotal=12, businessStatus=OPERATIONAL]
+Place 2: [PlacesSearchResult: "Gulf", "null", geometry=[Geometry: 39.71235410,-75.11135350 (null) bounds=null, viewport=[39.71372508,-75.10992052, 39.71102712,-75.11261848]], placeId=ChIJq8OI8QDXxokRH-RJ3EftxT0, vicinity=341 Delsea Drive North, Glassboro, types=[gas_station, point_of_interest, establishment], rating=4.0, icon, 1 photos, userRatingsTotal=1, businessStatus=OPERATIONAL]
+Place 3: [PlacesSearchResult: "Delta", "null", geometry=[Geometry: 39.71788010,-75.11719580 (null) bounds=null, viewport=[39.71923283,-75.11584022, 39.71653487,-75.11853818]], placeId=ChIJRYLCQTfXxokR29qrBz4wl3s, vicinity=737 North Main Street, Glassboro, types=[gas_station, point_of_interest, establishment], rating=4.0, icon, 1 photos, userRatingsTotal=29, businessStatus=OPERATIONAL]
+Place 4: [PlacesSearchResult: "Shell", "null", geometry=[Geometry: 39.71789300,-75.11720500 (null) bounds=null, viewport=[39.71924453,-75.11585152, 39.71654657,-75.11854948]], placeId=ChIJZ4xn3g3XxokRNBJxuBmfbus, vicinity=737 North Main Street, Glassboro, types=[gas_station, convenience_store, food, point_of_interest, store, establishment], rating=5.0, icon, openingHours, 1 photos, userRatingsTotal=3, businessStatus=OPERATIONAL]
+Place 5: [PlacesSearchResult: "Wawa", "null", geometry=[Geometry: 39.71910830,-75.11297910 (null) bounds=null, viewport=[39.72043143,-75.11172507, 39.71773347,-75.11442303]], placeId=ChIJ0Xj_fLLXxokRd45YusfNur0, vicinity=692 Delsea Drive, Glassboro, types=[gas_station, point_of_interest, establishment], rating=4.3, icon, openingHours, 1 photos, userRatingsTotal=33, businessStatus=OPERATIONAL]
+Place 6: [PlacesSearchResult: "Phillips 66", "null", geometry=[Geometry: 39.70567070,-75.10770400 (null) bounds=null, viewport=[39.70700718,-75.10639522, 39.70430922,-75.10909318]], placeId=ChIJWxxPU6vXxokRbpfNZKA-CbE, vicinity=100 Delsea Drive, Glassboro, types=[gas_station, point_of_interest, establishment], rating=3.6, icon, 1 photos, userRatingsTotal=45, businessStatus=OPERATIONAL]
