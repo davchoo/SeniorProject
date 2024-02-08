@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Icon } from 'react-icons-kit';
-import { PiUserRectangleDuotone } from "react-icons/pi"; // Import the user icon
-import { eyeOff } from 'react-icons-kit/feather/eyeOff';
-import { eye } from 'react-icons-kit/feather/eye';
+import { PiUserRectangleDuotone } from "react-icons/pi";
+import { FaEye, FaEyeSlash, } from 'react-icons/fa';
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState('');
@@ -52,7 +50,7 @@ const SignUp = () => {
       <div className="max-w-md w-full px-8 py-6 bg-white rounded-lg shadow-md">
         <h1 className="text-3xl md:text-5xl font-notosansjp font-bold text-center text-custom-black md:mb-5">Sign Up</h1>
         <div className="text-center mb-5">
-          <PiUserRectangleDuotone  size={80} color="black" /> {/* Adjusted icon size */}
+          <PiUserRectangleDuotone  size={80} color="black" /> 
         </div>
         <h1 className="text-4xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Thank You for Choosing TripEase!</h1>
         <p className="font-notosansjp text-custom-black mb-5">
@@ -133,7 +131,7 @@ const SignUp = () => {
               onClick={togglePasswordVisibility}
               className="ml-2 focus:outline-none"
             >
-              <Icon icon={passwordVisible ? eye : eyeOff} size={25} />
+             {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>
           </div>
 
