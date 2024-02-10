@@ -12,7 +12,7 @@ export const AutoComplete = () => {
        </Autocomplete>
      </div>
      <div className='flex flex-row'>
-       <label>Enter Arrival:</label>
+       <label>Enter Destination:</label>
        <Autocomplete >
          <input></input>
        </Autocomplete>
