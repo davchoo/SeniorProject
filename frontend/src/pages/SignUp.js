@@ -9,7 +9,6 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(prevVisible => !prevVisible);
@@ -17,68 +16,40 @@ const SignUp = () => {
 
   const inputType = passwordVisible ? 'text' : 'password';
 
-  const handleFirstNameChange = e => {
-    setFirstName(e.target.value);
-  };
-
-  const handleLastNameChange = e => {
-    setLastName(e.target.value);
-  };
-
-  const handleUsernameChange = e => {
-    setUsername(e.target.value);
-  };
-
-  const handleEmailChange = e => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordChange = e => {
-    setPassword(e.target.value);
-  };
-
-  const handleSubmit = e => {
-    e.preventDefault();
-
-    setLoading(true);
-
-    setLoading(false);
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-custom-green justify-center items-center m-10 relative">
       <div className="max-w-md w-full px-8 py-6 bg-white rounded-lg shadow-md">
         <h1 className="text-3xl md:text-5xl font-notosansjp font-bold text-center text-custom-black md:mb-5">Sign Up</h1>
         <div className="text-center mb-5">
-          <PiUserRectangleDuotone  size={80} color="black" /> 
+          <PiUserRectangleDuotone size={80} color="black" /> 
         </div>
         <h1 className="text-4xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Thank You for Choosing TripEase!</h1>
         <p className="font-notosansjp text-custom-black mb-5">
           Create An Account
         </p>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col md:flex-row md:space-x-2">
-            <div className="w-full md:w-1/2">
+        <form className="space-y-4">
+          <div className="grid grid-cols-2 mr-24">
+            <div>
               <label htmlFor="firstName" className="sr-only">First Name</label>
               <input
                 type="text"
                 id="firstName"
                 name="firstName"
                 value={firstName}
-                onChange={handleFirstNameChange}
+                onChange={e => setFirstName(e.target.value)}
                 placeholder="First Name"
                 className="input-field"
                 required
               />
             </div>
-            <div className="w-full md:w-1/2">
+            <div className="md:ml-2"> {/* Adjusted margin */}
               <label htmlFor="lastName" className="sr-only">Last Name</label>
               <input
                 type="text"
                 id="lastName"
                 name="lastName"
                 value={lastName}
-                onChange={handleLastNameChange}
+                onChange={e => setLastName(e.target.value)}
                 placeholder="Last Name"
                 className="input-field"
                 required
@@ -93,7 +64,7 @@ const SignUp = () => {
               id="username"
               name="username"
               value={username}
-              onChange={handleUsernameChange}
+              onChange={e => setUsername(e.target.value)}
               placeholder="Username"
               className="input-field"
               required
@@ -107,7 +78,7 @@ const SignUp = () => {
               id="email"
               name="email"
               value={email}
-              onChange={handleEmailChange}
+              onChange={e => setEmail(e.target.value)}
               placeholder="Email Address"
               className="input-field"
               required
@@ -121,7 +92,7 @@ const SignUp = () => {
               id="password"
               name="password"
               value={password}
-              onChange={handlePasswordChange}
+              onChange={e => setPassword(e.target.value)}
               placeholder="Password"
               className="input-field"
               required
@@ -129,20 +100,17 @@ const SignUp = () => {
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="ml-2 focus:outline-none"
+              className="absolute inset-y ml-44 flex px-3 text-grey"
             >
-             {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+             {passwordVisible ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
             </button>
           </div>
 
           <button
             type="submit"
-            className={`w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-semibold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white ${
-              loading && 'opacity-50 cursor-not-allowed'
-            }`}
-            disabled={loading}
+            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-semibold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            Sign Up
           </button>
         </form>
         
