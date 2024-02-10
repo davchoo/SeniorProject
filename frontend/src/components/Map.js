@@ -16,10 +16,10 @@ const center = {
 };
 
 const Map = () => {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: 'YOUR_API_KEY',
-    libraries,
-  });
+ const { isLoaded, loadError } = useLoadScript({
+   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+   libraries,
+ });
 
   if (loadError) {
     return <div>Error loading maps</div>;
