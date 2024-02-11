@@ -7,8 +7,10 @@ import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import team.travel.travelplanner.model.FuelOptions;
+import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
+import team.travel.travelplanner.service.GoogleMapsApiDistanceService;
+import team.travel.travelplanner.service.GoogleMapsApiFuelPriceService;
 import team.travel.travelplanner.service.GoogleMapsApiClientService;
-import team.travel.travelplanner.type.LatLng;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,7 +18,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientService {
+import static java.lang.Math.*;
+
+public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientService, GoogleMapsApiFuelPriceService,
+        GoogleMapsApiDirectionsService, GoogleMapsApiDistanceService {
 
     private final GeoApiContext context;
 
@@ -53,8 +58,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
         try {
 
             // Perform a nearby search for places of the specified type around the location
-            PlacesSearchResponse placesResponse = PlacesApi.nearbySearchQuery(context,
-                            new com.google.maps.model.LatLng(location.latitude(), location.longitude()))
+            PlacesSearchResponse placesResponse = PlacesApi.nearbySearchQuery(context, location)
                     .type(PlaceType.valueOf(type.toUpperCase()))
                     .radius(radius)
                     .await();
@@ -67,7 +71,6 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
             e.printStackTrace();
             // Handle exception
         }
-
     }
 
     @Override
@@ -107,6 +110,34 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
         FuelOptions fuelOptions = mapper.readValue(response.body(), FuelOptions.class);
         return fuelOptions;
     }
+
+    @Override
+    public double haversine(LatLng origin, LatLng destination) {
+        double RADIUS_OF_EARTH_KM = 6371.01;
+        double lat1 = toRadians(origin.lat);
+        double lon1 = toRadians(origin.lng);
+        double lat2 = toRadians(destination.lat);
+        double lon2 = toRadians(destination.lng);
+
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+
+        double a = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
+        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+        return RADIUS_OF_EARTH_KM * c;
+    }
+
+    // Don't want to continously call DistanceMatrix API so using haversine could introduce a little error.
+    //    @Override
+//    public DistanceMatrix calculateDistance(LatLng origin, LatLng destination) throws IOException, InterruptedException, ApiException {
+//        DistanceMatrix distanceMatrix = DistanceMatrixApi.newRequest(context)
+//                .origins(origin)
+//                .destinations(destination)
+//                .mode(TravelMode.DRIVING)
+//                .await();
+//        return distanceMatrix;
+//    }
 
     private void setApiKey(String apiKey){
         this.apiKey = apiKey;

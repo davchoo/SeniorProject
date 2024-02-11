@@ -1,11 +1,10 @@
 package team.travel.travelplanner.entity;
 
 import jakarta.persistence.*;
+import team.travel.travelplanner.model.FuelOptions;
 
-@Entity
 public class GasStation {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     private String name;
@@ -17,6 +16,8 @@ public class GasStation {
     private double latitude;
     private double longitude;
     private double pricePerGallon;
+
+    private FuelOptions fuelOptions;
 
     public GasStation() {
     }
