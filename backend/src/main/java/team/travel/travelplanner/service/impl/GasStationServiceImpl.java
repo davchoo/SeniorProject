@@ -3,13 +3,14 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
-import team.travel.travelplanner.service.GoogleMapsApiDistanceService;
-import team.travel.travelplanner.service.GoogleMapsApiFuelPriceService;
-import team.travel.travelplanner.service.GasStationService;
+import team.travel.travelplanner.model.FuelOptions;
+import team.travel.travelplanner.service.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class GasStationServiceImpl implements GasStationService {
@@ -23,21 +24,88 @@ public class GasStationServiceImpl implements GasStationService {
     @Autowired
     GoogleMapsApiDistanceService apiDistanceClient;
 
+    @Autowired
+    GoogleMapsApiPlacesClientService apiPlacesClient;
+
     /**
-     * Method that will be used to find cheapeast gas stations along route.
-     * Will have to figure out how to refractor this an adhere to SRP because many different steps will have to happen
-     * Skeleton example that will build on.
+     * Retrieves gas stations along a route and their fuel options.
      *
-     * @param departure
-     * @param arrival
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws ApiException
+     * @param departure              The departure location.
+     * @param arrival                The arrival location.
+     * @param travelersMeterCapacity The fuel capacity of the traveler in meters.
+     * @return A map containing the place IDs of gas stations along the route and their corresponding fuel options.
+     * @throws IOException          If there's an error communicating with the Google Maps API.
+     * @throws InterruptedException If the thread is interrupted while waiting for the API response.
      */
-    public List<LatLng> findNeededStops(LatLng departure, LatLng arrival) throws IOException, InterruptedException, ApiException {
+    public Map<String, FuelOptions> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity) throws IOException, InterruptedException {
+        Map<String, FuelOptions> fuelOptionsMap = new HashMap<>();
+        List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
+
+        for (LatLng location : stopsAlongRoute) {
+            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 50000);
+            Map<String, FuelOptions> placesPerLocation = new HashMap<>();
+
+            for (PlacesSearchResult place : response.results) {
+                String placeId = place.placeId;
+                FuelOptions fuelOptionForPlace = apiFuelClient.getFuelPrices(placeId);
+                placesPerLocation.put(placeId, fuelOptionForPlace);
+            }
+
+            // Find the lowest fuel prices and corresponding place ID for each location
+            Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation);
+            fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+        }
+        return fuelOptionsMap;
+    }
+
+    /**
+     * Finds the gas station with the lowest fuel prices among the given set of gas stations.
+     *
+     * @param placesPerLocation A map containing place IDs of gas stations and their fuel options.
+     * @return A map entry containing the place ID of the gas station with the lowest fuel prices and its fuel options.
+     */
+    private Map.Entry<String, FuelOptions> findEntryWithLowestPrices(Map<String, FuelOptions> placesPerLocation) {
+        Map.Entry<String, FuelOptions> entryWithLowestPrices = null;
+        double lowestPrice = Double.MAX_VALUE;
+
+        for (Map.Entry<String, FuelOptions> entry : placesPerLocation.entrySet()) {
+            FuelOptions fuelOptions = entry.getValue();
+            double totalPrice = getTotalPrice(fuelOptions);
+
+            if (totalPrice < lowestPrice) {
+                lowestPrice = totalPrice;
+                entryWithLowestPrices = entry;
+            }
+        }
+
+        return entryWithLowestPrices;
+    }
+
+    /**
+     * Calculates the total price of fuel options at a gas station.
+     *
+     * @param fuelOptions The fuel options available at a gas station.
+     * @return The total price of fuel options at the gas station.
+     */
+    private double getTotalPrice(FuelOptions fuelOptions) {
+        double totalPrice = 0;
+        for (FuelOptions.FuelPrice price : fuelOptions.getFuelOptions().getFuelPrices()) {
+            totalPrice += price.getPrice().getDollarPrice();
+        }
+        return totalPrice;
+    }
+
+
+    /**
+     * Finds the necessary stops along a route based on the travelers' fuel capacity.
+     *
+     * @param departure              The departure location.
+     * @param arrival                The arrival location.
+     * @param travelersMeterCapacity The fuel capacity of the traveler in meters.
+     * @return A list of LatLng coordinates representing the stops along the route where the traveler needs to refuel.
+     */
+    private List<LatLng> findNeededStops(LatLng departure, LatLng arrival, double travelersMeterCapacity)  {
         List<LatLng> stops = new ArrayList<>();
-        double travelersMeterCapacity = 200;
         double quarterTankSize = travelersMeterCapacity - (travelersMeterCapacity * .25);
         long metersDrivenAfterLastStop = 0;
 

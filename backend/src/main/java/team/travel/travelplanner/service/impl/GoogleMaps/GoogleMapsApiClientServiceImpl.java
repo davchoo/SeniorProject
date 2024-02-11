@@ -7,10 +7,7 @@ import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import team.travel.travelplanner.model.FuelOptions;
-import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
-import team.travel.travelplanner.service.GoogleMapsApiDistanceService;
-import team.travel.travelplanner.service.GoogleMapsApiFuelPriceService;
-import team.travel.travelplanner.service.GoogleMapsApiClientService;
+import team.travel.travelplanner.service.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,8 +17,8 @@ import java.net.http.HttpResponse;
 
 import static java.lang.Math.*;
 
-public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientService, GoogleMapsApiFuelPriceService,
-        GoogleMapsApiDirectionsService, GoogleMapsApiDistanceService {
+public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceService,
+        GoogleMapsApiDirectionsService, GoogleMapsApiDistanceService, GoogleMapsApiPlacesClientService {
 
     private final GeoApiContext context;
 
@@ -34,16 +31,6 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
         setApiKey(googleMapsAPIKey);
     }
 
-    public void test() throws IOException, InterruptedException, ApiException {
-        GeocodingResult[] results =  GeocodingApi.geocode(context,
-                "1600 Amphitheatre Parkway Mountain View, CA 94043").await();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        System.out.println(gson.toJson(results[0].addressComponents));
-
-// Invoke .shutdown() after your application is done making requests
-        context.shutdown();
-    }
-
     @Override
     public DirectionsResult getDirections(String origin, String destination) throws IOException, InterruptedException, ApiException {
         DirectionsResult result = DirectionsApi.newRequest(context)
@@ -54,7 +41,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
     }
 
     @Override
-    public void findPlaces(LatLng location, String type, int radius) {
+    public PlacesSearchResponse findPlaces(LatLng location, String type, int radius) {
         try {
 
             // Perform a nearby search for places of the specified type around the location
@@ -62,15 +49,12 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
                     .type(PlaceType.valueOf(type.toUpperCase()))
                     .radius(radius)
                     .await();
-
-            // Process the search response
-            for (int i = 0; i < placesResponse.results.length; i++) {
-                System.out.println("Place " + (i + 1) + ": " + placesResponse.results[i]);
-            }
+            return placesResponse;
         } catch (ApiException | InterruptedException | IOException e) {
             e.printStackTrace();
             // Handle exception
         }
+        return null;
     }
 
     @Override
@@ -111,6 +95,14 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
         return fuelOptions;
     }
 
+
+    /**
+     * Calculates the distance between two points on the Earth's surface using the Haversine formula.
+     *
+     * @param origin      The origin point (latitude and longitude) in degrees.
+     * @param destination The destination point (latitude and longitude) in degrees.
+     * @return The distance between the origin and destination points in meters.
+     */
     @Override
     public double haversine(LatLng origin, LatLng destination) {
         double RADIUS_OF_EARTH_KM = 6371.01;
@@ -125,19 +117,18 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiClientServic
         double a = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
         double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-        return RADIUS_OF_EARTH_KM * c;
+        return RADIUS_OF_EARTH_KM * c * 1000;
     }
 
-    // Don't want to continously call DistanceMatrix API so using haversine could introduce a little error.
-    //    @Override
-//    public DistanceMatrix calculateDistance(LatLng origin, LatLng destination) throws IOException, InterruptedException, ApiException {
-//        DistanceMatrix distanceMatrix = DistanceMatrixApi.newRequest(context)
-//                .origins(origin)
-//                .destinations(destination)
-//                .mode(TravelMode.DRIVING)
-//                .await();
-//        return distanceMatrix;
-//    }
+     // Don't want to continously call DistanceMatrix API so using haversine could introduce a little error.
+    public DistanceMatrix calculateDistance(LatLng origin, LatLng destination) throws IOException, InterruptedException, ApiException {
+        DistanceMatrix distanceMatrix = DistanceMatrixApi.newRequest(context)
+                .origins(origin)
+                .destinations(destination)
+                .mode(TravelMode.DRIVING)
+                .await();
+        return distanceMatrix;
+    }
 
     private void setApiKey(String apiKey){
         this.apiKey = apiKey;
