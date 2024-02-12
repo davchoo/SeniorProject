@@ -37,24 +37,37 @@ public class GasStationServiceImpl implements GasStationService {
      * @throws IOException          If there's an error communicating with the Google Maps API.
      * @throws InterruptedException If the thread is interrupted while waiting for the API response.
      */
-    public Map<String, FuelOptions> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity) throws IOException, InterruptedException {
+    public Map<String, FuelOptions> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) throws IOException, InterruptedException {
         Map<String, FuelOptions> fuelOptionsMap = new HashMap<>();
         List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
+        System.out.println(stopsAlongRoute.size());
+
+        System.out.println("Completed 1");
 
         for (LatLng location : stopsAlongRoute) {
-            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 50000);
+            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 5000);
+            System.out.println(response.results.length);
             Map<String, FuelOptions> placesPerLocation = new HashMap<>();
 
             for (PlacesSearchResult place : response.results) {
                 String placeId = place.placeId;
                 FuelOptions fuelOptionForPlace = apiFuelClient.getFuelPrices(placeId);
-                placesPerLocation.put(placeId, fuelOptionForPlace);
+                if(fuelOptionForPlace.getFuelOptions() !=  null){
+                    if(fuelOptionForPlace.getFuelOptions().getFuelPrices() != null) {
+                        placesPerLocation.put(placeId, fuelOptionForPlace);
+                    }
+                }
             }
 
             // Find the lowest fuel prices and corresponding place ID for each location
-            Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation);
-            fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+            System.out.println("Completed step");
+            if(!placesPerLocation.isEmpty()) {
+                Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
+                fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+            }
         }
+
+        System.out.println("Completed final");
         return fuelOptionsMap;
     }
 
@@ -64,13 +77,13 @@ public class GasStationServiceImpl implements GasStationService {
      * @param placesPerLocation A map containing place IDs of gas stations and their fuel options.
      * @return A map entry containing the place ID of the gas station with the lowest fuel prices and its fuel options.
      */
-    private Map.Entry<String, FuelOptions> findEntryWithLowestPrices(Map<String, FuelOptions> placesPerLocation) {
+    private Map.Entry<String, FuelOptions> findEntryWithLowestPrices(Map<String, FuelOptions> placesPerLocation, String type) {
         Map.Entry<String, FuelOptions> entryWithLowestPrices = null;
         double lowestPrice = Double.MAX_VALUE;
 
         for (Map.Entry<String, FuelOptions> entry : placesPerLocation.entrySet()) {
             FuelOptions fuelOptions = entry.getValue();
-            double totalPrice = getTotalPrice(fuelOptions);
+            double totalPrice = getTotalPrice(fuelOptions, type);
 
             if (totalPrice < lowestPrice) {
                 lowestPrice = totalPrice;
@@ -87,10 +100,13 @@ public class GasStationServiceImpl implements GasStationService {
      * @param fuelOptions The fuel options available at a gas station.
      * @return The total price of fuel options at the gas station.
      */
-    private double getTotalPrice(FuelOptions fuelOptions) {
+    private double getTotalPrice(FuelOptions fuelOptions, String type) {
         double totalPrice = 0;
         for (FuelOptions.FuelPrice price : fuelOptions.getFuelOptions().getFuelPrices()) {
-            totalPrice += price.getPrice().getDollarPrice();
+            if(price.getType().equals(type)){
+                totalPrice += price.getPrice().getDollarPrice();
+                break;
+            }
         }
         return totalPrice;
     }
@@ -118,10 +134,12 @@ public class GasStationServiceImpl implements GasStationService {
         DirectionsStep[] steps = leg.steps;
 
         for(DirectionsStep step : steps){
+            System.out.println("here");
+
             double totalStepMetersToBeDriven = metersDrivenAfterLastStop+step.distance.inMeters;
-            if(totalStepMetersToBeDriven >= travelersMeterCapacity){
+            if(totalStepMetersToBeDriven >= quarterTankSize){
                 //How many times do we need to stop along this step?
-                int neededStopsPerStep = (int)(totalStepMetersToBeDriven / travelersMeterCapacity);
+                int neededStopsPerStep = (int)(totalStepMetersToBeDriven / quarterTankSize);
 
                 int numStops = 0;
                 double drivenMetersAlongPoints = 0;
@@ -159,6 +177,7 @@ public class GasStationServiceImpl implements GasStationService {
                 metersDrivenAfterLastStop += step.distance.inMeters;
             }
         }
+        System.out.println("here2");
         return stops;
     }
 
