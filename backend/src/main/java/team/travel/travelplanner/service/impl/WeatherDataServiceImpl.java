@@ -26,6 +26,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import team.travel.travelplanner.config.WeatherDataConfig;
 import team.travel.travelplanner.entity.WeatherForecastFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
+import team.travel.travelplanner.model.RouteWeatherFeature;
 import team.travel.travelplanner.repository.WeatherForecastFeatureRepository;
 import team.travel.travelplanner.service.WeatherDataService;
 
@@ -34,6 +35,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -230,5 +232,10 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             case "Snow" -> WeatherFeatureType.SNOW;
             default -> null;
         };
+    }
+
+    @Override
+    public List<RouteWeatherFeature> checkRouteWeather(Geometry route, int[] durations, Instant startTime) {
+        return weatherForecastFeatureRepository.checkRouteWeather(route, durations, startTime);
     }
 }
