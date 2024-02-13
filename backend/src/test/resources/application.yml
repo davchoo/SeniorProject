@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+travel-planner:
+  weather:
+    auto-update: false
+zonky:
+  test:
+    database:
+      provider: docker
+      type: postgres
+      refresh: before_each_test_method
+      postgres:
+        docker:
+          image: postgis/postgis:16-3.4-alpine # Same container image in docker/docker-compose.yml
