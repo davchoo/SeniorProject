@@ -55,6 +55,18 @@ public class WeatherForecastFeature {
     public WeatherForecastFeature() {
     }
 
+    public WeatherForecastFeature(WeatherForecastFeature source) {
+        this.id = source.id;
+        this.day = source.day;
+        this.popUpContent = source.popUpContent;
+        this.retrievalTimestamp = source.retrievalTimestamp;
+        this.fileDate = source.fileDate;
+        this.validStart = source.validStart;
+        this.validEnd = source.validEnd;
+        this.weatherFeatureType = source.weatherFeatureType;
+        this.geometry = source.geometry;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -125,5 +137,20 @@ public class WeatherForecastFeature {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    @Override
+    public String toString() {
+        return "WeatherForecastFeature{" +
+                "id=" + id +
+                ", day=" + day +
+                ", popUpContent='" + popUpContent + '\'' +
+                ", retrievalTimestamp=" + retrievalTimestamp +
+                ", fileDate=" + fileDate +
+                ", validStart=" + validStart +
+                ", validEnd=" + validEnd +
+                ", weatherFeatureType=" + weatherFeatureType +
+                ", geometry=" + geometry +
+                '}';
     }
 }
