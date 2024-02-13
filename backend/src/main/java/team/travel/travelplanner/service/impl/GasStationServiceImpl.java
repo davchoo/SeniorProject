@@ -40,12 +40,10 @@ public class GasStationServiceImpl implements GasStationService {
     public Map<String, FuelOptions> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) throws IOException, InterruptedException {
         Map<String, FuelOptions> fuelOptionsMap = new HashMap<>();
         List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
-        System.out.println(stopsAlongRoute.size());
-
-        System.out.println("Completed 1");
+        System.out.println("Needed stops:"+ stopsAlongRoute.size());
 
         for (LatLng location : stopsAlongRoute) {
-            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 5000);
+            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 7500);
             System.out.println(response.results.length);
             Map<String, FuelOptions> placesPerLocation = new HashMap<>();
 
@@ -90,7 +88,6 @@ public class GasStationServiceImpl implements GasStationService {
                 entryWithLowestPrices = entry;
             }
         }
-
         return entryWithLowestPrices;
     }
 
@@ -134,8 +131,6 @@ public class GasStationServiceImpl implements GasStationService {
         DirectionsStep[] steps = leg.steps;
 
         for(DirectionsStep step : steps){
-            System.out.println("here");
-
             double totalStepMetersToBeDriven = metersDrivenAfterLastStop+step.distance.inMeters;
             if(totalStepMetersToBeDriven >= quarterTankSize){
                 //How many times do we need to stop along this step?
@@ -143,7 +138,7 @@ public class GasStationServiceImpl implements GasStationService {
 
                 int numStops = 0;
                 double drivenMetersAlongPoints = 0;
-                double drivenMetersAlongStep = metersDrivenAfterLastStop;
+                double drivenMetersAlongStep = 0;
                 List<LatLng> pointsAlongStep = step.polyline.decodePath();
                 LatLng lastLocation = step.startLocation;
                 boolean stopped = false;
@@ -160,7 +155,7 @@ public class GasStationServiceImpl implements GasStationService {
                         }
                         // I need to stop again along the step so now reset
                         stopped = true;
-                        metersDrivenAfterLastStop = (long) (totalDrivenDistance - drivenMetersAlongPoints);
+                        metersDrivenAfterLastStop = (long) distance;
                         drivenMetersAlongPoints = 0;
                     }
                     if(!stopped){
@@ -177,7 +172,6 @@ public class GasStationServiceImpl implements GasStationService {
                 metersDrivenAfterLastStop += step.distance.inMeters;
             }
         }
-        System.out.println("here2");
         return stops;
     }
 

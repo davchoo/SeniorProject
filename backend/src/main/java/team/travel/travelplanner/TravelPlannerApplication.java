@@ -35,7 +35,11 @@ public class TravelPlannerApplication {
             String placeId = entry.getKey();
             FuelOptions fuelOptions = entry.getValue();
             System.out.println("Place ID: " + placeId);
-            System.out.println("Fuel Options: " + fuelOptions.getFuelOptions().getFuelPrices().get(0).getPrice().getDollarPrice());
+            for(FuelOptions.FuelPrice data: fuelOptions.getFuelOptions().getFuelPrices()){
+                if(data.getType().equals("REGULAR_UNLEADED")){
+                    System.out.println("Fuel Options: $" + data.getPrice().getDollarPrice());
+                }
+            }
         });
 
     }
