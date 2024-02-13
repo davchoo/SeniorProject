@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class GasStationServiceImpl implements GasStationService {
@@ -42,28 +44,46 @@ public class GasStationServiceImpl implements GasStationService {
         List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
         System.out.println("Needed stops:"+ stopsAlongRoute.size());
 
-        for (LatLng location : stopsAlongRoute) {
-            PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 7500);
-            System.out.println(response.results.length);
-            Map<String, FuelOptions> placesPerLocation = new HashMap<>();
+        List<CompletableFuture<Map<String, FuelOptions>>> fuelOptionsFutures = stopsAlongRoute.parallelStream()
+                .map(location -> CompletableFuture.supplyAsync(() -> {
+                    PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 6500);
+                    System.out.println(response.results.length);
+                    Map<String, FuelOptions> placesPerLocation = new HashMap<>();
+                    int range = 0;
+                    range = Math.min(response.results.length, 5);
 
-            for (PlacesSearchResult place : response.results) {
-                String placeId = place.placeId;
-                FuelOptions fuelOptionForPlace = apiFuelClient.getFuelPrices(placeId);
-                if(fuelOptionForPlace.getFuelOptions() !=  null){
-                    if(fuelOptionForPlace.getFuelOptions().getFuelPrices() != null) {
-                        placesPerLocation.put(placeId, fuelOptionForPlace);
+                    for (int i = 0; i < range; i++) {
+                        PlacesSearchResult place = response.results[i];
+                        String placeId = place.placeId;
+                        try {
+                            FuelOptions fuelOptionForPlace = apiFuelClient.getFuelPrices(placeId);
+                            if (fuelOptionForPlace.getFuelOptions() != null && fuelOptionForPlace.getFuelOptions().getFuelPrices() != null) {
+                                placesPerLocation.put(placeId, fuelOptionForPlace);
+                            }
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace(); // Handle or log the exception
+                        }
                     }
-                }
-            }
+                    return placesPerLocation;
+                }))
+                .toList();
 
-            // Find the lowest fuel prices and corresponding place ID for each location
-            System.out.println("Completed step");
-            if(!placesPerLocation.isEmpty()) {
-                Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
-                fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
-            }
-        }
+        // Combine all completed futures into a single map
+        CompletableFuture.allOf(fuelOptionsFutures.toArray(new CompletableFuture[0]))
+                .thenAccept(v -> {
+                    for (CompletableFuture<Map<String, FuelOptions>> future : fuelOptionsFutures) {
+                        try {
+                            Map<String, FuelOptions> placesPerLocation = future.join();
+                            if (!placesPerLocation.isEmpty()) {
+                                Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
+                                fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace(); // Handle or log the exception
+                        }
+                    }
+                })
+                .join(); // Wait for all futures to complete
 
         System.out.println("Completed final");
         return fuelOptionsMap;

@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.CompletableFuture;
 
 import static java.lang.Math.*;
 
@@ -94,6 +95,29 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
         ObjectMapper mapper = new ObjectMapper();
         FuelOptions fuelOptions = mapper.readValue(response.body(), FuelOptions.class);
         return fuelOptions;
+    }
+
+    public CompletableFuture<FuelOptions> getFuelPricesAsync(String placeId) {
+        String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=*", placeId, apiKey);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build();
+
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenApply(this::mapJsonToFuelOptions);
+    }
+
+    private FuelOptions mapJsonToFuelOptions(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(json, FuelOptions.class);
+        } catch (IOException e) {
+            // Handle exception
+            return null;
+        }
     }
 
 
