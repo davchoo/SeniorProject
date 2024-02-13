@@ -1,5 +1,6 @@
 package team.travel.travelplanner.service.impl.GoogleMaps;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -81,7 +82,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
      */
     @Override
     public FuelOptions getFuelPrices(String placeId) throws IOException, InterruptedException {
-        String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=fuel_options", placeId, apiKey);
+        String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=*", placeId, apiKey);
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
