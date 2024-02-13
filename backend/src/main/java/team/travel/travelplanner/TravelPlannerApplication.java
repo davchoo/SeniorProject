@@ -9,7 +9,6 @@ import team.travel.travelplanner.model.FuelOptions;
 import team.travel.travelplanner.service.impl.GasStationServiceImpl;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootApplication
@@ -17,7 +16,6 @@ public class TravelPlannerApplication {
 
     public static void main(String[] args) throws IOException, InterruptedException, ApiException {
         LatLng departure = new LatLng(39.71899847525047, -75.09783609674565);
-        //LatLng arrival = new LatLng(39.7065471738, -75.1177295291);
         LatLng arrival = new LatLng(29.138315, -80.995613);
         ApplicationContext context = SpringApplication.run(TravelPlannerApplication.class, args);
 
