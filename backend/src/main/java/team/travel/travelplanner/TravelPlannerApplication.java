@@ -11,6 +11,9 @@ import team.travel.travelplanner.service.impl.GasStationServiceImpl;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * @Author Lukas DeLoach
+ */
 @SpringBootApplication
 public class TravelPlannerApplication {
 
