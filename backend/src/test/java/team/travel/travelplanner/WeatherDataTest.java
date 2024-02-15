@@ -14,11 +14,11 @@ import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import team.travel.travelplanner.entity.WeatherForecastFeature;
+import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
-import team.travel.travelplanner.model.Route;
-import team.travel.travelplanner.model.RouteWeatherFeature;
-import team.travel.travelplanner.repository.WeatherForecastFeatureRepository;
+import team.travel.travelplanner.model.RouteModel;
+import team.travel.travelplanner.model.weather.SegmentWeatherModel;
+import team.travel.travelplanner.repository.WeatherFeatureRepository;
 import team.travel.travelplanner.service.WeatherDataService;
 import team.travel.travelplanner.util.EncodedPolylineUtils;
 
@@ -53,7 +53,7 @@ public class WeatherDataTest {
     private static final Random RANDOM = new Random();
 
     @Autowired
-    private WeatherForecastFeatureRepository weatherForecastFeatureRepository;
+    private WeatherFeatureRepository weatherFeatureRepository;
 
     @Autowired
     private WeatherDataService weatherDataService;
@@ -63,8 +63,8 @@ public class WeatherDataTest {
         RANDOM.setSeed(0x414d424552L);
     }
 
-    private static WeatherForecastFeature setupFeature(int forecastDay, boolean afternoonIssuance, LocalDate fileDate, WeatherFeatureType type, Geometry geometry) {
-        WeatherForecastFeature feature = new WeatherForecastFeature();
+    private static WeatherFeature setupFeature(int forecastDay, boolean afternoonIssuance, LocalDate fileDate, WeatherFeatureType type, Geometry geometry) {
+        WeatherFeature feature = new WeatherFeature();
         feature.setDay(forecastDay);
         feature.setPopUpContent("Day " + forecastDay);
         feature.setRetrievalTimestamp(Instant.now());
@@ -100,7 +100,7 @@ public class WeatherDataTest {
                         -75.11418, 39.70694
                 ))
         });
-        WeatherForecastFeature template1 = setupFeature(1, false, today, WeatherFeatureType.RAIN, geometry);
+        WeatherFeature template1 = setupFeature(1, false, today, WeatherFeatureType.RAIN, geometry);
 
         Geometry geometry2 = GEOMETRY_FACTORY.createMultiPolygon(new Polygon[]{
                 GEOMETRY_FACTORY.createPolygon(new CoordinateSequence2D(
@@ -111,9 +111,9 @@ public class WeatherDataTest {
                         -75, 39
                 ))
         });
-        WeatherForecastFeature template2 = setupFeature(2, true, tomorrow, WeatherFeatureType.CRITICAL_FIRE_WEATHER_POSSIBLE, geometry2);
+        WeatherFeature template2 = setupFeature(2, true, tomorrow, WeatherFeatureType.CRITICAL_FIRE_WEATHER_POSSIBLE, geometry2);
 
-        List<Consumer<WeatherForecastFeature>> propertyCopiers = List.of(
+        List<Consumer<WeatherFeature>> propertyCopiers = List.of(
                 feature -> feature.setDay(template2.getDay()),
                 feature -> feature.setPopUpContent(template2.getPopUpContent()),
                 feature -> feature.setFileDate(template2.getFileDate()),
@@ -127,8 +127,8 @@ public class WeatherDataTest {
         // Generate features with all permutations of differing properties
         return IntStream.range(0, (1 << propertyCopiers.size()))
                 .mapToObj(i -> {
-                    WeatherForecastFeature older = new WeatherForecastFeature(template1);
-                    WeatherForecastFeature newer = new WeatherForecastFeature(template1);
+                    WeatherFeature older = new WeatherFeature(template1);
+                    WeatherFeature newer = new WeatherFeature(template1);
                     for (int copierI = 0; copierI < propertyCopiers.size(); copierI++) {
                         if (((i >> copierI) & 1) == 1) {
                             propertyCopiers.get(copierI).accept(newer);
@@ -142,27 +142,27 @@ public class WeatherDataTest {
     @ParameterizedTest
     @MethodSource("duplicateFeatures")
     @Transactional
-    public void testDeduplicate(int i, WeatherForecastFeature older, WeatherForecastFeature newer) {
-        older = weatherForecastFeatureRepository.save(older);
+    public void testDeduplicate(int i, WeatherFeature older, WeatherFeature newer) {
+        older = weatherFeatureRepository.save(older);
         newer.setRetrievalTimestamp(Instant.now());
-        weatherForecastFeatureRepository.save(newer);
+        weatherFeatureRepository.save(newer);
 
-        assertEquals(2, weatherForecastFeatureRepository.count());
-        weatherForecastFeatureRepository.deduplicate();
+        assertEquals(2, weatherFeatureRepository.count());
+        weatherFeatureRepository.deduplicate();
         if ((i & 0b110101) != 0) { // Day, file date, weather feature type, or geometry was changed
             // Both features should be kept
-            assertEquals(2, weatherForecastFeatureRepository.count());
+            assertEquals(2, weatherFeatureRepository.count());
         } else {
             // Features should be deduplicated
-            List<WeatherForecastFeature> features = weatherForecastFeatureRepository.findAll();
+            List<WeatherFeature> features = weatherFeatureRepository.findAll();
             assertEquals(1, features.size());
-            WeatherForecastFeature feature = features.getFirst();
+            WeatherFeature feature = features.getFirst();
             // Older feature should be kept
             assertEquals(older.getId(), feature.getId());
         }
     }
 
-    private Route generateRoute(int segments, double minLat, double minLng, double maxLat, double maxLng, Instant startTime, Instant endLimit) {
+    private RouteModel generateRoute(int segments, double minLat, double minLng, double maxLat, double maxLng, Instant startTime, Instant endLimit) {
         final long MIN_DURATION = 1000;
         long totalDurationMillis = Duration.between(startTime, endLimit).toMillis();
         long availableMillis = totalDurationMillis - MIN_DURATION * segments;
@@ -186,7 +186,7 @@ public class WeatherDataTest {
             coordinates[2 * i + 1] = RANDOM.nextDouble(minLat, maxLat);
         }
         CoordinateSequence sequence = new PackedCoordinateSequence.Double(coordinates, 2, 0);
-        return new Route(EncodedPolylineUtils.encodePolyline(sequence), durations, startTime);
+        return new RouteModel(EncodedPolylineUtils.encodePolyline(sequence), durations, startTime);
     }
 
     @ParameterizedTest
@@ -194,35 +194,35 @@ public class WeatherDataTest {
     void testCheckRouteAllInside(WeatherFeatureType type) {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
-        WeatherForecastFeature feature = setupFeature(1, false, today, type, GRID_0_0);
-        feature = weatherForecastFeatureRepository.save(feature);
+        WeatherFeature feature = setupFeature(1, false, today, type, GRID_0_0);
+        feature = weatherFeatureRepository.save(feature);
 
         // An hour after the feature is valid and an hour before the feature is invalid
         Instant startTime = feature.getValidStart().plusHours(1).toInstant();
         Instant limitTime = feature.getValidEnd().minusHours(1).toInstant();
         final int NUM_SEGMENTS = 20;
         // Check the weather along a random route within the 0.1, 0.1 to 0.9, 0.9 "square"
-        Route route = generateRoute(NUM_SEGMENTS, 0.1, 0.1, 0.9, 0.9, startTime, limitTime);
-        List<RouteWeatherFeature> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        RouteModel route = generateRoute(NUM_SEGMENTS, 0.1, 0.1, 0.9, 0.9, startTime, limitTime);
+        List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
         // All segments should be covered with rain
         assertEquals(NUM_SEGMENTS, result.size());
         BitSet bitSet = new BitSet();
         bitSet.set(0, NUM_SEGMENTS);
-        for (RouteWeatherFeature routeFeature : result) {
-            // i corresponds to a segment
-            assertTrue(routeFeature.i() >= 0);
-            assertTrue(routeFeature.i() < NUM_SEGMENTS);
-            bitSet.clear(routeFeature.i());
+        for (SegmentWeatherModel routeFeature : result) {
+            // segmentId corresponds to a segment
+            assertTrue(routeFeature.segmentId() >= 0);
+            assertTrue(routeFeature.segmentId() < NUM_SEGMENTS);
+            bitSet.clear(routeFeature.segmentId());
             // Metadata matches feature
             assertEquals(feature.getDay(), routeFeature.forecastDay());
             assertEquals(feature.getFileDate().toInstant(), routeFeature.fileDate());
             assertEquals(feature.getWeatherFeatureType(), routeFeature.weatherFeatureType());
             // startTimestamp -> endTimestamp duration matches provided duration
             Duration duration = Duration.between(routeFeature.startTimestamp(), routeFeature.endTimestamp());
-            assertEquals(route.durations()[routeFeature.i()], duration.toMillis());
+            assertEquals(route.durations()[routeFeature.segmentId()], duration.toMillis());
             // startTimestamp of the segment is correct
             int millisOffset = IntStream.of(route.durations())
-                    .limit(routeFeature.i())
+                    .limit(routeFeature.segmentId())
                     .sum();
             duration = Duration.between(route.startTime(), routeFeature.startTimestamp());
             assertEquals(millisOffset, duration.toMillis());
@@ -235,17 +235,17 @@ public class WeatherDataTest {
     void testCheckRouteOutsideValidPeriod() {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
-        WeatherForecastFeature feature = setupFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
-        feature = weatherForecastFeatureRepository.save(feature);
+        WeatherFeature feature = setupFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        feature = weatherFeatureRepository.save(feature);
 
         // Start time and limit time is after the feature expires
         Instant startTime = feature.getValidEnd().plusHours(1).toInstant();
         Instant limitTime = startTime.plus(Duration.ofHours(2));
         final int NUM_SEGMENTS = 20;
         // Check the weather along a random route within the 0.1, 0.1 to 0.9, 0.9 "square" but outside the valid period
-        Route route = generateRoute(NUM_SEGMENTS, 0.1, 0.1, 0.9, 0.9, startTime, limitTime);
+        RouteModel route = generateRoute(NUM_SEGMENTS, 0.1, 0.1, 0.9, 0.9, startTime, limitTime);
         // Check the weather along the route
-        List<RouteWeatherFeature> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
         // No segments should be returned
         assertTrue(result.isEmpty());
     }
@@ -254,17 +254,17 @@ public class WeatherDataTest {
     void testCheckRouteOutsideArea() {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
-        WeatherForecastFeature feature = setupFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
-        feature = weatherForecastFeatureRepository.save(feature);
+        WeatherFeature feature = setupFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        feature = weatherFeatureRepository.save(feature);
 
         // An hour after the feature is valid and an hour before the feature is invalid
         Instant startTime = feature.getValidStart().plusHours(1).toInstant();
         Instant limitTime = feature.getValidEnd().minusHours(1).toInstant();
         final int NUM_SEGMENTS = 20;
         // Check the weather along a random route outside the 0,0 grid square but inside the valid period
-        Route route = generateRoute(NUM_SEGMENTS, 1.1, 1.1, 1.9, 1.9, startTime, limitTime);
+        RouteModel route = generateRoute(NUM_SEGMENTS, 1.1, 1.1, 1.9, 1.9, startTime, limitTime);
         // Check the weather along the route
-        List<RouteWeatherFeature> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
         // No segments should be returned
         assertTrue(result.isEmpty());
     }

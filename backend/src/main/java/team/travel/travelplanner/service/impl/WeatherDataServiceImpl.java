@@ -24,10 +24,10 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import team.travel.travelplanner.config.WeatherDataConfig;
-import team.travel.travelplanner.entity.WeatherForecastFeature;
+import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
-import team.travel.travelplanner.model.RouteWeatherFeature;
-import team.travel.travelplanner.repository.WeatherForecastFeatureRepository;
+import team.travel.travelplanner.model.weather.SegmentWeatherModel;
+import team.travel.travelplanner.repository.WeatherFeatureRepository;
 import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
@@ -35,6 +35,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
     private final WeatherDataConfig weatherDataConfig;
 
-    private final WeatherForecastFeatureRepository weatherForecastFeatureRepository;
+    private final WeatherFeatureRepository weatherFeatureRepository;
 
     private final TaskScheduler taskScheduler;
 
@@ -57,9 +58,9 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
     private boolean completedLastUpdate = false;
 
-    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherForecastFeatureRepository weatherForecastFeatureRepository, TaskScheduler taskScheduler, PlatformTransactionManager platformTransactionManager) {
+    public WeatherDataServiceImpl(WeatherDataConfig weatherDataConfig, WeatherFeatureRepository weatherFeatureRepository, TaskScheduler taskScheduler, PlatformTransactionManager platformTransactionManager) {
         this.weatherDataConfig = weatherDataConfig;
-        this.weatherForecastFeatureRepository = weatherForecastFeatureRepository;
+        this.weatherFeatureRepository = weatherFeatureRepository;
         this.taskScheduler = taskScheduler;
         this.transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -79,7 +80,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             return;
         }
         if (completedLastUpdate) {
-            ZonedDateTime latestFileDate = weatherForecastFeatureRepository.findLatestFileDate();
+            ZonedDateTime latestFileDate = weatherFeatureRepository.findLatestFileDate();
             if (latestFileDate != null) {
                 ZonedDateTime now = Instant.now().atZone(EST);
                 if (latestFileDate.toLocalDate().equals(now.toLocalDate())) {
@@ -123,7 +124,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
     }
 
     private void updateNow() throws IOException {
-        long initialCount = weatherForecastFeatureRepository.count();
+        long initialCount = weatherFeatureRepository.count();
         WFSDataStore dataStore = new WFSDataStoreFactory()
                 .createDataStore(createWFSParams());
         for (Name name : dataStore.getNames()) {
@@ -158,21 +159,22 @@ public class WeatherDataServiceImpl implements WeatherDataService {
 
         dataStore.dispose();
         completedLastUpdate = true;
-        weatherForecastFeatureRepository.deduplicate();
+        weatherFeatureRepository.deduplicate();
 
-        long newCount = weatherForecastFeatureRepository.count();
+        long newCount = weatherFeatureRepository.count();
         LOGGER.info("Fetched National Weather Forecast Chart via WFS and received {} new features", newCount - initialCount);
     }
 
     private void saveFeature(int day, WeatherFeatureType featureType, SimpleFeature feature) {
-        WeatherForecastFeature weatherForecastFeature = new WeatherForecastFeature();
-        weatherForecastFeature.setDay(day);
-        weatherForecastFeature.setPopUpContent((String) feature.getAttribute("popupConte"));
-        weatherForecastFeature.setWeatherFeatureType(featureType);
+        WeatherFeature weatherFeature = new WeatherFeature();
+        weatherFeature.setDay(day);
+        weatherFeature.setPopUpContent((String) feature.getAttribute("popupConte"));
+        weatherFeature.setWeatherFeatureType(featureType);
 
         Timestamp rawFileDate = (Timestamp) feature.getAttribute("idp_filedate");
         ZonedDateTime fileDate = rawFileDate.toLocalDateTime().atZone(EST); // TODO check if file date is affected by DST
-        weatherForecastFeature.setFileDate(fileDate);
+        fileDate = fileDate.truncatedTo(ChronoUnit.HOURS); // Group features within the same hour
+        weatherFeature.setFileDate(fileDate);
 
         // https://www.wpc.ncep.noaa.gov/html/about_Gudes.shtml
         if (day == 1) {
@@ -182,23 +184,23 @@ public class WeatherDataServiceImpl implements WeatherDataService {
                 ZonedDateTime validStart = fileDate.toLocalDate()
                         .atTime(7, 0)
                         .atZone(EST);
-                weatherForecastFeature.setValidStart(validStart);
-                weatherForecastFeature.setValidEnd(validStart.plusHours(24));
+                weatherFeature.setValidStart(validStart);
+                weatherFeature.setValidEnd(validStart.plusHours(24));
             } else {
                 // Afternoon issuance is valid for 12 hours starting at 7 pm EST
                 ZonedDateTime validStart = fileDate.toLocalDate()
                         .atTime(19, 0)
                         .atZone(EST);
-                weatherForecastFeature.setValidStart(validStart);
-                weatherForecastFeature.setValidEnd(validStart.plusHours(12));
+                weatherFeature.setValidStart(validStart);
+                weatherFeature.setValidEnd(validStart.plusHours(12));
             }
         } else {
             // Day 2 and 3 are issued by 5 am EST and are valid for 24 hours
             ZonedDateTime validStart = fileDate.toLocalDate()
                     .plusDays(day - 1)
                     .atTime(7, 0).atZone(EST);
-            weatherForecastFeature.setValidStart(validStart);
-            weatherForecastFeature.setValidEnd(validStart.plusHours(24));
+            weatherFeature.setValidStart(validStart);
+            weatherFeature.setValidEnd(validStart.plusHours(24));
         }
 
         Geometry geometry = (Geometry) feature.getDefaultGeometryProperty().getValue();
@@ -214,9 +216,9 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             geometry.setSRID(WGS84_SRID);
         }
 
-        weatherForecastFeature.setGeometry(geometry);
+        weatherFeature.setGeometry(geometry);
 
-        weatherForecastFeatureRepository.save(weatherForecastFeature);
+        weatherFeatureRepository.save(weatherFeature);
     }
 
     private WeatherFeatureType parseFeatureType(String featureTypeStr) {
@@ -235,7 +237,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
     }
 
     @Override
-    public List<RouteWeatherFeature> checkRouteWeather(Geometry route, int[] durations, Instant startTime) {
-        return weatherForecastFeatureRepository.checkRouteWeather(route, durations, startTime);
+    public List<SegmentWeatherModel> checkRouteWeather(Geometry route, int[] durations, Instant startTime) {
+        return weatherFeatureRepository.checkRouteWeather(route, durations, startTime);
     }
 }
