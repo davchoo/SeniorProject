@@ -13,16 +13,16 @@ const Login = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-custom-green justify-center items-center m-10 relative">
-      <div className="absolute bottom-10 right-20 mb-4 mr-2">
-        <FaCar size={100} color="white" />
+       <div className="absolute bottom-5 right-10 mb-2 mr-1">
+        <FaCar size={80} color="white" />
       </div>
-      <div className="absolute bottom-10 left-20 mb-4 ml-4">
-        <FaLuggageCart size={100} color="white" />
+      <div className="absolute bottom-5 left-10 mb-2 ml-1">
+        <FaLuggageCart size={80} color="white" />
       </div>
 
       <div className="max-w-md w-full px-8 py-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-3xl md:text-5xl font-notosansjp font-bold text-center text-custom-black mb-6 md:mb-16">Login</h1>
-        <h1 className="text-4xl font-notosansjp font-extrabold mt-20 mb-10 text-custom-black">Welcome Back!</h1>
+        <h1 className="text-4xl md:text-5xl font-notosansjp font-bold text-center text-custom-black mb-6 md:mb-16">Login</h1>
+        <h2 className="text-3xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Welcome Back!</h2>
         <form>
           <div className="mb-4">
             <p className="font-notosansjp text-custom-black whitespace-pre-line mb-5">
@@ -66,7 +66,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-semibold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
+            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-bold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
           >
             Login
           </button>
@@ -79,12 +79,7 @@ const Login = () => {
               Sign Up Here.
             </Link>
           </p>
-          <p className="text-grey">
-            Forgot your password?{' '}
-            <Link to="/reset" className="font-medium text-custom-green hover:underline">
-              Reset Password.
-            </Link>
-          </p>
+         
         </div>
       </div>
     </div>

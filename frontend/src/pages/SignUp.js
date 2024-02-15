@@ -6,7 +6,6 @@ const SignUp = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -19,11 +18,11 @@ const SignUp = () => {
   return (
     <div className="flex flex-col min-h-screen bg-custom-green justify-center items-center m-10 relative">
       <div className="max-w-md w-full px-8 py-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-3xl md:text-5xl font-notosansjp font-bold text-center text-custom-black md:mb-5">Sign Up</h1>
+        <h1 className="text-4xl md:text-5xl font-notosansjp font-bold text-center text-custom-black md:mb-5">Sign Up</h1>
         <div className="text-center mb-5">
           <PiUserRectangleDuotone size={80} color="black" /> 
         </div>
-        <h1 className="text-4xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Thank You for Choosing TripEase!</h1>
+        <h2 className="text-3xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Thank You for Choosing TripEase!</h2>
         <p className="font-notosansjp text-custom-black mb-5">
           Create An Account
         </p>
@@ -71,20 +70,6 @@ const SignUp = () => {
             />
           </div>
 
-          <div className="relative">
-            <label htmlFor="email" className="sr-only">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Email Address"
-              className="input-field"
-              required
-            />
-          </div>
-
           <div className="relative flex items-center">
             <label htmlFor="password" className="sr-only">Password</label>
             <input
@@ -108,9 +93,9 @@ const SignUp = () => {
 
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-semibold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
+            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-bold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
           >
-            Sign Up
+          Register
           </button>
         </form>
         
