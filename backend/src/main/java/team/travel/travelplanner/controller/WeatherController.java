@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import team.travel.travelplanner.model.Route;
-import team.travel.travelplanner.model.RouteWeatherFeature;
+import team.travel.travelplanner.model.RouteModel;
+import team.travel.travelplanner.model.weather.SegmentWeatherModel;
 import team.travel.travelplanner.service.WeatherDataService;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class WeatherController {
     }
 
     @PostMapping("/check_route")
-    public List<RouteWeatherFeature> checkRoute(@RequestBody Route route) {
+    public List<SegmentWeatherModel> checkRoute(@RequestBody RouteModel route) {
         return weatherDataService.checkRouteWeather(route.geometry(geometryFactory), route.durations(), route.startTime());
     }
 }

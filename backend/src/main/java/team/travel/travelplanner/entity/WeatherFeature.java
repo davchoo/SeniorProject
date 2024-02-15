@@ -4,15 +4,15 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
-import team.travel.travelplanner.model.RouteWeatherFeature;
+import team.travel.travelplanner.model.weather.SegmentWeatherModel;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Entity
-@SqlResultSetMapping(name = "RouteWeatherFeature",
+@SqlResultSetMapping(name = "SegmentWeatherModel",
         classes = @ConstructorResult(
-                targetClass = RouteWeatherFeature.class,
+                targetClass = SegmentWeatherModel.class,
                 columns = {
                         @ColumnResult(name = "i"),
                         @ColumnResult(name = "weather_feature_type"),
@@ -24,11 +24,11 @@ import java.time.ZonedDateTime;
         )
 )
 @NamedNativeQuery(
-        name = "WeatherForecastFeature.checkRouteWeather",
+        name = "WeatherFeature.checkRouteWeather",
         query = "select i, weather_feature_type, forecast_day, file_date, start_timestamp, end_timestamp from check_route_weather(:route, :durations, :startTime)",
-        resultSetMapping = "RouteWeatherFeature"
+        resultSetMapping = "SegmentWeatherModel"
 )
-public class WeatherForecastFeature {
+public class WeatherFeature {
     @Id
     @GeneratedValue
     private long id;
@@ -52,10 +52,10 @@ public class WeatherForecastFeature {
 
     private Geometry geometry;
 
-    public WeatherForecastFeature() {
+    public WeatherFeature() {
     }
 
-    public WeatherForecastFeature(WeatherForecastFeature source) {
+    public WeatherFeature(WeatherFeature source) {
         this.id = source.id;
         this.day = source.day;
         this.popUpContent = source.popUpContent;
@@ -141,7 +141,7 @@ public class WeatherForecastFeature {
 
     @Override
     public String toString() {
-        return "WeatherForecastFeature{" +
+        return "WeatherFeature{" +
                 "id=" + id +
                 ", day=" + day +
                 ", popUpContent='" + popUpContent + '\'' +
