@@ -27,7 +27,6 @@ function App() {
           <Route path='/policy' element={<Policy/>} />
           <Route path='/login' element={<Login/>} />
           <Route path='/signup' element={<SignUp/>} />
-          <Route path='/reset/' element={<Reset/>} />
         </Routes>
         <Footer />
       </Router>
