@@ -11,7 +11,6 @@ import Plan from './pages/Plan';
 import Policy from './pages/Policy';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
-import Reset from './pages/Reset';
 import './App.css';
 
 function App() {
