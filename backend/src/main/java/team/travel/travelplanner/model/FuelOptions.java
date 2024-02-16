@@ -7,27 +7,22 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FuelOptions {
-    private FuelOptionsData fuelOptions;
+    private List<FuelPrice> fuelPrices;
 
-    public FuelOptionsData getFuelOptions() {
-        return fuelOptions;
+    public List<FuelPrice> getFuelPrices(){
+        return fuelPrices;
     }
 
-    public void setFuelOptions(FuelOptionsData fuelOptions) {
-        this.fuelOptions = fuelOptions;
+    public void setFuelPrices(List<FuelPrice> fuelPrices){
+        this.fuelPrices = fuelPrices;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class FuelOptionsData {
-        private List<FuelPrice> fuelPrices;
-
-        public List<FuelPrice> getFuelPrices() {
-            return fuelPrices;
+    public String toString(){
+        StringBuilder s = new StringBuilder();
+        for(FuelPrice price: fuelPrices){
+            s.append(price.type).append(": ").append(price.price.getDollarPrice()).append("\n");
         }
-
-        public void setFuelPrices(List<FuelPrice> fuelPrices) {
-            this.fuelPrices = fuelPrices;
-        }
+        return s.toString();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

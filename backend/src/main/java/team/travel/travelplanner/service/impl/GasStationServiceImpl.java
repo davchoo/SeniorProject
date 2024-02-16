@@ -3,6 +3,7 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.model.FuelOptions;
 import team.travel.travelplanner.service.*;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class GasStationServiceImpl implements GasStationService {
 
-    private final GoogleMapsApiFuelPriceService fuelService;
+    private final GoogleMapsApiFuelPriceService gasService;
 
     private final GoogleMapsApiDirectionsService directionsService;
 
@@ -25,11 +26,11 @@ public class GasStationServiceImpl implements GasStationService {
     private final GoogleMapsApiPlacesClientService placesService;
 
     @Autowired
-    public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiFuelClient,
+    public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiGasClient,
                                  GoogleMapsApiDirectionsService apiDirectionsClient,
                                  GoogleMapsApiDistanceService apiDistanceClient,
                                  GoogleMapsApiPlacesClientService apiPlacesClient){
-        this.fuelService = apiFuelClient;
+        this.gasService = apiGasClient;
         this.directionsService = apiDirectionsClient;
         this.distanceService = apiDistanceClient;
         this.placesService = apiPlacesClient;
@@ -45,28 +46,32 @@ public class GasStationServiceImpl implements GasStationService {
      * @throws IOException          If there's an error communicating with the Google Maps API.
      * @throws InterruptedException If the thread is interrupted while waiting for the API response.
      */
-    public Map<String, FuelOptions> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) throws IOException, InterruptedException {
-        Map<String, FuelOptions> fuelOptionsMap = new HashMap<>();
+    public Map<String, GasStation> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) {
+        Map<String, GasStation> gasOptionsMap = new HashMap<>();
         List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
         System.out.println("Needed stops:"+ stopsAlongRoute.size());
 
-        List<CompletableFuture<Map<String, FuelOptions>>> fuelOptionsFutures = stopsAlongRoute.parallelStream()
+        List<CompletableFuture<Map<String, GasStation>>> gasStationFutures = stopsAlongRoute.parallelStream()
                 .map(location -> CompletableFuture.supplyAsync(() -> {
                     PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 6500);
                     System.out.println(response.results.length);
-                    Map<String, FuelOptions> placesPerLocation = new HashMap<>();
+                    Map<String, GasStation> placesPerLocation = new HashMap<>();
                     int range = Math.min(response.results.length, 5);
 
                     for (int i = 0; i < range; i++) {
                         PlacesSearchResult place = response.results[i];
                         String placeId = place.placeId;
                         try {
-                            FuelOptions fuelOptionForPlace = fuelService.getFuelPrices(placeId);
-                            if (fuelOptionForPlace.getFuelOptions() != null && fuelOptionForPlace.getFuelOptions().getFuelPrices() != null) {
-                                placesPerLocation.put(placeId, fuelOptionForPlace);
+                            GasStation gasStationPerPlace = gasService.getGasStations(placeId);
+                            if (gasStationPerPlace != null && gasStationPerPlace.getFuelOptions() != null
+                            && gasStationPerPlace.getFuelOptions().getFuelPrices() != null
+                            ) {
+                                placesPerLocation.put(placeId, gasStationPerPlace);
                             }
                         } catch (IOException | InterruptedException e) {
                             e.printStackTrace(); // Handle or log the exception
+                        } catch (ApiException e) {
+                            throw new RuntimeException(e);
                         }
                     }
                     return placesPerLocation;
@@ -74,14 +79,14 @@ public class GasStationServiceImpl implements GasStationService {
                 .toList();
 
         // Combine all completed futures into a single map
-        CompletableFuture.allOf(fuelOptionsFutures.toArray(new CompletableFuture[0]))
+        CompletableFuture.allOf(gasStationFutures.toArray(new CompletableFuture[0]))
                 .thenAccept(v -> {
-                    for (CompletableFuture<Map<String, FuelOptions>> future : fuelOptionsFutures) {
+                    for (CompletableFuture<Map<String, GasStation>> future : gasStationFutures) {
                         try {
-                            Map<String, FuelOptions> placesPerLocation = future.join();
+                            Map<String, GasStation> placesPerLocation = future.join();
                             if (!placesPerLocation.isEmpty()) {
-                                Map.Entry<String, FuelOptions> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
-                                fuelOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+                                Map.Entry<String, GasStation> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
+                                gasOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
                             }
                         } catch (Exception e) {
                             e.printStackTrace(); // Handle or log the exception
@@ -91,7 +96,7 @@ public class GasStationServiceImpl implements GasStationService {
                 .join(); // Wait for all futures to complete
 
         System.out.println("Completed final");
-        return fuelOptionsMap;
+        return gasOptionsMap;
     }
 
     /**
@@ -100,12 +105,12 @@ public class GasStationServiceImpl implements GasStationService {
      * @param placesPerLocation A map containing place IDs of gas stations and their fuel options.
      * @return A map entry containing the place ID of the gas station with the lowest fuel prices and its fuel options.
      */
-    private Map.Entry<String, FuelOptions> findEntryWithLowestPrices(Map<String, FuelOptions> placesPerLocation, String type) {
-        Map.Entry<String, FuelOptions> entryWithLowestPrices = null;
+    private Map.Entry<String, GasStation> findEntryWithLowestPrices(Map<String, GasStation> placesPerLocation, String type) {
+        Map.Entry<String, GasStation> entryWithLowestPrices = null;
         double lowestPrice = Double.MAX_VALUE;
 
-        for (Map.Entry<String, FuelOptions> entry : placesPerLocation.entrySet()) {
-            FuelOptions fuelOptions = entry.getValue();
+        for (Map.Entry<String, GasStation> entry : placesPerLocation.entrySet()) {
+            FuelOptions fuelOptions = entry.getValue().getFuelOptions();
             double totalPrice = getTotalPrice(fuelOptions, type);
 
             if (totalPrice < lowestPrice) {
@@ -124,7 +129,7 @@ public class GasStationServiceImpl implements GasStationService {
      */
     private double getTotalPrice(FuelOptions fuelOptions, String type) {
         double totalPrice = 0;
-        for (FuelOptions.FuelPrice price : fuelOptions.getFuelOptions().getFuelPrices()) {
+        for (FuelOptions.FuelPrice price : fuelOptions.getFuelPrices()) {
             if(price.getType().equals(type)){
                 totalPrice += price.getPrice().getDollarPrice();
                 break;

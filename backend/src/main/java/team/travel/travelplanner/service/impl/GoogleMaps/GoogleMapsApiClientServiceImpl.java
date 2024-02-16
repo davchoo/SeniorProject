@@ -1,17 +1,19 @@
 package team.travel.travelplanner.service.impl.GoogleMaps;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
+import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.model.FuelOptions;
 import team.travel.travelplanner.service.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -82,20 +84,36 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
      * @throws InterruptedException
      */
     @Override
-    public FuelOptions getFuelPrices(String placeId) throws IOException, InterruptedException {
-        String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=*", placeId, apiKey);
+    public GasStation getGasStations(String placeId) throws IOException {
+        String urlString = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=*", placeId, apiKey);
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .build();
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String jsonResponse = response.toString();
 
-        ObjectMapper mapper = new ObjectMapper();
-        FuelOptions fuelOptions = mapper.readValue(response.body(), FuelOptions.class);
-        return fuelOptions;
+            // Create Gson object
+            Gson gson = new GsonBuilder().create();
+
+            // Parse JSON to Java object
+            GasStation gasStation = gson.fromJson(jsonResponse, GasStation.class);
+
+            return gasStation;
+        } else {
+            throw new IOException("Failed to fetch data. Response code: " + responseCode);
+        }
     }
+
 
     public CompletableFuture<FuelOptions> getFuelPricesAsync(String placeId) {
         String url = String.format("https://places.googleapis.com/v1/places/%s?key=%s&fields=*", placeId, apiKey);
