@@ -12,22 +12,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 public class GasStationServiceImpl implements GasStationService {
 
-    @Autowired
-    private GoogleMapsApiFuelPriceService apiFuelClient;
+    private final GoogleMapsApiFuelPriceService fuelService;
+
+    private final GoogleMapsApiDirectionsService directionsService;
+
+    private final GoogleMapsApiDistanceService distanceService;
+
+    private final GoogleMapsApiPlacesClientService placesService;
 
     @Autowired
-    private GoogleMapsApiDirectionsService apiDirectionsClient;
-
-    @Autowired
-    GoogleMapsApiDistanceService apiDistanceClient;
-
-    @Autowired
-    GoogleMapsApiPlacesClientService apiPlacesClient;
+    public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiFuelClient,
+                                 GoogleMapsApiDirectionsService apiDirectionsClient,
+                                 GoogleMapsApiDistanceService apiDistanceClient,
+                                 GoogleMapsApiPlacesClientService apiPlacesClient){
+        this.fuelService = apiFuelClient;
+        this.directionsService = apiDirectionsClient;
+        this.distanceService = apiDistanceClient;
+        this.placesService = apiPlacesClient;
+    }
 
     /**
      * Retrieves gas stations along a route and their fuel options.
@@ -46,17 +52,16 @@ public class GasStationServiceImpl implements GasStationService {
 
         List<CompletableFuture<Map<String, FuelOptions>>> fuelOptionsFutures = stopsAlongRoute.parallelStream()
                 .map(location -> CompletableFuture.supplyAsync(() -> {
-                    PlacesSearchResponse response = apiPlacesClient.findPlaces(location, "gas_station", 6500);
+                    PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 6500);
                     System.out.println(response.results.length);
                     Map<String, FuelOptions> placesPerLocation = new HashMap<>();
-                    int range = 0;
-                    range = Math.min(response.results.length, 5);
+                    int range = Math.min(response.results.length, 5);
 
                     for (int i = 0; i < range; i++) {
                         PlacesSearchResult place = response.results[i];
                         String placeId = place.placeId;
                         try {
-                            FuelOptions fuelOptionForPlace = apiFuelClient.getFuelPrices(placeId);
+                            FuelOptions fuelOptionForPlace = fuelService.getFuelPrices(placeId);
                             if (fuelOptionForPlace.getFuelOptions() != null && fuelOptionForPlace.getFuelOptions().getFuelPrices() != null) {
                                 placesPerLocation.put(placeId, fuelOptionForPlace);
                             }
@@ -164,7 +169,7 @@ public class GasStationServiceImpl implements GasStationService {
                 boolean stopped = false;
 
                 for(LatLng point : pointsAlongStep){
-                    double distance = apiDistanceClient.haversine(lastLocation, point);
+                    double distance = distanceService.haversine(lastLocation, point);
                     double totalDrivenDistance = drivenMetersAlongPoints+metersDrivenAfterLastStop+distance;
                     if(totalDrivenDistance >= quarterTankSize){
                         stops.add(lastLocation); // One of the locations to find a gas station around
@@ -197,7 +202,7 @@ public class GasStationServiceImpl implements GasStationService {
 
     private DirectionsResult getDirections(String departureLatLng, String arrivalLatLng) {
         try {
-            return apiDirectionsClient.getDirections(departureLatLng, arrivalLatLng);
+            return directionsService.getDirections(departureLatLng, arrivalLatLng);
         } catch (IOException | InterruptedException | ApiException e) {
             // Handle exceptions?
             e.printStackTrace();
