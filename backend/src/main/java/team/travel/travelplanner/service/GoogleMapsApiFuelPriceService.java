@@ -1,9 +1,10 @@
 package team.travel.travelplanner.service;
 
-import team.travel.travelplanner.model.FuelOptions;
+import com.google.maps.errors.ApiException;
+import team.travel.travelplanner.entity.GasStation;
 
 import java.io.IOException;
 
 public interface GoogleMapsApiFuelPriceService {
-    FuelOptions getFuelPrices(String placeId) throws IOException, InterruptedException;
+    GasStation getGasStations(String placeId) throws IOException, InterruptedException, ApiException;
 }
