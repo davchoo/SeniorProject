@@ -2,32 +2,40 @@ package team.travel.travelplanner.controller;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.model.RouteModel;
 import team.travel.travelplanner.model.weather.SegmentWeatherModel;
+import team.travel.travelplanner.model.weather.WeatherFeatureModel;
 import team.travel.travelplanner.service.WeatherDataService;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherController {
-    private final WeatherDataService weatherDataService;
-
-    private final GeometryFactory geometryFactory;
-
     private static final int WGS84_SRID = 4326;
 
+    private final GeometryFactory geometryFactory;
+    private final WeatherDataService weatherDataService;
+
     public WeatherController(WeatherDataService weatherDataService) {
-        this.weatherDataService = weatherDataService;
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), WGS84_SRID);
+        this.weatherDataService = weatherDataService;
     }
 
     @PostMapping("/check_route")
     public List<SegmentWeatherModel> checkRoute(@RequestBody RouteModel route) {
         return weatherDataService.checkRouteWeather(route.geometry(geometryFactory), route.durations(), route.startTime());
+    }
+
+    @GetMapping("/features")
+    public List<WeatherFeatureModel> getFeatures(@RequestParam("file_date") Instant fileDate, @RequestParam("day") int day) {
+        return weatherDataService.getFeatures(fileDate, day);
+    }
+
+    @GetMapping("/features/file_dates")
+    public List<Instant> getAvailableFileDates() {
+        return weatherDataService.getAvailableFileDates();
     }
 }

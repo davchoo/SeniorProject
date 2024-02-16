@@ -7,7 +7,6 @@ import team.travel.travelplanner.entity.type.WeatherFeatureType;
 import team.travel.travelplanner.model.weather.SegmentWeatherModel;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 @Entity
 @SqlResultSetMapping(name = "SegmentWeatherModel",
@@ -41,11 +40,11 @@ public class WeatherFeature {
     @CreationTimestamp
     private Instant retrievalTimestamp;
 
-    private ZonedDateTime fileDate;
+    private Instant fileDate;
 
-    private ZonedDateTime validStart;
+    private Instant validStart;
 
-    private ZonedDateTime validEnd;
+    private Instant validEnd;
 
     @Enumerated(EnumType.STRING)
     private WeatherFeatureType weatherFeatureType;
@@ -99,27 +98,27 @@ public class WeatherFeature {
         this.retrievalTimestamp = retrievalTimestamp;
     }
 
-    public ZonedDateTime getFileDate() {
+    public Instant getFileDate() {
         return fileDate;
     }
 
-    public void setFileDate(ZonedDateTime fileDate) {
+    public void setFileDate(Instant fileDate) {
         this.fileDate = fileDate;
     }
 
-    public ZonedDateTime getValidStart() {
+    public Instant getValidStart() {
         return validStart;
     }
 
-    public void setValidStart(ZonedDateTime validStart) {
+    public void setValidStart(Instant validStart) {
         this.validStart = validStart;
     }
 
-    public ZonedDateTime getValidEnd() {
+    public Instant getValidEnd() {
         return validEnd;
     }
 
-    public void setValidEnd(ZonedDateTime validEnd) {
+    public void setValidEnd(Instant validEnd) {
         this.validEnd = validEnd;
     }
 
