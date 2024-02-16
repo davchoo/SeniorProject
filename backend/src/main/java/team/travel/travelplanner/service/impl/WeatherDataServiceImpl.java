@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,14 +28,13 @@ import team.travel.travelplanner.config.WeatherDataConfig;
 import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
 import team.travel.travelplanner.model.weather.SegmentWeatherModel;
+import team.travel.travelplanner.model.weather.WeatherFeatureModel;
 import team.travel.travelplanner.repository.WeatherFeatureRepository;
 import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -172,35 +172,30 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         weatherFeature.setWeatherFeatureType(featureType);
 
         Timestamp rawFileDate = (Timestamp) feature.getAttribute("idp_filedate");
-        ZonedDateTime fileDate = rawFileDate.toLocalDateTime().atZone(EST); // TODO check if file date is affected by DST
+        Instant fileDate = rawFileDate.toLocalDateTime().atZone(EST).toInstant(); // TODO check if file date is affected by DST
         fileDate = fileDate.truncatedTo(ChronoUnit.HOURS); // Group features within the same hour
         weatherFeature.setFileDate(fileDate);
 
         // https://www.wpc.ncep.noaa.gov/html/about_Gudes.shtml
+        ZonedDateTime fileDateEST = fileDate.atZone(EST);
         if (day == 1) {
             // Day 1 is issued by 5 am EST and 5 pm EST
-            if (fileDate.getHour() < 12) {
+            if (fileDateEST.getHour() < 12) {
                 // Morning issuance is valid for 24 hours starting at 7 am EST
-                ZonedDateTime validStart = fileDate.toLocalDate()
-                        .atTime(7, 0)
-                        .atZone(EST);
+                Instant validStart = fileDateEST.withHour(7).toInstant();
                 weatherFeature.setValidStart(validStart);
-                weatherFeature.setValidEnd(validStart.plusHours(24));
+                weatherFeature.setValidEnd(validStart.plus(24, ChronoUnit.HOURS));
             } else {
                 // Afternoon issuance is valid for 12 hours starting at 7 pm EST
-                ZonedDateTime validStart = fileDate.toLocalDate()
-                        .atTime(19, 0)
-                        .atZone(EST);
+                Instant validStart = fileDateEST.withHour(19).toInstant();
                 weatherFeature.setValidStart(validStart);
-                weatherFeature.setValidEnd(validStart.plusHours(12));
+                weatherFeature.setValidEnd(validStart.plus(12, ChronoUnit.HOURS));
             }
         } else {
             // Day 2 and 3 are issued by 5 am EST and are valid for 24 hours
-            ZonedDateTime validStart = fileDate.toLocalDate()
-                    .plusDays(day - 1)
-                    .atTime(7, 0).atZone(EST);
+            Instant validStart = fileDateEST.withHour(7).plusDays(day - 1).toInstant();
             weatherFeature.setValidStart(validStart);
-            weatherFeature.setValidEnd(validStart.plusHours(24));
+            weatherFeature.setValidEnd(validStart.plus(24, ChronoUnit.HOURS));
         }
 
         Geometry geometry = (Geometry) feature.getDefaultGeometryProperty().getValue();
@@ -239,5 +234,18 @@ public class WeatherDataServiceImpl implements WeatherDataService {
     @Override
     public List<SegmentWeatherModel> checkRouteWeather(Geometry route, int[] durations, Instant startTime) {
         return weatherFeatureRepository.checkRouteWeather(route, durations, startTime);
+    }
+
+    @Override
+    public List<WeatherFeatureModel> getFeatures(Instant fileDate, int day) {
+        List<WeatherFeature> features = weatherFeatureRepository.findAllByFileDateAndDay(fileDate, day);
+        return features.stream()
+                .map(WeatherFeatureModel::from)
+                .toList();
+    }
+
+    @Override
+    public List<Instant> getAvailableFileDates() {
+        return weatherFeatureRepository.findAllDistinctFileDates(Sort.by(Sort.Direction.ASC, "fileDate"));
     }
 }

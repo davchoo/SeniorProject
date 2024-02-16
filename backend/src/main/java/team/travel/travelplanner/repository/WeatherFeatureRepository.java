@@ -1,6 +1,7 @@
 package team.travel.travelplanner.repository;
 
 import org.locationtech.jts.geom.Geometry;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,11 @@ import java.util.List;
 public interface WeatherFeatureRepository extends JpaRepository<WeatherFeature, Long> {
     @Query("select max(f.fileDate) from WeatherFeature f")
     ZonedDateTime findLatestFileDate();
+
+    List<WeatherFeature> findAllByFileDateAndDay(Instant fileDate, int day);
+
+    @Query("select distinct f.fileDate from WeatherFeature f")
+    List<Instant> findAllDistinctFileDates(Sort sort);
 
     @Query(value = "CALL deduplicate_weather_features()", nativeQuery = true) // HACK?: @Modifying only applies to @Query and not @Procedure
     @Modifying(flushAutomatically = true, clearAutomatically = true)
