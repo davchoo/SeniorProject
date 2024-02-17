@@ -7,7 +7,7 @@ import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import team.travel.travelplanner.entity.GasStation;
-import team.travel.travelplanner.model.FuelOptions;
+import team.travel.travelplanner.entity.FuelOptions;
 import team.travel.travelplanner.service.*;
 
 import java.io.*;

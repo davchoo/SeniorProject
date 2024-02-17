@@ -5,6 +5,7 @@ import com.google.maps.model.LatLng;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.service.impl.GasStationServiceImpl;
 import team.travel.travelplanner.service.impl.GoogleMaps.GoogleMapsApiClientServiceImpl;
