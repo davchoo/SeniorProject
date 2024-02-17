@@ -3,8 +3,11 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import team.travel.travelplanner.repository.FuelOptionsRepository;
+import team.travel.travelplanner.repository.GasStationRepository;
+import team.travel.travelplanner.repository.ReviewsRepository;
 import team.travel.travelplanner.entity.GasStation;
-import team.travel.travelplanner.model.FuelOptions;
+import team.travel.travelplanner.entity.FuelOptions;
 import team.travel.travelplanner.service.*;
 
 import java.io.IOException;
@@ -25,15 +28,27 @@ public class GasStationServiceImpl implements GasStationService {
 
     private final GoogleMapsApiPlacesClientService placesService;
 
+    private final GasStationRepository gasStationRepository;
+
+    private final ReviewsRepository reviewsRepository;
+
+    private final FuelOptionsRepository fuelOptionsRepository;
+
     @Autowired
     public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiGasClient,
                                  GoogleMapsApiDirectionsService apiDirectionsClient,
                                  GoogleMapsApiDistanceService apiDistanceClient,
-                                 GoogleMapsApiPlacesClientService apiPlacesClient){
+                                 GoogleMapsApiPlacesClientService apiPlacesClient,
+                                 GasStationRepository gasStationRepository,
+                                 ReviewsRepository reviewsRepository,
+                                 FuelOptionsRepository fuelOptionsRepository){
         this.gasService = apiGasClient;
         this.directionsService = apiDirectionsClient;
         this.distanceService = apiDistanceClient;
         this.placesService = apiPlacesClient;
+        this.gasStationRepository = gasStationRepository;
+        this.reviewsRepository = reviewsRepository;
+        this.fuelOptionsRepository = fuelOptionsRepository;
     }
 
     /**
@@ -86,6 +101,11 @@ public class GasStationServiceImpl implements GasStationService {
                             Map<String, GasStation> placesPerLocation = future.join();
                             if (!placesPerLocation.isEmpty()) {
                                 Map.Entry<String, GasStation> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
+
+                                GasStation station = entryWithLowestPrices.getValue();
+                                reviewsRepository.saveAll(station.getReviews());
+                                fuelOptionsRepository.save(station.getFuelOptions());
+                                gasStationRepository.save(station);
                                 gasOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
                             }
                         } catch (Exception e) {

@@ -1,12 +1,19 @@
-package team.travel.travelplanner.model;
+package team.travel.travelplanner.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
 import java.util.List;
 
-
+@Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FuelOptions {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @ElementCollection
     private List<FuelPrice> fuelPrices;
 
     public List<FuelPrice> getFuelPrices(){
@@ -25,9 +32,20 @@ public class FuelOptions {
         return s.toString();
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @Embeddable
     public static class FuelPrice {
         private String type;
+
+        @Embedded
         private Price price;
         private String updateTime;
 

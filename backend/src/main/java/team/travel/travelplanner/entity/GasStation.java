@@ -1,22 +1,29 @@
 package team.travel.travelplanner.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import team.travel.travelplanner.model.FuelOptions;
+import jakarta.persistence.*;
+
 import java.util.List;
 
 
+@Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GasStation {
-    private String name;
+
+    @Id
     private String id;
+    private String name;
     private String formattedAddress;
 
     private String googleMapsUri;
 
+    @OneToMany
     private List<Reviews> reviews;
 
+    @OneToOne
     private FuelOptions fuelOptions;
 
+    @Embedded
     private CurrentOpeningHours currentOpeningHours;
 
     private double rating;
@@ -24,11 +31,11 @@ public class GasStation {
     public GasStation() {
     }
 
-    public GasStation(String name, String id, String formattedAddress, String googleMapsUri,
+    public GasStation(String name, String placeId, String formattedAddress, String googleMapsUri,
                       List<Reviews> reviews, FuelOptions fuelOptions,
                       CurrentOpeningHours currentOpeningHours, double rating) {
         this.name = name;
-        this.id = id;
+        this.id = placeId;
         this.formattedAddress = formattedAddress;
         this.googleMapsUri = googleMapsUri;
         this.reviews = reviews;
@@ -45,11 +52,11 @@ public class GasStation {
         this.name = name;
     }
 
-    public String getId() {
+    public String getPlaceId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setPlaceId(String id) {
         this.id = id;
     }
 
@@ -125,29 +132,9 @@ public class GasStation {
                     "weekdayDescriptions=" + description.toString() +
                     '}';
         }
-    }
 
-    public static class Reviews{
-        private Text text;
-        private int rating;
-        private String name;
-
-        @Override
-        public String toString() {
-            return "Reviews{" +
-                    "text=" + text.toString() +
-                    ", rating=" + rating +
-                    ", name='" + name + '\'' +
-                    '}';
-        }
-
-        public static class Text{
-            private String text;
-
-            @Override
-            public String toString(){
-                return text;
-            }
+        public void setWeekdayDescriptions(List<String> weekdayDescriptions){
+            this.weekdayDescriptions = weekdayDescriptions;
         }
     }
 }
