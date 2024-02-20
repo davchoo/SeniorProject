@@ -3,8 +3,8 @@ package team.travel.travelplanner.model;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
-import team.travel.travelplanner.model.weather.nws.FeatureCollection;
-import team.travel.travelplanner.model.weather.nws.GeoJSONObject;
+import team.travel.travelplanner.model.geojson.FeatureCollection;
+import team.travel.travelplanner.model.geojson.GeoJSONObject;
 
 import java.net.URI;
 

@@ -1,4 +1,4 @@
-package team.travel.travelplanner.model.weather.nws;
+package team.travel.travelplanner.model.geojson;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
