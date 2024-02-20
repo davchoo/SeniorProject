@@ -4,7 +4,10 @@ spring:
       ddl-auto: create
 travel-planner:
   weather:
-    auto-update: false
+    alert:
+      pulling-enabled: false
+    data:
+      auto-update: false
 zonky:
   test:
     database:

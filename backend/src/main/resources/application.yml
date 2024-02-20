@@ -10,7 +10,7 @@ spring:
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
       # Set to 'create' to initialize the schema
-      ddl-auto: validate
+      ddl-auto: update
     # Defer execution of schema.sql and data.sql scripts until the entity tables are created
     defer-datasource-initialization: true
   session:
@@ -30,4 +30,5 @@ spring:
         size: 2
 travel-planner:
   weather:
-    national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS
+    data:
+      national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS
