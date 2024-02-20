@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 @Configuration
-@ConfigurationProperties(prefix = "travel-planner.weather")
+@ConfigurationProperties(prefix = "travel-planner.weather.data")
 public class WeatherDataConfig {
     private URL nationalWeatherForecastWfcUrl;
 
