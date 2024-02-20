@@ -1,22 +1,28 @@
-import React from 'react'
-import { Autocomplete } from '@react-google-maps/api'
+import React, { useRef } from 'react';
+import { Autocomplete } from '@react-google-maps/api';
 
+export const AutoComplete = ({ handlePlaceSelect, label }) => {
+  const autoCompleteRef = useRef(null);
 
-export const AutoComplete = () => {
- return (
-   <div>
-       <div className='flex flex-row'>
-       <label>Enter Departue:</label>
-       <Autocomplete >
-         <input></input>
-       </Autocomplete>
-     </div>
-     <div className='flex flex-row'>
-       <label>Enter Destination:</label>
-       <Autocomplete >
-         <input></input>
-       </Autocomplete>
-     </div>
-   </div>
- )
-}
+  const onLoad = (autocomplete) => {
+    autoCompleteRef.current = autocomplete;
+  };
+
+  const onPlaceChanged = () => {
+    if (autoCompleteRef.current !== null) {
+      const place = autoCompleteRef.current.getPlace();
+      handlePlaceSelect(place);
+    } else {
+      console.error('Autocomplete is not loaded yet.');
+    }
+  };
+
+  return (
+    <div className='flex flex-row'>
+      <label>{label}</label>
+      <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+        <input />
+      </Autocomplete>
+    </div>
+  );
+};

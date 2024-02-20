@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Map from '../components/Map';
+import Sidebar from '../components/SaveSidebar';
+import { GiHamburgerMenu } from 'react-icons/gi';
 
 function Plan() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-custom-green flex justify-center items-center font-notosansjp font-bold m-1">
-      <div className="w-full max-w-screen-xl">
-        <div className="flex flex-col min-h-screen justify-center items-center m-2 relative">
+      <div className="w-full max-w-screen-xl relative">
+        <button onClick={toggleSidebar} className="fixed top-4 left-4 text-xl text-white">
+        <GiHamburgerMenu />
+        </button>
+
+        <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
+            <div style={{ padding: '20px', borderRight: '2px solid white' }}>
+              <h2 className="font-notosansjp">Saved Trips</h2>
+            </div>
+        </Sidebar>
+
+        <div className="flex flex-col justify-center items-center m-2">
           <p className="mt-4 text-center text-2xl text-custom-black">
             Let's Start Planning!
           </p>
