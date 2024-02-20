@@ -80,8 +80,9 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             return;
         }
         if (completedLastUpdate) {
-            ZonedDateTime latestFileDate = weatherFeatureRepository.findLatestFileDate();
-            if (latestFileDate != null) {
+            Instant latestFileDateInstant = weatherFeatureRepository.findLatestFileDate();
+            if (latestFileDateInstant != null) {
+                ZonedDateTime latestFileDate = latestFileDateInstant.atZone(EST);
                 ZonedDateTime now = Instant.now().atZone(EST);
                 if (latestFileDate.toLocalDate().equals(now.toLocalDate())) {
                     // Still the same day
