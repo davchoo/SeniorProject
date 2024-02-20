@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public interface WeatherFeatureRepository extends JpaRepository<WeatherFeature, Long> {
     @Query("select max(f.fileDate) from WeatherFeature f")
-    ZonedDateTime findLatestFileDate();
+    Instant findLatestFileDate();
 
     List<WeatherFeature> findAllByFileDateAndDay(Instant fileDate, int day);
 
