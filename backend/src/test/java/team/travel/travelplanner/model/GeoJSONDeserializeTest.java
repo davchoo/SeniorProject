@@ -6,8 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.locationtech.jts.geom.*;
-import team.travel.travelplanner.model.weather.nws.GeoJSONGeometry;
-import team.travel.travelplanner.model.weather.nws.GeoJSONObject;
+import team.travel.travelplanner.model.geojson.GeoJSONGeometry;
+import team.travel.travelplanner.model.geojson.GeoJSONObject;
 
 import java.io.IOException;
 import java.util.stream.Stream;

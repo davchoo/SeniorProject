@@ -3,7 +3,7 @@ package team.travel.travelplanner.deserializer;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
-import team.travel.travelplanner.model.weather.nws.GeoJSONGeometry;
+import team.travel.travelplanner.model.geojson.GeoJSONGeometry;
 
 import java.io.IOException;
 
