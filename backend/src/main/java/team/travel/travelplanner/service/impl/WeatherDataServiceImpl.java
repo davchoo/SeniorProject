@@ -21,8 +21,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import team.travel.travelplanner.config.WeatherDataConfig;
 import team.travel.travelplanner.entity.WeatherFeature;
@@ -34,7 +32,9 @@ import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -101,15 +101,12 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             LOGGER.info("Checking National Weather Forecast Chart for updates. Application has just started or the last update was not complete.");
         }
         completedLastUpdate = false;
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                try {
-                    updateNow();
-                } catch (IOException e) {
-                    LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", e);
-                    status.setRollbackOnly();
-                }
+        transactionTemplate.executeWithoutResult(status -> {
+            try {
+                updateNow();
+            } catch (IOException e) {
+                LOGGER.error("Failed to fetch National Weather Forecast Chart via WFS", e);
+                status.setRollbackOnly();
             }
         });
     }
