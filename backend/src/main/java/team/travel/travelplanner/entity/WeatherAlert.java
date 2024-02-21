@@ -21,7 +21,7 @@ public class WeatherAlert {
     private List<String> geocodeSAME;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = "refs")
+    @Column(name = "refs", length = 128)
     private List<String> references;
 
     private Instant sent;
@@ -61,6 +61,8 @@ public class WeatherAlert {
     private AlertResponseType response;
 
     private Geometry geometry;
+
+    private boolean outdated;
 
     public String getId() {
         return id;
@@ -236,5 +238,13 @@ public class WeatherAlert {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
+    }
+
+    public boolean isOutdated() {
+        return outdated;
+    }
+
+    public void setOutdated(boolean outdated) {
+        this.outdated = outdated;
     }
 }
