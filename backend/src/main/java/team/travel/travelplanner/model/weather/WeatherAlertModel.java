@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AlertModel {
+public class WeatherAlertModel {
     private String id;
 
     @JsonAlias("areaDesc")
