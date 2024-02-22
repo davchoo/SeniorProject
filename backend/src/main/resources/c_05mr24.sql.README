@@ -1,0 +1,3 @@
+Shapefile for U.S. Counties was acquired from https://www.weather.gov/gis/Counties on 2024-02-22
+This was exported to SQL using QGIS, modified to have a 6 character FIPS column, and compressed with gzip as
+c_05mr24.sql.gz
