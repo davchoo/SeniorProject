@@ -1,6 +1,7 @@
 package team.travel.travelplanner.entity;
 
 import jakarta.persistence.*;
+import org.locationtech.jts.geom.Geometry;
 
 @Entity
 @Table(name = "c_05mr24")
@@ -33,6 +34,9 @@ public class County {
 
     @Column(columnDefinition = "numeric(19, 11)")
     private double lat;
+
+    @Column(name = "wkb_geometry")
+    private Geometry geometry;
 
     public int getOgcFID() {
         return ogcFID;
@@ -104,5 +108,13 @@ public class County {
 
     public void setLat(double lat) {
         this.lat = lat;
+    }
+
+    public Geometry getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
     }
 }
