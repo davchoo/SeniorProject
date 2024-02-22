@@ -9,7 +9,7 @@ import org.springframework.core.io.Resource;
 import team.travel.travelplanner.model.geojson.Feature;
 import team.travel.travelplanner.model.geojson.FeatureCollection;
 import team.travel.travelplanner.model.geojson.GeoJSONObject;
-import team.travel.travelplanner.model.weather.AlertModel;
+import team.travel.travelplanner.model.weather.WeatherAlertModel;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +30,7 @@ public class NWSAlertDeserializeTest {
 
         FeatureCollection featureCollection = (FeatureCollection) geoJSONObject;
         for (Feature feature : featureCollection.features()) {
-            AlertModel alert = objectMapper.convertValue(feature.properties(), AlertModel.class);
+            WeatherAlertModel alert = objectMapper.convertValue(feature.properties(), WeatherAlertModel.class);
             System.out.println(objectMapper.writeValueAsString(alert));
             // TODO additional validation?
         }

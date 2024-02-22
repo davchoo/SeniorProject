@@ -26,6 +26,8 @@ CREATE OR REPLACE FUNCTION check_route_weather(IN route geometry, IN durations i
                 end_timestamp        timestamp with time zone
             )
     LANGUAGE sql
+    STABLE
+    PARALLEL SAFE
 AS
 $$
 WITH route AS (SELECT durations.i,
@@ -33,7 +35,7 @@ WITH route AS (SELECT durations.i,
                       make_interval(secs := (sum(duration) OVER (ORDER BY durations.i) - duration) / 1000.0) AS start_timestamp,
                       start_time +
                       make_interval(secs := (sum(duration) OVER (ORDER BY durations.i)) / 1000.0)            AS end_timestamp,
-                      route_segements.g                                                             AS segment
+                      route_segements.g                                                                      AS segment
                FROM unnest(durations) WITH ORDINALITY AS durations(duration, i)
                         JOIN (SELECT path[1] AS i, geom AS g
                               FROM st_dumpsegments(route)) AS route_segements
@@ -69,4 +71,42 @@ FROM route
                             ))
                         ) AND
                         st_intersects(route.segment, wf.geometry) -- Segment intersects the weather feature
+$$;
+
+DROP FUNCTION IF EXISTS check_route_weather_alerts;
+CREATE OR REPLACE FUNCTION check_route_weather_alerts(IN route geometry, IN durations int[],
+                                                      In start_time timestamp with time zone)
+    RETURNS TABLE
+            (
+                i                int,
+                weather_alert_id varchar(128)
+            )
+    LANGUAGE sql
+    STABLE
+    PARALLEL SAFE
+AS
+$$
+WITH route AS (SELECT durations.i,
+                      start_time +
+                      make_interval(secs := (sum(duration) OVER (ORDER BY durations.i) - duration) / 1000.0) AS start_timestamp,
+                      start_time +
+                      make_interval(secs := (sum(duration) OVER (ORDER BY durations.i)) / 1000.0)            AS end_timestamp,
+                      route_segments.g                                                                       AS segment
+               FROM unnest(durations) WITH ORDINALITY AS durations(duration, i)
+                        JOIN (SELECT path[1] AS i, geom AS g FROM st_dumpsegments(route)) AS route_segments
+                             ON durations.i = route_segments.i)
+SELECT DISTINCT route.i - 1,
+                weather_alert_id
+FROM route
+         INNER JOIN weather_alert ON weather_alert.outdated = FALSE AND
+                                     (route.start_timestamp, route.end_timestamp) OVERLAPS
+                                     (coalesce(weather_alert.onset, weather_alert.sent), coalesce(weather_alert.ends, weather_alert.expires))
+         INNER JOIN weather_alert_geocodesame AS gs ON weather_alert.id = gs.weather_alert_id -- Weather alerts should always have one or more geocodes
+         LEFT JOIN c_05mr24 AS counties ON gs.geocodesame = counties.fips -- Some counties are missing from the table, include the alerts just in case they contain their own geometry
+WHERE
+   -- Select based on county if the alert does not include geometry
+    (weather_alert.geometry IS NULL and st_intersects(route.segment, counties.wkb_geometry))
+   OR
+   -- Select based on the alert's included geometry
+    st_intersects(route.segment, weather_alert.geometry)
 $$;

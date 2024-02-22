@@ -1,6 +1,7 @@
 package team.travel.travelplanner.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -16,15 +17,15 @@ import team.travel.travelplanner.entity.WeatherAlert;
 import team.travel.travelplanner.model.geojson.Feature;
 import team.travel.travelplanner.model.geojson.FeatureCollection;
 import team.travel.travelplanner.model.geojson.GeoJSONObject;
-import team.travel.travelplanner.model.weather.AlertModel;
+import team.travel.travelplanner.model.weather.RouteWeatherAlertsModel;
+import team.travel.travelplanner.model.weather.SegmentWeatherAlertModel;
+import team.travel.travelplanner.model.weather.WeatherAlertModel;
 import team.travel.travelplanner.repository.WeatherAlertRepository;
 import team.travel.travelplanner.service.WeatherAlertService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class WeatherAlertServiceImpl implements WeatherAlertService {
@@ -83,7 +84,7 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
         // existing entries. It helps prevent us from sending redundant data though.
         Set<String> existingIds = weatherAlertRepository.getAllIds();
         for (Feature feature : featureCollection.features()) {
-            AlertModel alertModel = objectMapper.convertValue(feature.properties(), AlertModel.class);
+            WeatherAlertModel alertModel = objectMapper.convertValue(feature.properties(), WeatherAlertModel.class);
             if (existingIds.contains(alertModel.getId())) {
                 continue;
             }
@@ -101,5 +102,28 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
         long afterDeleteCount = weatherAlertRepository.count();
         // Counts can be messed up with concurrent changes, but that shouldn't happen (only 1 instance should be pulling)
         LOGGER.info("Pulled {} new alerts from the NWS and deleted {} expired alerts", afterAddCount - initialCount, afterAddCount - afterDeleteCount);
+    }
+
+    @Override
+    public RouteWeatherAlertsModel checkRouteWeatherAlerts(Geometry route, int[] durations, Instant startTime) {
+        List<SegmentWeatherAlertModel> segmentAlerts = weatherAlertRepository.checkRouteWeatherAlerts(route, durations, startTime);
+
+        Set<String> alertIds = new HashSet<>();
+        segmentAlerts.forEach(segmentAlert -> alertIds.add(segmentAlert.alertId()));
+
+        List<WeatherAlert> alerts = weatherAlertRepository.findAllById(alertIds);
+        Map<String, WeatherAlertModel> alertModels = new HashMap<>();
+        for (WeatherAlert alert : alerts) {
+            WeatherAlertModel alertModel = new WeatherAlertModel();
+            BeanUtils.copyProperties(alert, alertModel, "geocodeSame", "references", "geometry");
+            alertModel.setGeocodeSAME(new ArrayList<>(alert.getGeocodeSAME()));
+            alertModel.setReferences(new ArrayList<>(alert.getReferences()));
+            if (alert.getGeometry() != null) {
+                alertModel.setGeometryWKT(alert.getGeometry().toString());
+            }
+            alertModels.put(alertModel.getId(), alertModel);
+        }
+
+        return new RouteWeatherAlertsModel(segmentAlerts, alertModels);
     }
 }

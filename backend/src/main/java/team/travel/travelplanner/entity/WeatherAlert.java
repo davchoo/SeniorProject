@@ -3,11 +3,25 @@ package team.travel.travelplanner.entity;
 import jakarta.persistence.*;
 import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.type.alert.*;
+import team.travel.travelplanner.model.weather.SegmentWeatherAlertModel;
 
 import java.time.Instant;
 import java.util.List;
 
 @Entity
+@SqlResultSetMapping(name = "SegmentWeatherAlertModel",
+        classes = @ConstructorResult(
+                targetClass = SegmentWeatherAlertModel.class,
+                columns = {
+                        @ColumnResult(name = "i"),
+                        @ColumnResult(name = "weather_alert_id")
+                }
+        ))
+@NamedNativeQuery(
+        name = "WeatherAlert.checkRouteWeatherAlerts",
+        query = "select i, weather_alert_id from check_route_weather_alerts(:route, :durations, :startTime)",
+        resultSetMapping = "SegmentWeatherAlertModel"
+)
 public class WeatherAlert {
     @Id
     @Column(length = 128)
