@@ -69,7 +69,6 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
             PlaceDetails placeDetails = request.await();
             System.out.println(placeDetails);
 
-
         } catch (Exception e) {
             // Handle any exceptions
             e.printStackTrace();

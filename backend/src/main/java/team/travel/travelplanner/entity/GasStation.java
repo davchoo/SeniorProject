@@ -1,10 +1,10 @@
 package team.travel.travelplanner.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.util.List;
-
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,10 +17,14 @@ public class GasStation {
 
     private String googleMapsUri;
 
-    @OneToMany
+    @OneToMany(
+            mappedBy = "gasStation",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Reviews> reviews;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private FuelOptions fuelOptions;
 
     @Embedded
@@ -28,12 +32,15 @@ public class GasStation {
 
     private double rating;
 
+    @Transient
+    private Location location;
+
     public GasStation() {
     }
 
     public GasStation(String name, String placeId, String formattedAddress, String googleMapsUri,
                       List<Reviews> reviews, FuelOptions fuelOptions,
-                      CurrentOpeningHours currentOpeningHours, double rating) {
+                      CurrentOpeningHours currentOpeningHours, double rating, Location location) {
         this.name = name;
         this.id = placeId;
         this.formattedAddress = formattedAddress;
@@ -42,6 +49,7 @@ public class GasStation {
         this.fuelOptions = fuelOptions;
         this.currentOpeningHours = currentOpeningHours;
         this.rating = rating;
+        this.location = location;
     }
 
     public String getName() {
@@ -101,6 +109,18 @@ public class GasStation {
         this.currentOpeningHours = currentOpeningHours;
     }
 
+    public double getRating(){
+        return this.rating;
+    }
+
+    public Location getLocation(){
+        return location;
+    }
+
+    public void setLocation(Location location){
+        this.location = location;
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -120,6 +140,7 @@ public class GasStation {
     }
 
     public static class CurrentOpeningHours {
+        @JsonProperty("weekdayDescriptions")
         private List<String> weekdayDescriptions;
         @Override
         public String toString() {
@@ -136,6 +157,28 @@ public class GasStation {
         public void setWeekdayDescriptions(List<String> weekdayDescriptions){
             this.weekdayDescriptions = weekdayDescriptions;
         }
+    }
+
+    public static class Location {
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public void setLatitude(double latitude) {
+            this.latitude = latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(double longitude) {
+            this.longitude = longitude;
+        }
+
+        private double latitude;
+        private double longitude;
+
     }
 }
 
