@@ -312,7 +312,7 @@ public class WeatherDataTest {
         assertEquals(olderFeature.getValidEnd(), model.validEnd());
         assertEquals(olderFeature.getPopUpContent(), model.popUpContent());
         assertEquals(olderFeature.getWeatherFeatureType(), model.type());
-        assertEquals(olderFeature.getGeometry().toString(), model.geometryWKT());
+        assertEquals(olderFeature.getGeometry(), model.geometry());
 
         // No features for yesterday day 2
         results = weatherDataService.getFeatures(availableFileDates.getFirst(), 2);

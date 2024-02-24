@@ -1,7 +1,10 @@
 package team.travel.travelplanner.model.weather;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
+import team.travel.travelplanner.serializer.WKB64GeometrySerializer;
 
 import java.time.Instant;
 
@@ -12,7 +15,8 @@ public record WeatherFeatureModel(
         Instant validEnd,
         String popUpContent,
         WeatherFeatureType type,
-        String geometryWKT
+        @JsonSerialize(using = WKB64GeometrySerializer.class)
+        Geometry geometry
 ) {
     public static WeatherFeatureModel from(WeatherFeature feature) {
         return new WeatherFeatureModel(
@@ -22,7 +26,7 @@ public record WeatherFeatureModel(
                 feature.getValidEnd(),
                 feature.getPopUpContent(),
                 feature.getWeatherFeatureType(),
-                feature.getGeometry().toString()
+                feature.getGeometry()
         );
     }
 }

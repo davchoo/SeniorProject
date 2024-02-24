@@ -22,7 +22,7 @@ public class CountyServiceImpl implements CountyService {
     public Map<String, CountyModel> getCounties(List<String> fipsCodes) {
         Map<String, CountyModel> models = new HashMap<>();
         for (County county : countyRepository.findAllByFipsIn(fipsCodes)) {
-            CountyModel model = new CountyModel(county.getFips(), county.getCountyName(), county.getState(), county.getGeometry().toText());
+            CountyModel model = new CountyModel(county.getFips(), county.getCountyName(), county.getState(), county.getGeometry());
             models.put(model.fips(), model);
         }
         return models;
