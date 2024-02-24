@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team.travel.travelplanner.repository.FuelOptionsRepository;
 import team.travel.travelplanner.repository.GasStationRepository;
-import team.travel.travelplanner.repository.ReviewsRepository;
 import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.entity.FuelOptions;
 import team.travel.travelplanner.service.*;
@@ -28,27 +27,15 @@ public class GasStationServiceImpl implements GasStationService {
 
     private final GoogleMapsApiPlacesClientService placesService;
 
-    private final GasStationRepository gasStationRepository;
-
-    private final ReviewsRepository reviewsRepository;
-
-    private final FuelOptionsRepository fuelOptionsRepository;
-
     @Autowired
     public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiGasClient,
                                  GoogleMapsApiDirectionsService apiDirectionsClient,
                                  GoogleMapsApiDistanceService apiDistanceClient,
-                                 GoogleMapsApiPlacesClientService apiPlacesClient,
-                                 GasStationRepository gasStationRepository,
-                                 ReviewsRepository reviewsRepository,
-                                 FuelOptionsRepository fuelOptionsRepository){
+                                 GoogleMapsApiPlacesClientService apiPlacesClient){
         this.gasService = apiGasClient;
         this.directionsService = apiDirectionsClient;
         this.distanceService = apiDistanceClient;
         this.placesService = apiPlacesClient;
-        this.gasStationRepository = gasStationRepository;
-        this.reviewsRepository = reviewsRepository;
-        this.fuelOptionsRepository = fuelOptionsRepository;
     }
 
     /**
@@ -61,8 +48,9 @@ public class GasStationServiceImpl implements GasStationService {
      * @throws IOException          If there's an error communicating with the Google Maps API.
      * @throws InterruptedException If the thread is interrupted while waiting for the API response.
      */
-    public Map<String, GasStation> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) {
-        Map<String, GasStation> gasOptionsMap = new HashMap<>();
+    @Override
+    public List<GasStation> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) {
+        List<GasStation> gasOptionsList = new ArrayList<>();
         List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
         System.out.println("Needed stops:"+ stopsAlongRoute.size());
 
@@ -103,10 +91,7 @@ public class GasStationServiceImpl implements GasStationService {
                                 Map.Entry<String, GasStation> entryWithLowestPrices = findEntryWithLowestPrices(placesPerLocation, type);
 
                                 GasStation station = entryWithLowestPrices.getValue();
-                                reviewsRepository.saveAll(station.getReviews());
-                                fuelOptionsRepository.save(station.getFuelOptions());
-                                gasStationRepository.save(station);
-                                gasOptionsMap.put(entryWithLowestPrices.getKey(), entryWithLowestPrices.getValue());
+                                gasOptionsList.add(station);
                             }
                         } catch (Exception e) {
                             e.printStackTrace(); // Handle or log the exception
@@ -116,7 +101,7 @@ public class GasStationServiceImpl implements GasStationService {
                 .join(); // Wait for all futures to complete
 
         System.out.println("Completed final");
-        return gasOptionsMap;
+        return gasOptionsList;
     }
 
     /**

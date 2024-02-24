@@ -25,15 +25,17 @@ public class TravelPlannerApplication {
         ApplicationContext context = SpringApplication.run(TravelPlannerApplication.class, args);
 
         GoogleMapsApiClientServiceImpl service = context.getBean(GoogleMapsApiClientServiceImpl.class);
-
-        GasStationServiceImpl gasStationService = context.getBean(GasStationServiceImpl.class);
-        long startTime = System.nanoTime();
-        Map<String, GasStation> map = gasStationService.getGasStationsAlongRoute(departure, arrival, 482803, "REGULAR_UNLEADED");
-        long endTime = System.nanoTime();
-        long durationInNano = endTime - startTime;
-        double durationInMilli = (double) durationInNano / 1_000_000; // converting nanoseconds to milliseconds
-
-        System.out.println("Time taken: " + durationInMilli + " milliseconds");
-        map.forEach((key, value) -> System.out.println(value.toString() + "\n"));
+//        GasStation station = service.getGasStations("ChIJ_SYAPXUNq4kRWa4SHE-uZAo");
+//        System.out.println(station);
+//
+//        GasStationServiceImpl gasStationService = context.getBean(GasStationServiceImpl.class);
+//        long startTime = System.nanoTime();
+//        Map<String, GasStation> map = gasStationService.getGasStationsAlongRoute(departure, arrival, 482803, "REGULAR_UNLEADED");
+//        long endTime = System.nanoTime();
+//        long durationInNano = endTime - startTime;
+//        double durationInMilli = (double) durationInNano / 1_000_000; // converting nanoseconds to milliseconds
+//
+//        System.out.println("Time taken: " + durationInMilli + " milliseconds");
+//        map.forEach((key, value) -> System.out.println(value.toString() + "\n"));
     }
 }
