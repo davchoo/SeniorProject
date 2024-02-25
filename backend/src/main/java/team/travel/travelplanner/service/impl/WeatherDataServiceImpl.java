@@ -39,14 +39,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
+import static team.travel.travelplanner.util.SRIDConstants.WGS84;
+
 @Service
 public class WeatherDataServiceImpl implements WeatherDataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WeatherDataServiceImpl.class);
 
     private static final ZoneId EST = ZoneId.of("-05:00");
-
-    private static final int WGS84_SRID = 4326;
 
     private final WeatherDataConfig weatherDataConfig;
 
@@ -205,8 +205,8 @@ public class WeatherDataServiceImpl implements WeatherDataService {
             }
         }
         if (geometry.getSRID() == 0) {
-            LOGGER.warn("Failed to find SRID for feature in Day_{}_{}, assuming {}", day, featureType, WGS84_SRID);
-            geometry.setSRID(WGS84_SRID);
+            LOGGER.warn("Failed to find SRID for feature in Day_{}_{}, assuming {}", day, featureType, WGS84);
+            geometry.setSRID(WGS84);
         }
 
         weatherFeature.setGeometry(geometry);
