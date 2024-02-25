@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import org.locationtech.jts.geom.Geometry;
 
 @Entity
-@Table(name = "c_05mr24")
+@Table(name = "c_05mr24", indexes = @Index(name = "c_05mr24_fips_idx", columnList = "fips"))
 public class County {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -55,7 +55,6 @@ FROM route
          JOIN s ON TRUE
          INNER JOIN weather_feature AS wf
                     ON
-                        (route.start_timestamp, route.end_timestamp) OVERLAPS (wf.valid_start, wf.valid_end) AND -- Segment overlaps with valid period for issuance
                         (
                             forecast_day = greatest(floor(date_part('epoch', route.start_timestamp - s.latest_valid_end) / 86400) + 2, 1) OR -- Match with latest issuance for a time range
                             forecast_day = greatest(floor(date_part('epoch', route.end_timestamp - s.latest_valid_end) / 86400) + 2, 1)
@@ -70,7 +69,8 @@ FROM route
                                 ((s.latest_file_date - wf.file_date) < interval '1 hour' AND date_part('hour', s.latest_valid_start AT TIME ZONE 'EST') = 7) -- Missing latest afternoon issuance, match with morning issuance
                             ))
                         ) AND
-                        st_intersects(route.segment, wf.geometry) -- Segment intersects the weather feature
+                        tstzrange(route.start_timestamp, route.end_timestamp, '[)') && tstzrange(wf.valid_start, wf.valid_end, '[)') AND -- Segment overlaps with valid period for issuance AND
+                        st_intersects(route.segment, wf.geometry)  -- Segment intersects the weather feature
 $$;
 
 DROP FUNCTION IF EXISTS check_route_weather_alerts;
@@ -95,18 +95,26 @@ WITH route AS (SELECT durations.i,
                FROM unnest(durations) WITH ORDINALITY AS durations(duration, i)
                         JOIN (SELECT path[1] AS i, geom AS g FROM st_dumpsegments(route)) AS route_segments
                              ON durations.i = route_segments.i)
-SELECT DISTINCT route.i - 1,
-                weather_alert_id
+-- Select based on county if the alert does not include geometry
+SELECT route.i - 1, weather_alert.id
 FROM route
+         INNER JOIN c_05mr24 AS counties ON st_intersects(route.segment, counties.wkb_geometry)
+         INNER JOIN weather_alert_geocodesame AS gs
+                    ON gs.geocodesame = counties.fips -- Weather alerts should always have one or more geocodes
          INNER JOIN weather_alert ON weather_alert.outdated = FALSE AND
                                      (route.start_timestamp, route.end_timestamp) OVERLAPS
-                                     (coalesce(weather_alert.onset, weather_alert.sent), coalesce(weather_alert.ends, weather_alert.expires))
-         INNER JOIN weather_alert_geocodesame AS gs ON weather_alert.id = gs.weather_alert_id -- Weather alerts should always have one or more geocodes
-         LEFT JOIN c_05mr24 AS counties ON gs.geocodesame = counties.fips -- Some counties are missing from the table, include the alerts just in case they contain their own geometry
-WHERE
-   -- Select based on county if the alert does not include geometry
-    (weather_alert.geometry IS NULL and st_intersects(route.segment, counties.wkb_geometry))
-   OR
-   -- Select based on the alert's included geometry
-    st_intersects(route.segment, weather_alert.geometry)
+                                     (weather_alert.sent, coalesce(weather_alert.ends, weather_alert.expires)) -- Use sent instead of onset because all alerts refer to when they're sent
+    AND gs.weather_alert_id = weather_alert.id
+WHERE weather_alert.geometry IS NULL
+UNION
+-- Select based on the alert's included geometry
+SELECT route.i - 1, weather_alert.id
+FROM route
+         INNER JOIN weather_alert
+                    ON weather_alert.outdated = FALSE AND st_intersects(route.segment, weather_alert.geometry) AND
+                       (route.start_timestamp, route.end_timestamp)
+                           OVERLAPS (weather_alert.sent, coalesce(weather_alert.ends, weather_alert.expires)) -- Use sent instead of onset because all alerts refer to when they're sent
 $$;
+
+CREATE INDEX IF NOT EXISTS weather_feature_valid_range_geometry_idx ON weather_feature USING GIST (tstzrange(valid_start, valid_end, '[)'), geometry);
+CREATE INDEX IF NOT EXISTS weather_alert_geometry_idx ON weather_alert USING GIST (geometry);
