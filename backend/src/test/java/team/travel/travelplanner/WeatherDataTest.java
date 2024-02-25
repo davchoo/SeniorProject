@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureEmbeddedDatabase
-@Sql({"/schema-postgres.sql"})
 public class WeatherDataTest {
 
     private static final ZoneId EST = ZoneId.of("-05:00");
