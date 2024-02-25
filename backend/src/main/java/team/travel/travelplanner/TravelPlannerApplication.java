@@ -8,6 +8,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import static team.travel.travelplanner.util.SRIDConstants.WGS84;
+
 @EnableScheduling
 @SpringBootApplication
 public class TravelPlannerApplication {
@@ -19,7 +21,7 @@ public class TravelPlannerApplication {
         // Preload CRS to make debugging less atrocious
         CRS.getAuthorityFactory(false);
         // Same with Geolatte because apparently we need TWO spatial libraries
-        CrsRegistry.getCrsIdForEPSG(4326); // WGS 84
+        CrsRegistry.getCrsIdForEPSG(WGS84);
 
         SpringApplication.run(TravelPlannerApplication.class, args);
     }

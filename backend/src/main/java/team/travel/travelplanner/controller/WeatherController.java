@@ -16,18 +16,18 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static team.travel.travelplanner.util.SRIDConstants.WGS84;
+
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherController {
-    private static final int WGS84_SRID = 4326;
-
     private final GeometryFactory geometryFactory;
     private final CountyService countyService;
     private final WeatherAlertService weatherAlertService;
     private final WeatherDataService weatherDataService;
 
     public WeatherController(CountyService countyService, WeatherAlertService weatherAlertService, WeatherDataService weatherDataService) {
-        this.geometryFactory = new GeometryFactory(new PrecisionModel(), WGS84_SRID);
+        this.geometryFactory = new GeometryFactory(new PrecisionModel(), WGS84);
         this.countyService = countyService;
         this.weatherAlertService = weatherAlertService;
         this.weatherDataService = weatherDataService;

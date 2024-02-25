@@ -8,9 +8,10 @@ import org.locationtech.jts.geom.*;
 
 import java.io.IOException;
 
+import static team.travel.travelplanner.util.SRIDConstants.WGS84;
+
 public class GeometryDeserializer extends StdNodeBasedDeserializer<Geometry> {
-    private static final int WGS84_SRID = 4326;
-    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), WGS84_SRID);
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), WGS84);
 
     public GeometryDeserializer() {
         super(Geometry.class);
