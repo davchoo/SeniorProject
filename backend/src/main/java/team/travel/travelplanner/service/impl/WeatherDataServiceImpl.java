@@ -158,6 +158,7 @@ public class WeatherDataServiceImpl implements WeatherDataService {
         dataStore.dispose();
         completedLastUpdate = true;
         weatherFeatureRepository.deduplicate();
+        weatherFeatureRepository.refreshView();
 
         long newCount = weatherFeatureRepository.count();
         LOGGER.info("Fetched National Weather Forecast Chart via WFS and received {} new features", newCount - initialCount);

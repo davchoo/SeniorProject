@@ -10,7 +10,6 @@ import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.model.weather.SegmentWeatherModel;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -29,4 +28,8 @@ public interface WeatherFeatureRepository extends JpaRepository<WeatherFeature, 
 
     @Query(nativeQuery = true)
     List<SegmentWeatherModel> checkRouteWeather(Geometry route, int[] durations, Instant startTime);
+
+    @Query(value = "refresh materialized view weather_feature_view", nativeQuery = true)
+    @Modifying(flushAutomatically = true)
+    void refreshView();
 }

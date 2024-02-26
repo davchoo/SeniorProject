@@ -1,3 +1,9 @@
+-- Create views and indices
+CREATE INDEX IF NOT EXISTS weather_alert_geometry_idx ON weather_alert USING GIST (geometry);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS weather_feature_view AS SELECT id, valid_start, valid_end, st_subdivide(geometry, 8) AS geometry FROM weather_feature;
+CREATE INDEX IF NOT EXISTS weather_feature_view_valid_range_geometry_idx ON weather_feature_view USING GIST (tstzrange(valid_start, valid_end, '[)'), geometry);
+
 -- Script is ran every time on startup, so procedures & functions must be replaced
 CREATE OR REPLACE PROCEDURE deduplicate_weather_features()
     LANGUAGE sql
@@ -45,7 +51,7 @@ WITH route AS (SELECT durations.i,
                                                                           max(wf.file_date)
                                                                    FROM weather_feature AS wf
                                                                    WHERE forecast_day = 1)
-SELECT route.i - 1,
+SELECT DISTINCT route.i - 1,
        wf.weather_feature_type,
        wf.forecast_day,
        wf.file_date,
@@ -53,8 +59,13 @@ SELECT route.i - 1,
        route.end_timestamp
 FROM route
          JOIN s ON TRUE
+         INNER JOIN weather_feature_view AS wfv
+                    ON
+                        tstzrange(route.start_timestamp, route.end_timestamp, '[)') && tstzrange(wfv.valid_start, wfv.valid_end, '[)') AND -- Segment overlaps with valid period for issuance AND
+                        st_intersects(route.segment, wfv.geometry)  -- Segment intersects the weather feature
          INNER JOIN weather_feature AS wf
                     ON
+                        wfv.id = wf.id AND
                         (
                             forecast_day = greatest(floor(date_part('epoch', route.start_timestamp - s.latest_valid_end) / 86400) + 2, 1) OR -- Match with latest issuance for a time range
                             forecast_day = greatest(floor(date_part('epoch', route.end_timestamp - s.latest_valid_end) / 86400) + 2, 1)
@@ -68,9 +79,7 @@ FROM route
                                 date_part('hour', wf.file_date AT TIME ZONE 'EST') >= 12 OR       -- Always match with afternoon issuance
                                 ((s.latest_file_date - wf.file_date) < interval '1 hour' AND date_part('hour', s.latest_valid_start AT TIME ZONE 'EST') = 7) -- Missing latest afternoon issuance, match with morning issuance
                             ))
-                        ) AND
-                        tstzrange(route.start_timestamp, route.end_timestamp, '[)') && tstzrange(wf.valid_start, wf.valid_end, '[)') AND -- Segment overlaps with valid period for issuance AND
-                        st_intersects(route.segment, wf.geometry)  -- Segment intersects the weather feature
+                        )
 $$;
 
 DROP FUNCTION IF EXISTS check_route_weather_alerts;
@@ -115,6 +124,3 @@ FROM route
                        (route.start_timestamp, route.end_timestamp)
                            OVERLAPS (weather_alert.sent, coalesce(weather_alert.ends, weather_alert.expires)) -- Use sent instead of onset because all alerts refer to when they're sent
 $$;
-
-CREATE INDEX IF NOT EXISTS weather_feature_valid_range_geometry_idx ON weather_feature USING GIST (tstzrange(valid_start, valid_end, '[)'), geometry);
-CREATE INDEX IF NOT EXISTS weather_alert_geometry_idx ON weather_alert USING GIST (geometry);
