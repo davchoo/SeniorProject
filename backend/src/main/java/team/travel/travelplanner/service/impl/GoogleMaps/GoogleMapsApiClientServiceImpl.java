@@ -36,7 +36,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
     }
 
     @Override
-    public DirectionsResult getDirections(String origin, String destination) throws IOException, InterruptedException, ApiException {
+    public DirectionsResult getDirections(LatLng origin, LatLng destination) throws IOException, InterruptedException, ApiException {
         DirectionsResult result = DirectionsApi.newRequest(context)
                 .origin(origin)
                 .destination(destination)

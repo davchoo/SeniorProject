@@ -40,18 +40,16 @@ public class GasStationServiceImpl implements GasStationService {
 
     /**
      * Retrieves gas stations along a route and their fuel options.
-     *
-     * @param departure              The departure location.
-     * @param arrival                The arrival location.
      * @param travelersMeterCapacity The fuel capacity of the traveler in meters.
      * @return A map containing the place IDs of gas stations along the route and their corresponding fuel options.
      * @throws IOException          If there's an error communicating with the Google Maps API.
      * @throws InterruptedException If the thread is interrupted while waiting for the API response.
      */
     @Override
-    public List<GasStation> getGasStationsAlongRoute(LatLng departure, LatLng arrival, double travelersMeterCapacity, String type) {
+    public List<GasStation> getGasStationsAlongRoute(DirectionsResult directionsResult, double travelersMeterCapacity,
+                                                     String type) {
         List<GasStation> gasOptionsList = new ArrayList<>();
-        List<LatLng> stopsAlongRoute = findNeededStops(departure, arrival, travelersMeterCapacity);
+        List<LatLng> stopsAlongRoute = findNeededStops(directionsResult, travelersMeterCapacity);
         System.out.println("Needed stops:"+ stopsAlongRoute.size());
 
         List<CompletableFuture<Map<String, GasStation>>> gasStationFutures = stopsAlongRoute.parallelStream()
@@ -147,20 +145,16 @@ public class GasStationServiceImpl implements GasStationService {
     /**
      * Finds the necessary stops along a route based on the travelers' fuel capacity.
      *
-     * @param departure              The departure location.
-     * @param arrival                The arrival location.
+     *
      * @param travelersMeterCapacity The fuel capacity of the traveler in meters.
      * @return A list of LatLng coordinates representing the stops along the route where the traveler needs to refuel.
      */
-    private List<LatLng> findNeededStops(LatLng departure, LatLng arrival, double travelersMeterCapacity)  {
+    private List<LatLng> findNeededStops(DirectionsResult result,  double travelersMeterCapacity)  {
         List<LatLng> stops = new ArrayList<>();
         double quarterTankSize = travelersMeterCapacity - (travelersMeterCapacity * .25);
         long metersDrivenAfterLastStop = 0;
 
-        String departureLatLng = departure.toString();
-        String arrivalLatLng = arrival.toString();
-
-        DirectionsResult directionsResult = getDirections(departureLatLng, arrivalLatLng);
+        DirectionsResult directionsResult = result;
         DirectionsRoute route = getRoute(directionsResult);
         DirectionsLeg leg = getLeg(route);
         DirectionsStep[] steps = leg.steps;
@@ -210,7 +204,7 @@ public class GasStationServiceImpl implements GasStationService {
         return stops;
     }
 
-    private DirectionsResult getDirections(String departureLatLng, String arrivalLatLng) {
+    private DirectionsResult getDirections(LatLng departureLatLng, LatLng arrivalLatLng) {
         try {
             return directionsService.getDirections(departureLatLng, arrivalLatLng);
         } catch (IOException | InterruptedException | ApiException e) {
