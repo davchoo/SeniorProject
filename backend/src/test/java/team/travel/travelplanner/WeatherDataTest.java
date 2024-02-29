@@ -190,11 +190,13 @@ public class WeatherDataTest {
 
     @ParameterizedTest
     @EnumSource(WeatherFeatureType.class)
+    @Transactional
     void testCheckRouteAllInside(WeatherFeatureType type) {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
         WeatherFeature feature = createFeature(1, false, today, type, GRID_0_0);
         feature = weatherFeatureRepository.save(feature);
+        weatherFeatureRepository.refreshView();
 
         // An hour after the feature is valid and an hour before the feature is invalid
         Instant startTime = feature.getValidStart().plus(1, ChronoUnit.HOURS);
@@ -231,11 +233,13 @@ public class WeatherDataTest {
     }
 
     @Test
+    @Transactional
     void testCheckRouteOutsideValidPeriod() {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
         WeatherFeature feature = createFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
         feature = weatherFeatureRepository.save(feature);
+        weatherFeatureRepository.refreshView();
 
         // Start time and limit time is after the feature expires
         Instant startTime = feature.getValidEnd().plus(1, ChronoUnit.HOURS);
@@ -250,11 +254,13 @@ public class WeatherDataTest {
     }
 
     @Test
+    @Transactional
     void testCheckRouteOutsideArea() {
         LocalDate today = LocalDate.now();
         // Create a rain feature today at grid 0,0
         WeatherFeature feature = createFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
         feature = weatherFeatureRepository.save(feature);
+        weatherFeatureRepository.refreshView();
 
         // An hour after the feature is valid and an hour before the feature is invalid
         Instant startTime = feature.getValidStart().plus(1, ChronoUnit.HOURS);
@@ -269,6 +275,7 @@ public class WeatherDataTest {
     }
 
     @Test
+    @Transactional
     void testGetFeatures() {
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
@@ -286,6 +293,8 @@ public class WeatherDataTest {
 
         WeatherFeature olderFeature = createFeature(1, false, yesterday, WeatherFeatureType.HEAVY_SNOW_POSSIBLE, GRID_0_0);
         olderFeature = weatherFeatureRepository.save(olderFeature);
+
+        weatherFeatureRepository.refreshView();
 
         // Check available file dates
         List<Instant> availableFileDates = weatherDataService.getAvailableFileDates();
