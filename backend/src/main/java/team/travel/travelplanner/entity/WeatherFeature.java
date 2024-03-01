@@ -16,15 +16,13 @@ import java.time.Instant;
                         @ColumnResult(name = "i"),
                         @ColumnResult(name = "weather_feature_type"),
                         @ColumnResult(name = "forecast_day"),
-                        @ColumnResult(name = "file_date"),
-                        @ColumnResult(name = "start_timestamp"),
-                        @ColumnResult(name = "end_timestamp"),
+                        @ColumnResult(name = "file_date")
                 }
         )
 )
 @NamedNativeQuery(
         name = "WeatherFeature.checkRouteWeather",
-        query = "select i, weather_feature_type, forecast_day, file_date, start_timestamp, end_timestamp from check_route_weather(:route, :durations, :startTime)",
+        query = "select i, weather_feature_type, forecast_day, file_date from check_route_weather(:route, :durations, :startTime)",
         resultSetMapping = "SegmentWeatherModel"
 )
 public class WeatherFeature {

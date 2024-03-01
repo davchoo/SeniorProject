@@ -13,7 +13,6 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 import team.travel.travelplanner.entity.WeatherFeature;
 import team.travel.travelplanner.entity.type.WeatherFeatureType;
 import team.travel.travelplanner.model.RouteModel;
@@ -25,12 +24,16 @@ import team.travel.travelplanner.util.EncodedPolylineUtils;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureEmbeddedDatabase
@@ -218,15 +221,6 @@ public class WeatherDataTest {
             assertEquals(feature.getDay(), routeFeature.forecastDay());
             assertEquals(feature.getFileDate(), routeFeature.fileDate());
             assertEquals(feature.getWeatherFeatureType(), routeFeature.weatherFeatureType());
-            // startTimestamp -> endTimestamp duration matches provided duration
-            Duration duration = Duration.between(routeFeature.startTimestamp(), routeFeature.endTimestamp());
-            assertEquals(route.durations()[routeFeature.segmentId()], duration.toMillis());
-            // startTimestamp of the segment is correct
-            int millisOffset = IntStream.of(route.durations())
-                    .limit(routeFeature.segmentId())
-                    .sum();
-            duration = Duration.between(route.startTime(), routeFeature.startTimestamp());
-            assertEquals(millisOffset, duration.toMillis());
         }
         // All segments were accounted for
         assertTrue(bitSet.isEmpty());
