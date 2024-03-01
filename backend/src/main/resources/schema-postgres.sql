@@ -4,6 +4,10 @@ CREATE INDEX IF NOT EXISTS weather_alert_geometry_idx ON weather_alert USING GIS
 CREATE MATERIALIZED VIEW IF NOT EXISTS weather_feature_view AS SELECT id, valid_start, valid_end, st_subdivide(geometry, 8) AS geometry FROM weather_feature;
 CREATE INDEX IF NOT EXISTS weather_feature_view_valid_range_geometry_idx ON weather_feature_view USING GIST (tstzrange(valid_start, valid_end, '[)'), geometry);
 
+-- Subdivide and simplify county geometry
+CREATE TABLE IF NOT EXISTS c_05mr24_sub AS SELECT fips, st_subdivide(wkb_geometry, 25, 0.01) AS wkb_geometry FROM c_05mr24;
+CREATE INDEX IF NOT EXISTS c_05mr24_sub_geometry_idx ON c_05mr24_sub USING GIST (wkb_geometry);
+
 -- Script is ran every time on startup, so procedures & functions must be replaced
 CREATE OR REPLACE PROCEDURE deduplicate_weather_features()
     LANGUAGE sql
@@ -107,7 +111,7 @@ WITH route AS (SELECT durations.i,
 -- Select based on county if the alert does not include geometry
 SELECT route.i - 1, weather_alert.id
 FROM route
-         INNER JOIN c_05mr24 AS counties ON st_intersects(route.segment, counties.wkb_geometry)
+         INNER JOIN c_05mr24_sub AS counties ON st_intersects(route.segment, counties.wkb_geometry)
          INNER JOIN weather_alert_geocodesame AS gs
                     ON gs.geocodesame = counties.fips -- Weather alerts should always have one or more geocodes
          INNER JOIN weather_alert ON weather_alert.outdated = FALSE AND
