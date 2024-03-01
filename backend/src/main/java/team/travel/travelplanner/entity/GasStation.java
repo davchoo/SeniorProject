@@ -9,10 +9,12 @@ import java.util.List;
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GasStation {
-
     @Id
     private String id;
     private String name;
+
+    @Embedded
+    private DisplayName displayName;
     private String formattedAddress;
 
     private String googleMapsUri;
@@ -121,6 +123,18 @@ public class GasStation {
         this.location = location;
     }
 
+    public DisplayName getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(DisplayName displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -156,6 +170,18 @@ public class GasStation {
 
         public void setWeekdayDescriptions(List<String> weekdayDescriptions){
             this.weekdayDescriptions = weekdayDescriptions;
+        }
+    }
+
+    public static class DisplayName{
+        private String text;
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
         }
     }
 

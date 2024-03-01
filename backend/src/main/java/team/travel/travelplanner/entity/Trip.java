@@ -1,10 +1,7 @@
 package team.travel.travelplanner.entity;
 
 import com.google.maps.model.DirectionsResult;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 
 @Entity
 public abstract class Trip {
@@ -16,6 +13,9 @@ public abstract class Trip {
 
     private String destination;
 
+    @Column(length = 65535, columnDefinition = "TEXT")
+    private String encodedPolyline;
+
     @Transient
     private DirectionsResult directionsResult;
 
@@ -23,6 +23,7 @@ public abstract class Trip {
         this.origin = origin;
         this.destination = destination;
         this.directionsResult = directionsResult;
+        this.encodedPolyline = directionsResult.routes[0].overviewPolyline.getEncodedPath();
     }
 
     public Trip() {
@@ -59,5 +60,13 @@ public abstract class Trip {
 
     public void setDirectionsResult(DirectionsResult directionsResult) {
         this.directionsResult = directionsResult;
+    }
+
+    public String getEncodedPolyline(){
+        return encodedPolyline;
+    }
+
+    public void setEncodedPolyline(String encodedPolyline){
+        this.encodedPolyline = encodedPolyline;
     }
 }
