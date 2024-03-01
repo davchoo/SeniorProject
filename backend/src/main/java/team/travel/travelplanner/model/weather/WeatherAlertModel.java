@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.locationtech.jts.geom.Geometry;
 import team.travel.travelplanner.entity.type.alert.*;
+import team.travel.travelplanner.serializer.WKB64GeometrySerializer;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -64,7 +67,8 @@ public class WeatherAlertModel {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
     private AlertResponseType response;
 
-    private String geometryWKT;
+    @JsonSerialize(using = WKB64GeometrySerializer.class)
+    private Geometry geometry;
 
     public String getId() {
         return id;
@@ -234,12 +238,12 @@ public class WeatherAlertModel {
         this.response = response;
     }
 
-    public String getGeometryWKT() {
-        return geometryWKT;
+    public Geometry getGeometry() {
+        return geometry;
     }
 
-    public void setGeometryWKT(String geometryWKT) {
-        this.geometryWKT = geometryWKT;
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
     }
 
     @JsonProperty("geocode")

@@ -24,7 +24,6 @@ import team.travel.travelplanner.repository.WeatherAlertRepository;
 import team.travel.travelplanner.service.WeatherAlertService;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -77,7 +76,10 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
             LOGGER.error("Expected FeatureCollection from the NWS alert API. Received {}", geoJSONObject);
             return;
         }
-        // TODO extract and unit test?
+        loadWeatherAlerts(featureCollection);
+    }
+
+    public void loadWeatherAlerts(FeatureCollection featureCollection) {
         long initialCount = weatherAlertRepository.count();
         List<String> outdatedAlertIds = new ArrayList<>();
         // Kinda wasteful, but I'm not sure if there's another way to prevent repository.save() from overwriting
@@ -97,11 +99,11 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
         }
         weatherAlertRepository.markOutdated(outdatedAlertIds);
         long afterAddCount = weatherAlertRepository.count();
-        // Endpoint keeps expired alerts for 1 week, might as well keep it in the DB
-        weatherAlertRepository.deleteAllByExpiresBefore(Instant.now().minus(7, ChronoUnit.DAYS));
+        // Keep a history of alerts past their expiry
+        weatherAlertRepository.deleteAllByExpiresBefore(Instant.now().minus(weatherAlertConfig.getHistoryLength()));
         long afterDeleteCount = weatherAlertRepository.count();
         // Counts can be messed up with concurrent changes, but that shouldn't happen (only 1 instance should be pulling)
-        LOGGER.info("Pulled {} new alerts from the NWS and deleted {} expired alerts", afterAddCount - initialCount, afterAddCount - afterDeleteCount);
+        LOGGER.info("Loaded {} new alerts from the NWS and deleted {} expired alerts", afterAddCount - initialCount, afterAddCount - afterDeleteCount);
     }
 
     @Override
@@ -115,12 +117,9 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
         Map<String, WeatherAlertModel> alertModels = new HashMap<>();
         for (WeatherAlert alert : alerts) {
             WeatherAlertModel alertModel = new WeatherAlertModel();
-            BeanUtils.copyProperties(alert, alertModel, "geocodeSame", "references", "geometry");
+            BeanUtils.copyProperties(alert, alertModel, "geocodeSame", "references");
             alertModel.setGeocodeSAME(new ArrayList<>(alert.getGeocodeSAME()));
             alertModel.setReferences(new ArrayList<>(alert.getReferences()));
-            if (alert.getGeometry() != null) {
-                alertModel.setGeometryWKT(alert.getGeometry().toString());
-            }
             alertModels.put(alertModel.getId(), alertModel);
         }
 

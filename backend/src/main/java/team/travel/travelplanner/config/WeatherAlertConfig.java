@@ -15,6 +15,8 @@ public class WeatherAlertConfig {
 
     private Duration pullPeriod = Duration.ofMinutes(5);
 
+    private Duration historyLength = Duration.ofDays(7);
+
     public URI getNwsAlertEndpoint() {
         return nwsAlertEndpoint;
     }
@@ -40,5 +42,13 @@ public class WeatherAlertConfig {
 
     public void setPullPeriod(Duration pullPeriod) {
         this.pullPeriod = pullPeriod;
+    }
+
+    public Duration getHistoryLength() {
+        return historyLength;
+    }
+
+    public void setHistoryLength(Duration historyLength) {
+        this.historyLength = historyLength;
     }
 }
