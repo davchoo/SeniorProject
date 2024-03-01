@@ -31,9 +31,7 @@ CREATE OR REPLACE FUNCTION check_route_weather(IN route geometry, IN durations i
                 i                    int,
                 weather_feature_type varchar(255),
                 forecast_day         int,
-                file_date            timestamp with time zone,
-                start_timestamp      timestamp with time zone,
-                end_timestamp        timestamp with time zone
+                file_date            timestamp with time zone
             )
     LANGUAGE sql
     STABLE
@@ -58,9 +56,7 @@ WITH route AS (SELECT durations.i,
 SELECT DISTINCT route.i - 1,
        wf.weather_feature_type,
        wf.forecast_day,
-       wf.file_date,
-       route.start_timestamp,
-       route.end_timestamp
+       wf.file_date
 FROM route
          JOIN s ON TRUE
          INNER JOIN weather_feature_view AS wfv
