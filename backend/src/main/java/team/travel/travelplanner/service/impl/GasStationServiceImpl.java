@@ -54,7 +54,7 @@ public class GasStationServiceImpl implements GasStationService {
 
         List<CompletableFuture<Map<String, GasStation>>> gasStationFutures = stopsAlongRoute.parallelStream()
                 .map(location -> CompletableFuture.supplyAsync(() -> {
-                    PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 6500);
+                    PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 50000);
                     System.out.println(response.results.length);
                     Map<String, GasStation> placesPerLocation = new HashMap<>();
                     int range = Math.min(response.results.length, 5);
