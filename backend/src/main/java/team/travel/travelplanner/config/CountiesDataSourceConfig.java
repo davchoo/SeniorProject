@@ -12,7 +12,6 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import team.travel.travelplanner.repository.CountyRepository;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 @Configuration
@@ -20,7 +19,7 @@ public class CountiesDataSourceConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(CountiesDataSourceConfig.class);
 
     @Bean
-    public DataSourceInitializer countiesDataSourceInitializer(DataSource dataSource, CountyRepository countyRepository) throws IOException {
+    public DataSourceInitializer countiesDataSourceInitializer(DataSource dataSource, CountyRepository countyRepository) {
         DataSourceInitializer dataSourceInitializer = new DataSourceInitializer();
         dataSourceInitializer.setDataSource(dataSource);
         dataSourceInitializer.setDatabasePopulator(connection -> {
