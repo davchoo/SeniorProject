@@ -24,11 +24,9 @@ import team.travel.travelplanner.util.EncodedPolylineUtils;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.BitSet;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -191,6 +189,11 @@ public class WeatherDataTest {
         return new RouteModel(EncodedPolylineUtils.encodePolyline(sequence), durations, startTime);
     }
 
+    /**
+     * Verify that checkRouteWeather will return all segments of a route
+     * if they are all within the geometry and valid period of a WeatherFeature
+     * @param type the type of WeatherFeature
+     */
     @ParameterizedTest
     @EnumSource(WeatherFeatureType.class)
     @Transactional
@@ -226,6 +229,10 @@ public class WeatherDataTest {
         assertTrue(bitSet.isEmpty());
     }
 
+    /**
+     * Verify that checkRouteWeather will not return route segments that
+     * intersect a WeatherFeature but is outside its valid period
+     */
     @Test
     @Transactional
     void testCheckRouteOutsideValidPeriod() {
@@ -247,6 +254,10 @@ public class WeatherDataTest {
         assertTrue(result.isEmpty());
     }
 
+    /**
+     * Verify that checkRouteWeather will not return route segments that
+     * do not intersect any WeatherFeatures but is within its valid period
+     */
     @Test
     @Transactional
     void testCheckRouteOutsideArea() {
@@ -266,6 +277,137 @@ public class WeatherDataTest {
         List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
         // No segments should be returned
         assertTrue(result.isEmpty());
+    }
+
+    /**
+     * Verify that checkRouteWeather will return the latest weather forecast when
+     * there are multiple forecasts for a single period
+     */
+    @Test
+    @Transactional
+    void testCheckRouteLatestForecast() {
+        LocalDate today = LocalDate.now();
+        // Create rain features at grid 0,0 over for each possible issuance (old -> latest predictions)
+        WeatherFeature day3 = createFeature(3, false, today.minusDays(2), WeatherFeatureType.RAIN, GRID_0_0);
+        day3 = weatherFeatureRepository.save(day3);
+        WeatherFeature day2 = createFeature(2, false, today.minusDays(1), WeatherFeatureType.RAIN, GRID_0_0);
+        day2 = weatherFeatureRepository.save(day2);
+        WeatherFeature day1Morning = createFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        day1Morning = weatherFeatureRepository.save(day1Morning);
+        WeatherFeature day1Afternoon = createFeature(1, true, today, WeatherFeatureType.RAIN, GRID_0_0);
+        day1Afternoon = weatherFeatureRepository.save(day1Afternoon);
+        weatherFeatureRepository.refreshView();
+
+        // Generate and check a route during the morning period
+        Instant startTime = day1Morning.getValidStart().plus(1, ChronoUnit.HOURS);
+        Instant limitTime = day1Afternoon.getValidStart().minus(1, ChronoUnit.HOURS);
+        RouteModel route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Only a single result should be returned
+        assertEquals(1, result.size());
+        SegmentWeatherModel model = result.getFirst();
+        // Segment has the latest forecast day of 1
+        assertEquals(1, model.forecastDay());
+        // Segment has the file date of the day 1 morning issuance
+        assertEquals(day1Morning.getFileDate(), model.fileDate());
+
+        // Generate and check a route during the afternoon period
+        startTime = day1Afternoon.getValidStart().plus(1, ChronoUnit.HOURS);
+        limitTime = day1Afternoon.getValidEnd().minus(1, ChronoUnit.HOURS);
+        route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Only a single result should be returned
+        assertEquals(1, result.size());
+        model = result.getFirst();
+        // Segment has the latest forecast day of 1
+        assertEquals(1, model.forecastDay());
+        // Segment has the file date of the day 1 afternoon issuance
+        assertEquals(day1Afternoon.getFileDate(), model.fileDate());
+
+        // Generate and check a route that intersects both the morning and afternoon periods
+        startTime = day1Afternoon.getValidStart().minus(1, ChronoUnit.HOURS);
+        limitTime = day1Afternoon.getValidStart().plus(1, ChronoUnit.HOURS);
+        route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Two results should be returned
+        assertEquals(2, result.size());
+        // Both results should be for the day 1 forecast
+        assertTrue(result.stream().map(SegmentWeatherModel::forecastDay).allMatch(forecastDay -> forecastDay == 1));
+        // The results should be from the morning issuance and afternoon issuance
+        List<Instant> fileDates = result.stream().map(SegmentWeatherModel::fileDate).toList();
+        assertTrue(fileDates.contains(day1Morning.getFileDate()));
+        assertTrue(fileDates.contains(day1Afternoon.getFileDate()));
+
+        // If the afternoon issuance is not available, the morning issuance should be returned during the afternoon period
+        weatherFeatureRepository.delete(day1Afternoon);
+        weatherFeatureRepository.refreshView();
+        startTime = day1Afternoon.getValidStart().plus(1, ChronoUnit.HOURS);
+        limitTime = day1Afternoon.getValidEnd().minus(1, ChronoUnit.HOURS);
+        route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        assertEquals(1, result.size());
+        model = result.getFirst();
+        assertEquals(1, model.forecastDay());
+        assertEquals(day1Morning.getFileDate(), model.fileDate());
+    }
+
+
+    /**
+     * Verify that checkRouteWeather will return the latest weather forecast when
+     * there are multiple forecasts for a single period in the future
+     */
+    @Test
+    @Transactional
+    void testCheckRouteLatestFutureForecast() {
+        LocalDate today = LocalDate.now();
+        // Create rain features at grid 0,0 over 3 days from a morning issuance
+        WeatherFeature day1Morning = createFeature(1, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        day1Morning = weatherFeatureRepository.save(day1Morning);
+        WeatherFeature day2 = createFeature(2, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        day2 = weatherFeatureRepository.save(day2);
+        WeatherFeature day3 = createFeature(3, false, today, WeatherFeatureType.RAIN, GRID_0_0);
+        day3 = weatherFeatureRepository.save(day3);
+        weatherFeatureRepository.refreshView();
+
+        // Generate and check a route for tomorrow
+        Instant startTime = day2.getValidStart().plus(1, ChronoUnit.HOURS);
+        Instant limitTime = day2.getValidEnd().minus(1, ChronoUnit.HOURS);
+        RouteModel route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        List<SegmentWeatherModel> result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Only a single result should be returned
+        assertEquals(1, result.size());
+        SegmentWeatherModel model = result.getFirst();
+        // Segment has the correct forecast day
+        assertEquals(2, model.forecastDay());
+        // Segment has the file date of the morning issuance
+        assertEquals(day2.getFileDate(), model.fileDate());
+
+        // Generate and check a route between tomorrow and the day after tomorrow
+        startTime = day2.getValidEnd().minus(1, ChronoUnit.HOURS);
+        limitTime = day2.getValidEnd().plus(1, ChronoUnit.HOURS);
+        route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Two results should be returned from each day
+        assertEquals(2, result.size());
+        List<Integer> forecastDays = result.stream().map(SegmentWeatherModel::forecastDay).toList();
+        assertTrue(forecastDays.contains(2));
+        assertTrue(forecastDays.contains(3));
+        Set<Instant> fileDates = result.stream().map(SegmentWeatherModel::fileDate).collect(Collectors.toSet());
+        assertEquals(1, fileDates.size());
+        assertTrue(fileDates.contains(day2.getFileDate()));
+
+        // Generate and check a route for the day after tomorrow
+        startTime = day3.getValidStart().plus(1, ChronoUnit.HOURS);
+        limitTime = day3.getValidEnd().minus(1, ChronoUnit.HOURS);
+        route = generateRoute(1, 0.0, 0.0, 1.0, 1.0, startTime, limitTime);
+        result = weatherDataService.checkRouteWeather(route.geometry(GEOMETRY_FACTORY), route.durations(), route.startTime());
+        // Only a single result should be returned
+        assertEquals(1, result.size());
+        model = result.getFirst();
+        // Segment has the correct forecast day
+        assertEquals(3, model.forecastDay());
+        // Segment has the file date of the morning issuance
+        assertEquals(day3.getFileDate(), model.fileDate());
     }
 
     @Test
