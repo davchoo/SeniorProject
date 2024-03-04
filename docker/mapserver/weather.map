@@ -1,0 +1,52 @@
+MAP
+    NAME "Weather"
+    EXTENT -15028131.323000 -0.296770 -5009377.307578 7514065.219441
+    OUTPUTFORMAT
+        NAME png
+        DRIVER AGG/PNG
+        MIMETYPE "image/png"
+        IMAGEMODE RGBA
+        EXTENSION "png"
+    END
+
+    PROJECTION
+        # Pseudo-Mercator
+        "init=epsg:3857"
+    END
+
+    LAYER
+        NAME         "conus.temperature"
+        TYPE         RASTER
+        STATUS       ON
+        CONNECTIONTYPE WMS
+        CONNECTION "https://digital.mdl.nws.noaa.gov/ndfd/wms?vtit=%VTIT%"
+        EXTENT -15028131.323000 -0.296770 -5009377.307578 7514065.219441
+
+        VALIDATION
+            "vtit" "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-2][0-9]:[0-9]{2}$"
+            "default_vtit" "1970-01-01T00:00"
+        END
+
+        METADATA
+            "wms_title" "conus.temperature"
+
+            "wms_srs" "EPSG:3857"
+            "wms_name" "ndfd.conus.t"
+            "wms_server_version" "1.1.1"
+            "wms_format" "image/png; mode=8bit"
+        END
+
+        PROJECTION
+            "init=epsg:3857"
+        END
+    END
+
+    WEB
+        METADATA
+            "wms_title"           "Travel Planner WMS"
+            "wms_enable_request"  "GetMap GetCapabilities"
+            "wms_attribution_title" "National Digital Forecast Database (NDFD) from the National Weather Service (NWS)"
+            "wms_attribution_onlineresource" "https://digital.mdl.nws.noaa.gov/staticpages/mapservices.php"
+        END
+    END
+END

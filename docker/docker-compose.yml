@@ -11,3 +11,12 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=ThisPasswordIsOnlyUsedForDev
       - POSTGRES_DB=travel-planner-local
+  mapserver:
+    image: travelplanner-mapserver:apache
+    build:
+      context: mapserver
+    ports:
+      - "127.0.0.1:4242:80"
+    volumes:
+      - ./mapserver/mapserver.conf:/etc/mapserver.conf:ro
+      - ./mapserver/weather.map:/data/weather.map:ro
