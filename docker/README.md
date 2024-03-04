@@ -1,5 +1,6 @@
 ## Docker
 ### Commands
+`docker compose build` - Rebuild containers with Dockerfiles \
 `docker compose up` - Create and start all containers \
 `docker compose stop` - Stop all containers \
 `docker compose down` - Stop and delete all containers
@@ -13,12 +14,12 @@ A container running an Apache HTTP Server with the MapServer CGI program. Map la
 `mapserver/weather.map` and additional maps can be added to `mapserver/mapserver.conf`. This server is accessible
 through `http://localhost:4242`
 #### Viewing the map using WMS and QGIS
-Add a new WMS connection with the URL `http://localhost:4242/cgi-bin/mapserv?map=weather`
+Add a new WMS connection with the URL `http://localhost:4242/cgi-bin/mapserv.fcgi?map=weather`
 
 #### Viewing the map using Google Maps
 Use the following template tile URL
 ```
-http://localhost:4242/cgi-bin/mapserv?
+http://localhost:4242/cgi-bin/mapserv.fcgi?
         MAP=weather
         &MODE=tile
         &TILEMODE=gmap
