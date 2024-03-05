@@ -36,16 +36,21 @@ const Weather = () => {
         Show Weather Radar
       </label>
 
-      <div style={{ marginTop: '250px', marginLeft: 'auto', marginRight: '-400px' }}>
+      <div style={{ position: 'absolute', left: '10px', bottom: '-10px', top: '250px' }}>
+        <p className="text-m text-custom-black font-notosansjp">
+        Alerts Along Your Route: 
+            </p>
+        </div>
+      <div style={{ marginTop: '200px', marginLeft: 'auto', marginRight: '-400px' }}>
         <button
-          className={`font-notosansjp font-extrabold text-custom-black ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2`}
+          className={`font-notosansjp font-extrabold text-custom-black py-1 px-2 rounded-md mb-2 ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'} ${selectedOption ? 'bg-custom-green4' : ''}`}
           onClick={toggleLegend}
         >
           {showLegend ? 'Hide' : 'Show'} Legend
         </button>
 
         {showLegend && (
-          <div style={{ marginTop: '10px', marginRight: '-400px'}}>
+          <div style={{ marginTop: '10px', marginRight: '-400px' }}>
             <p style={{ color: '#333' }}>Legend Content Here</p>
           </div>
         )}
