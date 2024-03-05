@@ -119,7 +119,7 @@ const Map = () => {
           label={{
             text: 'A',
             color: 'black', 
-            fontSize: '14px', 
+            fontSize: '17px', 
             fontWeight: 'bold',
             
           }}
@@ -132,7 +132,7 @@ const Map = () => {
             label={{
               text: 'B',
               color: 'black',
-              fontSize: '14px',
+              fontSize: '17px',
               fontWeight: 'bold'
             }}
           />: null}
