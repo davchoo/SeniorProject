@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.entity.GasTrip;
 import team.travel.travelplanner.entity.Reviews;
+import team.travel.travelplanner.excpetion.NoRouteFoundException;
 import team.travel.travelplanner.model.GasRequestModel;
 import team.travel.travelplanner.model.GasTripModel;
 import team.travel.travelplanner.repository.GasStationRepository;
@@ -46,22 +47,28 @@ public class GasTripController {
     }
     @PostMapping("/gas")
     public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel) throws IOException, InterruptedException, ApiException {
-        DirectionsResult directionResult = directionsService.getDirections(new LatLng(gasRequestModel.originLat(), gasRequestModel.originLng()),
-                new LatLng(gasRequestModel.destinationLat(), gasRequestModel.destinationLng()));
-        List<GasStation> gasStationList = gasStationService.getGasStationsAlongRoute(directionResult, gasRequestModel.travelersMeterCapacity(),
-                gasRequestModel.type());
-        for(GasStation gasStation : gasStationList) {
-            repository.save(gasStation);
-            for (Reviews review : gasStation.getReviews()) {
-                Reviews reviewToSave = review;
-                reviewToSave.setGasStation(gasStation);
-                reviewsRepository.save(reviewToSave);
+        try {
+            DirectionsResult directionResult = directionsService.getDirections(new LatLng(gasRequestModel.originLat(), gasRequestModel.originLng()),
+                    new LatLng(gasRequestModel.destinationLat(), gasRequestModel.destinationLng()));
+            List<GasStation> gasStationList = gasStationService.getGasStationsAlongRoute(directionResult, gasRequestModel.travelersMeterCapacity(),
+                    gasRequestModel.type());
+            for (GasStation gasStation : gasStationList) {
+                repository.save(gasStation);
+                for (Reviews review : gasStation.getReviews()) {
+                    Reviews reviewToSave = review;
+                    reviewToSave.setGasStation(gasStation);
+                    reviewsRepository.save(reviewToSave);
+                }
             }
+            String origin = directionResult.routes[0].legs[0].startAddress;
+            String destination = directionResult.routes[0].legs[0].endAddress;
+            GasTrip gasTrip = new GasTrip(origin, destination, directionResult, gasStationList);
+            gasTripRepository.save(gasTrip);
+            return GasTripModel.fromEntity(gasTrip);
         }
-        String origin = directionResult.routes[0].legs[0].startAddress;
-        String destination = directionResult.routes[0].legs[0].endAddress;
-        GasTrip gasTrip = new GasTrip(origin, destination, directionResult, gasStationList);
-        gasTripRepository.save(gasTrip);
-        return GasTripModel.fromEntity(gasTrip);
+        catch (ApiException apiException){
+            throw new NoRouteFoundException();
+        }
+
     }
 }
