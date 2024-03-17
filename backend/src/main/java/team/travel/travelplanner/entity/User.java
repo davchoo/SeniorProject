@@ -3,7 +3,8 @@ package team.travel.travelplanner.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class Users {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

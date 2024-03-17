@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import team.travel.travelplanner.entity.Users;
+import team.travel.travelplanner.entity.User;
 import team.travel.travelplanner.model.UserModel;
 import team.travel.travelplanner.repository.UserRepository;
 
@@ -17,14 +17,11 @@ import team.travel.travelplanner.repository.UserRepository;
 public class SignUpController {
     private final UserRepository userRepository;
 
-    private final AuthenticationManager authenticationManager;
-
     private PasswordEncoder passwordEncoder;
 
-    public SignUpController(UserRepository userRepository, AuthenticationManager authenticationManager,
+    public SignUpController(UserRepository userRepository,
                             PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
-        this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -39,7 +36,7 @@ public class SignUpController {
                     HttpStatus.BAD_REQUEST);
         }
 
-        Users user = new Users();
+        User user = new User();
         user.setFirstName(userModel.firstName());
         user.setLastName(userModel.lastName());
         user.setEmail(userModel.email());
