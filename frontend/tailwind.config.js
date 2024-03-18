@@ -14,6 +14,7 @@ module.exports = {
         'custom-black' : '#131313',
         'custom-green2' : '#a9ba9d',
         'custom-green3': '#ebffeb', 
+        'custom-green4': '#5F8575', 
         'white': '#ffffff', 
         'grey': '#808080', 
         'light-gray': '#D3D3D3'
@@ -23,6 +24,7 @@ module.exports = {
         'custom-black' : '#131313',
         'custom-green2' : '#a9ba9d',
         'custom-green3': '#131313', 
+        'custom-green4': '#5F8575', 
         'white': '#ffffff', 
         'grey': '#808080', 
         'light-gray': '#D3D3D3',
