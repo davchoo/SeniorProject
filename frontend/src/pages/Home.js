@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import acadia from '../images/acadia.png';
+import picture from '../images/homepageImage.jpg';
 
 const Home = () => {
   return (
@@ -18,8 +18,8 @@ const Home = () => {
           </div>
         </div>
         <img
-          src={acadia}
-          alt="Acadia"
+          src={picture}
+          alt="homepageImage"
           className="w-full md:w-1/2 md:h-auto mx-auto mt-3 md:mx-0"
         />
       </div>
