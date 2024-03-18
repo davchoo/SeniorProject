@@ -4,6 +4,7 @@ import { Autocomplete } from '@react-google-maps/api';
 export const AutoComplete = ({ handlePlaceSelect, label }) => {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState(null);
+  const [validInput, setValidInput] = useState(false);
 
   const autoCompleteRef = useRef(null);
 
@@ -11,36 +12,62 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
     autoCompleteRef.current = autocomplete;
   };
 
-  const onPlaceChanged = () => {
-    if (autoCompleteRef.current !== null) {
-      const place = autoCompleteRef.current.getPlace();
-
-      if (place && place.formatted_address) {
-        setInputValue(place.formatted_address);
-        handlePlaceSelect(place);
-        setError(null);
-      } else {
-        console.error('Invalid location entered.');
-        setError('Invalid location entered.');
-      }
-    } else {
-      console.error('Autocomplete is not loaded yet.');
-      setError('Autocomplete is not loaded yet.');
+  const validatePlace = (place) => {
+    if (!place || !place.formatted_address) {
+      console.error('Invalid location entered.');
+      setError('Invalid location entered.');
+      setValidInput(false);
+      return;
     }
+
+    setInputValue(place.formatted_address);
+    handlePlaceSelect(place);
+    setError(null);
+    setValidInput(true);
   };
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
-    setError(null);
+    setError(null); 
+    setValidInput(false); 
+  };
+
+  const handlePlaceChanged = () => {
+    const place = autoCompleteRef.current.getPlace();
+    validatePlace(place);
+  };
+
+  const handleInputBlur = () => {
+    if (inputValue.trim() !== '' && !validInput) {
+      setError('Invalid location entered.');
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (inputValue.trim() === '') {
+        setError('Invalid location entered.');
+      } else {
+        const place = autoCompleteRef.current.getPlace();
+        validatePlace(place);
+      }
+    }
   };
 
   return (
     <div className='flex flex-column'>
       <label>{label}</label>
-      <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-        <input value={inputValue} onChange={handleInputChange} />
+      <Autocomplete onLoad={onLoad} onPlaceChanged={handlePlaceChanged}>
+        <input
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyPress={handleKeyPress}
+        />
       </Autocomplete>
-      {error && <p style={{ color: 'red', fontSize: '12px', margin: '0', marginLeft: '5px' }}>{error}</p>}
+      {!validInput && error && (
+        <p style={{ color: 'red', fontSize: '12px', margin: '0', marginLeft: '5px' }}>{error}</p>
+      )}
     </div>
   );
 };
