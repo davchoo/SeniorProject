@@ -1,12 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Autocomplete } from '@react-google-maps/api';
 
 export const AutoComplete = ({ handlePlaceSelect, label }) => {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState(null);
   const [validInput, setValidInput] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [previousPlace, setPreviousPlace] = useState(null); 
 
   const autoCompleteRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedPlace && selectedPlace.formatted_address) {
+      setInputValue(selectedPlace.formatted_address);
+    }
+  }, [selectedPlace]);
 
   const onLoad = (autocomplete) => {
     autoCompleteRef.current = autocomplete;
@@ -17,10 +25,15 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
       console.error('Invalid location entered.');
       setError('Invalid location entered.');
       setValidInput(false);
+      if (previousPlace) {
+        handlePlaceSelect(null); 
+        setPreviousPlace(null);
+      }
       return;
     }
 
-    setInputValue(place.formatted_address);
+    setSelectedPlace(place);
+    setPreviousPlace(place);
     handlePlaceSelect(place);
     setError(null);
     setValidInput(true);
@@ -28,8 +41,8 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
-    setError(null); 
-    setValidInput(false); 
+    setError(null);
+    setValidInput(false);
   };
 
   const handlePlaceChanged = () => {
@@ -40,6 +53,8 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
   const handleInputBlur = () => {
     if (inputValue.trim() !== '' && !validInput) {
       setError('Invalid location entered.');
+      handlePlaceSelect(null); 
+      setPreviousPlace(null);
     }
   };
 
