@@ -22,7 +22,10 @@ public record GasRequestModel(
         String type,
 
         @NotBlank
-        Double travelersMeterCapacity
+        Double tankSizeInGallons,
+
+        @NotBlank
+        Double milesPerGallon
 ){
 
 }
