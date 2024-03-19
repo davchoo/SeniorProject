@@ -17,6 +17,7 @@ import team.travel.travelplanner.service.GasStationService;
 import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,9 +49,12 @@ public class GasTripController {
     @PostMapping("/gas")
     public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel) throws IOException, InterruptedException, ApiException {
         try {
+
             DirectionsResult directionResult = directionsService.getDirections(new LatLng(gasRequestModel.originLat(), gasRequestModel.originLng()),
                     new LatLng(gasRequestModel.destinationLat(), gasRequestModel.destinationLng()));
-            List<GasStation> gasStationList = gasStationService.getGasStationsAlongRoute(directionResult, gasRequestModel.travelersMeterCapacity(),
+            double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
+
+            List<GasStation> gasStationList = gasStationService.getGasStationsAlongRoute(directionResult, travelersMeterCapacity,
                     gasRequestModel.type());
             for (GasStation gasStation : gasStationList) {
                 repository.save(gasStation);
@@ -62,7 +66,7 @@ public class GasTripController {
             }
             String origin = directionResult.routes[0].legs[0].startAddress;
             String destination = directionResult.routes[0].legs[0].endAddress;
-            GasTrip gasTrip = new GasTrip(origin, destination, directionResult, gasStationList);
+            GasTrip gasTrip = new GasTrip(origin, destination, directionResult, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity);
             gasTripRepository.save(gasTrip);
             return GasTripModel.fromEntity(gasTrip);
         }
@@ -71,4 +75,10 @@ public class GasTripController {
         }
 
     }
+
+    private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon){
+        return tankSizeInGallons*milesPerGallon*1000;
+    }
+
+
 }
