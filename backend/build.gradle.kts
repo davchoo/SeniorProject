@@ -40,6 +40,9 @@ dependencies {
     // Use a newer version of Guava, so IntelliJ doesn't complain about the CVEs from the old Guava version used by GeoTools
     implementation("com.google.guava:guava:33.0.0-jre")
 
+    // Reading GRIB2 files
+    implementation("edu.ucar:grib:5.5.3")
+
     runtimeOnly("org.postgresql:postgresql")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
