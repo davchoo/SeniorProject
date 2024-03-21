@@ -51,7 +51,7 @@ const Weather = () => {
 
         {showLegend && (
           <div style={{ marginTop: '10px', marginRight: '-400px' }}>
-            <p style={{ color: '#333' }}>Legend Content Here</p>
+            <p style={{ color: 'text_custom_black' }}>Legend Content Here</p>
           </div>
         )}
       </div>
