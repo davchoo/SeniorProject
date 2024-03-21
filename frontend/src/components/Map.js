@@ -18,12 +18,10 @@ const center = {
 };
 
 const Map = () => {
-  const { isLoaded, loadError } = useLoadScript({
-    
-googleMapsApiKey: 'AIzaSyAquT4y7VbS6RKyYn6Nbpjrm5Wcng-O-oo',
-
-    libraries,
-  });
+ const { isLoaded, loadError } = useLoadScript({
+   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+   libraries,
+ });
 
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
