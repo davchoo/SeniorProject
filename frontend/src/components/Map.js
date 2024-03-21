@@ -6,7 +6,7 @@ import axios from "axios";
 const libraries = ['places'];
 const mapContainerStyle = {
   width: '65vw',
-  height: '70vh',
+  height: '80vh',
   border: '4px solid white',
   borderRadius: '8px',
   marginLeft: 'auto',
