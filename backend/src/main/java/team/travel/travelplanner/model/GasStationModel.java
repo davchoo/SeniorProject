@@ -1,35 +1,27 @@
 package team.travel.travelplanner.model;
 
-import team.travel.travelplanner.entity.FuelOptions;
-import team.travel.travelplanner.entity.GasStation;
-import team.travel.travelplanner.entity.Reviews;
+import com.google.maps.model.LatLng;
+import team.travel.travelplanner.model.google.GoogleGasStation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public record GasStationModel(
         String id,
         String name,
-        String formattedAddress,
-        String googleMapsUri,
-        double rating,
-
-        GasStation.Location location,
-        List<Reviews> reviews,
-        FuelOptions fuelOptions,
-        GasStation.CurrentOpeningHours currentOpeningHours
+        Map<String, Double> prices,
+        LatLng location
 ) {
-    public static GasStationModel fromEntity(GasStation gasStation) {
+    public static GasStationModel from(GoogleGasStation gasStation) {
         return new GasStationModel(
-                gasStation.getPlaceId(),
-                gasStation.getName(),
-                gasStation.getFormattedAddress(),
-                gasStation.getGoogleMapsUri(),
-                gasStation.getRating(),
-                gasStation.getLocation(),
-                new ArrayList<>(gasStation.getReviews()),// Retrieve review IDs
-                gasStation.getFuelOptions(),
-                gasStation.getCurrentOpeningHours()
+                gasStation.getId(),
+                gasStation.getDisplayName(),
+                gasStation.getFuelPrices().stream()
+                        .collect(Collectors.toMap(
+                                GoogleGasStation.FuelPrice::type,
+                                GoogleGasStation.FuelPrice::priceDouble)
+                        ),
+                gasStation.getLocation() // TODO make null?
         );
     }
 }

@@ -1,31 +1,25 @@
 package team.travel.travelplanner.model;
 
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.DirectionsRoute;
 import jakarta.validation.constraints.NotBlank;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import team.travel.travelplanner.util.EncodedPolylineUtils;
 
 public record GasRequestModel(
-
         @NotBlank
-        Double originLat,
-
+        String polyline,
         @NotBlank
-        Double originLng,
-
+        String startAddress,
         @NotBlank
-        Double destinationLat,
-
-        @NotBlank
-        Double destinationLng,
-
+        String endAddress,
         @NotBlank
         String type,
-
-        @NotBlank
-        Double tankSizeInGallons,
-
-        @NotBlank
-        Double milesPerGallon
+        double tankSizeInGallons,
+        double milesPerGallon
 ){
-
+        public LineString geometry(GeometryFactory geometryFactory) {
+                CoordinateSequence coordinateSequence = EncodedPolylineUtils.decodePolyline(polyline);
+                return geometryFactory.createLineString(coordinateSequence);
+        }
 }

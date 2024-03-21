@@ -1,13 +1,18 @@
 package team.travel.travelplanner;
 
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.LatLng;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import team.travel.travelplanner.entity.GasStation;
-import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.service.impl.GasStationServiceImpl;
+import team.travel.travelplanner.util.EncodedPolylineUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,21 +20,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 public class GasStationTest {
 
-
-    @Autowired
-    private GoogleMapsApiDirectionsService directionsService;
-
-
    @Autowired
     private GasStationServiceImpl gasStationService;
 
     @Test
     public void testGetGasStationsAlongRoute() throws Exception {
-        LatLng departure = new LatLng(39.71899847525047, -75.09783609674565);
-        LatLng arrival = new LatLng(29.138315, -80.995613);
-        DirectionsResult directionsResult = directionsService.getDirections(departure, arrival);
+        Resource polylineResource = new ClassPathResource("gas_station_polyline.txt");
+        String polyline = polylineResource.getContentAsString(StandardCharsets.US_ASCII);
 
-        List<GasStation> gasStations = gasStationService.getGasStationsAlongRoute(directionsResult, 482803, "type");
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+        LineString lineString = geometryFactory.createLineString(EncodedPolylineUtils.decodePolyline(polyline));
+
+        List<GasStationModel> gasStations = gasStationService.getGasStationsAlongRoute(lineString, 482803, "REGULAR_UNLEADED");
         assertEquals(4, gasStations.size());
     }
 }

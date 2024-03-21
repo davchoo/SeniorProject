@@ -1,22 +1,23 @@
 package team.travel.travelplanner.entity;
 
-import com.google.maps.model.DirectionsResult;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
+import org.hibernate.annotations.Type;
+import org.locationtech.jts.geom.LineString;
+import team.travel.travelplanner.model.GasStationModel;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 @Entity
 public class GasTrip extends Trip{
-
-    @ManyToMany
-    private List<GasStation> gasStationList;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private List<GasStationModel> gasStations;
 
     private String fuelType;
 
-    private BigDecimal totalTripGasPrice;
+    private double totalTripGasPrice;
 
     private double travelersMeterCapacity;
 
@@ -24,11 +25,11 @@ public class GasTrip extends Trip{
 
     private double milesPerGallon;
 
-    public GasTrip(String origin, String destination, DirectionsResult directionsResult,
-                   List<GasStation> gasStationList, String fuelType,
+    public GasTrip(String origin, String destination, LineString lineString,
+                   List<GasStationModel> gasStationList, String fuelType,
                    double tankSizeInGallons, double milesPerGallon, double travelersMeterCapacity) {
-        super(origin, destination, directionsResult);
-        this.gasStationList = gasStationList;
+        super(origin, destination, lineString);
+        this.gasStations = gasStationList;
         this.fuelType = fuelType;
         this.tankSizeInGallons = tankSizeInGallons;
         this.milesPerGallon = milesPerGallon;
@@ -40,16 +41,12 @@ public class GasTrip extends Trip{
 
     }
 
-    private BigDecimal calculateTotalGasTripCost() {
-        BigDecimal total = BigDecimal.ZERO;
-        for (GasStation gasStation : gasStationList) {
-            for (FuelOptions.FuelPrice fuelPrice : gasStation.getFuelOptions().getFuelPrices()) {
-                if (fuelPrice.getType().equalsIgnoreCase(fuelType)) {
-                    total = total.add(BigDecimal.valueOf(fuelPrice.getPrice().getDollarPrice()*calculateQuarterTank()));
-                }
-            }
+    private double calculateTotalGasTripCost() {
+        double total = 0;
+        for (GasStationModel gasStation : gasStations) {
+            double price = gasStation.prices().getOrDefault(fuelType, 0.0);
+            total += price;
         }
-        total = total.setScale(2, RoundingMode.HALF_UP);
         return total;
     }
 
@@ -62,12 +59,12 @@ public class GasTrip extends Trip{
     }
 
 
-    public List<GasStation> getGasStationList() {
-        return gasStationList;
+    public List<GasStationModel> getGasStations() {
+        return gasStations;
     }
 
-    public void setGasStationList(List<GasStation> gasStationList) {
-        this.gasStationList = gasStationList;
+    public void setGasStations(List<GasStationModel> gasStationList) {
+        this.gasStations = gasStationList;
     }
 
     public String getFuelType(){
@@ -78,11 +75,11 @@ public class GasTrip extends Trip{
         this.fuelType = fuelType;
     }
 
-    public BigDecimal getTotalTripGasPrice(){
+    public double getTotalTripGasPrice(){
         return totalTripGasPrice;
     }
 
-    public void setTotalTripGasPrice(BigDecimal totalTripGasPrice){
+    public void setTotalTripGasPrice(double totalTripGasPrice){
         this.totalTripGasPrice = totalTripGasPrice;
     }
 

@@ -1,10 +1,8 @@
 package team.travel.travelplanner.model;
 
-import com.google.maps.model.DirectionsResult;
-import team.travel.travelplanner.entity.GasStation;
 import team.travel.travelplanner.entity.GasTrip;
+import team.travel.travelplanner.util.EncodedPolylineUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,13 +10,13 @@ public record GasTripModel(
         String origin,
         String destination,
 
-        DirectionsResult directionsResult,
+        String polyline,
 
-        List<GasStation> gasStationList,
+        List<GasStationModel> gasStations,
 
         String fuelType,
 
-        BigDecimal totalTripGasPrice,
+        double totalTripGasPrice,
 
         double travelersMeterCapacity,
 
@@ -32,8 +30,8 @@ public record GasTripModel(
         return new GasTripModel(
                 gasTrip.getOrigin(),
                 gasTrip.getDestination(),
-                gasTrip.getDirectionsResult(),
-                new ArrayList<>(gasTrip.getGasStationList()),
+                EncodedPolylineUtils.encodePolyline(gasTrip.getLineString().getCoordinateSequence()),
+                new ArrayList<>(gasTrip.getGasStations()),
                 gasTrip.getFuelType(),
                 gasTrip.getTotalTripGasPrice(),
                 gasTrip.getTravelersMeterCapacity(),

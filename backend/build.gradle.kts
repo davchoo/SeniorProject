@@ -31,6 +31,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.hibernate.orm:hibernate-spatial")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
 
     val geotoolsVersion = "30.2"
     implementation("org.geotools:gt-wms:${geotoolsVersion}")
