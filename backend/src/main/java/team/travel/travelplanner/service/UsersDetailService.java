@@ -20,6 +20,7 @@ public class UsersDetailService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<team.travel.travelplanner.entity.User> user = Optional.ofNullable(userRepository.findByUsername(username));

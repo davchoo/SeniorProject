@@ -13,7 +13,9 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,6 +24,8 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
+import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,8 +42,6 @@ public class SecurityConfig {
     @Value("${server.allowed-origin-patterns:#{null}}")
     private String allowedOriginPatterns;
 
-    @Autowired
-    private UsersDetailService usersDetailService;
 
     @Bean
     public MvcRequestMatcher.Builder mvc(HandlerMappingIntrospector introspector) {
@@ -53,7 +55,7 @@ public class SecurityConfig {
         http.authenticationManager(authenticationManager);
         http.authorizeHttpRequests(
                 authorize -> authorize
-                        .requestMatchers(mvc.pattern("/api/auth/register")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/auth/signup")).permitAll()
                         .requestMatchers(mvc.pattern("/api/auth/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/auth/logout")).permitAll()
                         .requestMatchers(mvc.pattern("/actuator/**")).permitAll() // Only accessible through the management port
@@ -80,11 +82,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return usersDetailService;
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder encoder, UsersDetailService service) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
@@ -103,9 +100,15 @@ public class SecurityConfig {
         );
     }
 
+    @Bean
+    public SessionRegistry sessionRegistry(JdbcIndexedSessionRepository sessionRepository) {
+        return new SpringSessionBackedSessionRegistry<>(sessionRepository);
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
+
 }
