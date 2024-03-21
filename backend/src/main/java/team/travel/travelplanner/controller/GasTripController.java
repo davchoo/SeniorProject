@@ -1,24 +1,20 @@
 package team.travel.travelplanner.controller;
 
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.LatLng;
-import org.springframework.web.bind.annotation.*;
-import team.travel.travelplanner.entity.GasStation;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import team.travel.travelplanner.entity.GasTrip;
-import team.travel.travelplanner.entity.Reviews;
-import team.travel.travelplanner.excpetion.NoRouteFoundException;
 import team.travel.travelplanner.model.GasRequestModel;
+import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.GasTripModel;
-import team.travel.travelplanner.repository.GasStationRepository;
 import team.travel.travelplanner.repository.GasTripRepository;
-import team.travel.travelplanner.repository.ReviewsRepository;
 import team.travel.travelplanner.service.GasStationService;
-import team.travel.travelplanner.service.GoogleMapsApiDirectionsService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,53 +23,29 @@ public class GasTripController {
 
     private final GasStationService gasStationService;
 
-    private final GoogleMapsApiDirectionsService directionsService;
-
-    private final GasStationRepository repository;
-
     private final GasTripRepository gasTripRepository;
 
-    private final ReviewsRepository reviewsRepository;
+    private final GeometryFactory geometryFactory;
 
     public GasTripController(GasStationService gasStationService,
-                             GasStationRepository gasStationRepository,
-                             ReviewsRepository reviewsRepository,
-                             GoogleMapsApiDirectionsService directionsService,
                              GasTripRepository gasTripRepository) {
         this.gasStationService = gasStationService;
-        this.repository = gasStationRepository;
-        this.reviewsRepository = reviewsRepository;
-        this.directionsService = directionsService;
         this.gasTripRepository = gasTripRepository;
+        this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     }
     @PostMapping("/gas")
-    public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel) throws IOException, InterruptedException, ApiException {
-        try {
+    public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel) throws IOException {
+        LineString lineString = gasRequestModel.geometry(geometryFactory);
+        double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
 
-            DirectionsResult directionResult = directionsService.getDirections(new LatLng(gasRequestModel.originLat(), gasRequestModel.originLng()),
-                    new LatLng(gasRequestModel.destinationLat(), gasRequestModel.destinationLng()));
-            double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
+        List<GasStationModel> gasStationList = gasStationService.getGasStationsAlongRoute(lineString, travelersMeterCapacity,
+                gasRequestModel.type());
 
-            List<GasStation> gasStationList = gasStationService.getGasStationsAlongRoute(directionResult, travelersMeterCapacity,
-                    gasRequestModel.type());
-            for (GasStation gasStation : gasStationList) {
-                repository.save(gasStation);
-                for (Reviews review : gasStation.getReviews()) {
-                    Reviews reviewToSave = review;
-                    reviewToSave.setGasStation(gasStation);
-                    reviewsRepository.save(reviewToSave);
-                }
-            }
-            String origin = directionResult.routes[0].legs[0].startAddress;
-            String destination = directionResult.routes[0].legs[0].endAddress;
-            GasTrip gasTrip = new GasTrip(origin, destination, directionResult, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity);
-            gasTripRepository.save(gasTrip);
-            return GasTripModel.fromEntity(gasTrip);
-        }
-        catch (ApiException apiException){
-            throw new NoRouteFoundException();
-        }
-
+        String origin = gasRequestModel.startAddress();
+        String destination = gasRequestModel.endAddress();
+        GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity);
+        gasTrip = gasTripRepository.save(gasTrip);
+        return GasTripModel.fromEntity(gasTrip);
     }
 
     private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon){

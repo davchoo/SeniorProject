@@ -1,7 +1,9 @@
 package team.travel.travelplanner.entity;
 
-import com.google.maps.model.DirectionsResult;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import org.locationtech.jts.geom.LineString;
 
 @Entity
 public abstract class Trip {
@@ -13,17 +15,12 @@ public abstract class Trip {
 
     private String destination;
 
-    @Column(length = 65535, columnDefinition = "TEXT")
-    private String encodedPolyline;
+    private LineString lineString;
 
-    @Transient
-    private DirectionsResult directionsResult;
-
-    public Trip(String origin, String destination, DirectionsResult directionsResult) {
+    public Trip(String origin, String destination, LineString linestring) {
         this.origin = origin;
         this.destination = destination;
-        this.directionsResult = directionsResult;
-        this.encodedPolyline = directionsResult.routes[0].overviewPolyline.getEncodedPath();
+        this.lineString = linestring;
     }
 
     public Trip() {
@@ -54,19 +51,11 @@ public abstract class Trip {
         this.destination = destination;
     }
 
-    public DirectionsResult getDirectionsResult() {
-        return directionsResult;
+    public LineString getLineString() {
+        return lineString;
     }
 
-    public void setDirectionsResult(DirectionsResult directionsResult) {
-        this.directionsResult = directionsResult;
-    }
-
-    public String getEncodedPolyline(){
-        return encodedPolyline;
-    }
-
-    public void setEncodedPolyline(String encodedPolyline){
-        this.encodedPolyline = encodedPolyline;
+    public void setLineString(LineString lineString) {
+        this.lineString = lineString;
     }
 }

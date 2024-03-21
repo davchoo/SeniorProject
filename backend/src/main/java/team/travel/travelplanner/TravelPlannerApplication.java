@@ -5,16 +5,9 @@ import com.google.maps.model.LatLng;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import team.travel.travelplanner.entity.GasStation;
-import team.travel.travelplanner.service.impl.GasStationServiceImpl;
 import team.travel.travelplanner.service.impl.GoogleMaps.GoogleMapsApiClientServiceImpl;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @Author Lukas DeLoach
