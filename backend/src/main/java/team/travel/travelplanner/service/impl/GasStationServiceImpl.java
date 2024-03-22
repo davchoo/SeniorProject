@@ -16,7 +16,9 @@ import team.travel.travelplanner.service.GoogleMapsApiPlacesClientService;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GasStationServiceImpl implements GasStationService {
@@ -39,45 +41,61 @@ public class GasStationServiceImpl implements GasStationService {
      * @throws IOException          If there's an error communicating with the Google Maps API.
      */
     @Override
-    public List<GasStationModel> getGasStationsAlongRoute(LineString route, double rangeMeters,
-                                                          String type) throws IOException {
+    public List<GasStationModel> getGasStationsAlongRoute(LineString route, double rangeMeters, String type) throws IOException {
         List<GasStationModel> stops = new ArrayList<>();
         List<Coordinate> stopsAlongRoute = findNeededStops(route, rangeMeters);
-        System.out.println("Needed stops:"+ stopsAlongRoute.size());
-        if (stopsAlongRoute.size() > 12) {
-            throw new RuntimeException("Too many stops!");
-        }
+
 
         for (Coordinate coordinate : stopsAlongRoute) {
             LatLng location = new LatLng(coordinate.getY(), coordinate.getX());
-            PlacesSearchResponse response;
-            int radius = 5000;
-            do {
-                response = placesService.findPlaces(location, "gas_station", radius);
-                radius += 2500;
-            } while (response.results.length == 0);
-            System.out.println(response.results.length);
-            int range = Math.min(response.results.length, 5);
 
-            List<GoogleGasStation> gasStations = new ArrayList<>();
-            for (int i = 0; i < range; i++) {
-                PlacesSearchResult place = response.results[i];
-                GoogleGasStation station = gasService.getGasStation(place.placeId);
-                if (station != null && station.getFuelPrices() != null) {
-                    gasStations.add(station);
-                }
-            }
-            GoogleGasStation lowestPriceGasStation = findLowestPriceGasStation(gasStations, type);
-            if (lowestPriceGasStation != null) {
-                stops.add(GasStationModel.from(lowestPriceGasStation));
-            } else {
-                stops.add(null);
-            }
+            PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 50000);
+            List<GoogleGasStation> gasStations = findGasStationsWithTypeAndPrice(response, type);
+
+            GasStationModel lowestPriceGasStation = GasStationModel.from(findLowestPriceGasStation(gasStations, type));
+            stops.add(lowestPriceGasStation);
         }
 
-        System.out.println("Completed final");
         return stops;
     }
+
+    private List<GoogleGasStation> findGasStationsWithTypeAndPrice(PlacesSearchResponse response, String type) throws IOException {
+        List<GoogleGasStation> gasStations = new ArrayList<>();
+        int range = 5;
+        boolean hasPrice = false;
+
+        for (int i = 0; i < response.results.length; i++) {
+            PlacesSearchResult place = response.results[i];
+            if (i < range) {
+                GoogleGasStation station = gasService.getGasStation(place.placeId);
+                if (station != null && stationHasFuelPrice(station, type)) {
+                    gasStations.add(station);
+                    hasPrice = true;
+                }
+            } else {
+                if (!hasPrice) {
+                    GoogleGasStation station = gasService.getGasStation(place.placeId);
+                    if (station != null && stationHasFuelPrice(station, type)) {
+                        gasStations.add(station);
+                        break;
+                    }
+                }
+            }
+        }
+        return gasStations;
+    }
+
+    private boolean stationHasFuelPrice(GoogleGasStation station, String type) {
+        if(station.getFuelPrices()!=null){
+            for (GoogleGasStation.FuelPrice fuelPrice : station.getFuelPrices()) {
+                if (fuelPrice.type().equalsIgnoreCase(type) && fuelPrice.price() != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Finds the gas station with the lowest fuel prices among the given List of GasStations.
