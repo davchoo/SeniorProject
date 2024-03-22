@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
@@ -25,6 +25,7 @@ const Map = () => {
 
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
+  const [path, setPath] = useState(null);
   const [directions, setDirections] = useState(null);
   const [gasStations, setGasStations] = useState([]);
   const [infoWindow, setInfoWindow] = useState(null);
@@ -49,51 +50,54 @@ const Map = () => {
 };
 
 const getGasStations = () => {
-  if(origin != null && destination != null){
-
-  // Make an HTTP POST request to your backend
-  axios.post('http://localhost:8080/api/trip/gas', {
-      originLat: origin.lat,
-      originLng: origin.lng,
-      destinationLat: destination.lat,
-      destinationLng: destination.lng,
-      type: "REGULAR_UNLEADED", // need to get this from what Kaan is working on
-      travelersMeterCapacity: 482803 // need to get this from what Kaan is working on
-  })
-      .then(response => {
-        // Handle success
-        setDirections(response.data.directionsResult)
-        setGasStations(response.data.gasStationList)
-        console.log("Response from backend:", response.data);
-    
-      })
-      .catch(error => {
-        // Handle error
-        console.error("Error getting gas stations:", error);
-      });
+  if(directions != null) {
+    // Make an HTTP POST request to your backend
+    axios.post('http://localhost:8080/api/trip/gas', {
+        polyline: window.google.maps.geometry.encoding.encodePath(path),
+        startAddress: directions.routes[0].legs[0].start_address,
+        endAddress: directions.routes[0].legs[0].end_address,
+        type: "REGULAR_UNLEADED", // need to get this from what Kaan is working on
+        tankSizeInGallons: 18.56934615384615,
+        milesPerGallon: 26,
+        travelersMeterCapacity: 482803 // need to get this from what Kaan is working on
+    })
+        .then(response => {
+          // Handle success
+          setGasStations(response.data.gasStations)
+          console.log("Response from backend:", response.data);
+      
+        })
+        .catch(error => {
+          // Handle error
+          console.error("Error getting gas stations:", error);
+        });
   }
 };
 
-// useEffect(() => {
-//   if (origin && destination) {
-//     const directionsService = new window.google.maps.DirectionsService();
-//     directionsService.route(
-//       {
-//         origin: new window.google.maps.LatLng(origin.lat, origin.lng),
-//         destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-//         travelMode: 'DRIVING',
-//       },
-//       (result, status) => {
-//         if (status === 'OK') {
-//           console.log(result)
-//           setDirections(result);
-//         } else {
-//           console.error('Failed to fetch directions. Status: ', status);
-//         }
-//       }
-//     );
-//   }
-// }, [origin, destination]);
+useEffect(() => {
+  if (origin && destination) {
+    const directionsService = new window.google.maps.DirectionsService();
+    directionsService.route(
+      {
+        origin: new window.google.maps.LatLng(origin.lat, origin.lng),
+        destination: new window.google.maps.LatLng(destination.lat, destination.lng),
+        travelMode: 'DRIVING',
+      },
+      (result, status) => {
+        if (status === 'OK') {
+          console.log(result)
+          setDirections(result);
+          setPath(getFullRoute(result.routes[0]));
+          getGasStations();
+        } else {
+          console.error('Failed to fetch directions. Status: ', status);
+          setDirections(null);
+          setPath(null);
+        }
+      }
+    );
+  }
+}, [origin, destination]);
 
 
   if (loadError) {
@@ -176,10 +180,10 @@ const getGasStations = () => {
           </InfoWindow>
         )}
 
-        {directions && directions.routes && directions.routes.length > 0 && (
+        {path && (
           <>
             <Polyline
-              path={decodePolyline(directions.routes[0].overviewPolyline.encodedPath)}
+              path={path}
               options={{
                 strokeColor: '#FF0000',
                 strokeOpacity: 1.0,
@@ -194,8 +198,8 @@ const getGasStations = () => {
             <Marker
               key={station.name}
               position={{
-                lat: station.location.latitude,
-                lng: station.location.longitude
+                lat: station.location.lat,
+                lng: station.location.lng
               }}
               title={station.formattedAddress}
               icon={{
@@ -211,39 +215,20 @@ const getGasStations = () => {
 };
 
 function decodePolyline(encoded) {
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-  const path = [];
+  return window.google.maps.geometry.encoding.decodePath(encoded);
+}
 
-  while (index < encoded.length) {
-      let result = 1;
-      let shift = 0;
-      let b;
-
-      do {
-          b = encoded.charAt(index++).charCodeAt(0) - 63 - 1;
-          result += b << shift;
-          shift += 5;
-      } while (b >= 0x1f);
-
-      lat += result & 1 ? ~(result >> 1) : result >> 1;
-
-      result = 1;
-      shift = 0;
-
-      do {
-          b = encoded.charAt(index++).charCodeAt(0) - 63 - 1;
-          result += b << shift;
-          shift += 5;
-      } while (b >= 0x1f);
-
-      lng += result & 1 ? ~(result >> 1) : result >> 1;
-
-      path.push({ lat: lat / 1e5, lng: lng / 1e5 });
+function getFullRoute(route) {
+  console.log(route);
+  let coordinates = []
+  for (let leg of route.legs) {
+    for (let step of leg.steps) {
+      for (let coordinate of decodePolyline(step.polyline.points)) {
+        coordinates.push(coordinate)
+      }
+    }
   }
-
-  return path;
+  return coordinates
 }
 
 export default Map;
