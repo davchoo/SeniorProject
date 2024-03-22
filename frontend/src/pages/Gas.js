@@ -5,9 +5,21 @@ const Gas = ({ showGasInfo }) => {
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [showGasStations, setShowGasStations] = useState(false);
+  const [selectedFuelType, setSelectedFuelType] = useState('');
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
+  };
+
+  const handleFuelTypeChange = (event) => {
+    setSelectedFuelType(event.target.value);
+  };
+
+  // Function to filter gas stations based on fuel type
+  const filterGasStations = () => {
+    return gasStationsData.gasStationList.filter(station => {
+      return station.fuelOptions.fuelPrices.some(fuel => fuel.type === selectedFuelType);
+    });
   };
 
   const GasStationsMarkers = ({ gasStations }) => (
@@ -35,7 +47,7 @@ const Gas = ({ showGasInfo }) => {
         <p className="text-sm text-custom-black font-notosansjp">Enter Information About Your Vehicle:</p>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', marginTop: '50px'}}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', marginTop: '50px' }}>
         <div>
           <p className="text-sm text-custom-black font-notosansjp">Car Make:</p>
           <select value={selectedMake} onChange={(e) => setSelectedMake(e.target.value)}>
@@ -44,12 +56,25 @@ const Gas = ({ showGasInfo }) => {
         </div>
 
         <div>
-          <div style={{ marginLeft: '30px' }}> 
+          <div style={{ marginLeft: '30px' }}>
             <p className="text-sm text-custom-black font-notosansjp">Car Model:</p>
             <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
               <option value="">Select Model</option>
             </select>
           </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+        <div>
+          <p className="text-sm text-custom-black font-notosansjp">Select Fuel Type:</p>
+          <select id="fuelType" onChange={handleFuelTypeChange} value={selectedFuelType}>
+            <option value="">Select...</option>
+            <option value="REGULAR_UNLEADED">Regular Unleaded</option>
+            <option value="MIDGRADE">Midgrade</option>
+            <option value="PREMIUM">Premium</option>
+            <option value="DIESEL">Diesel</option>
+          </select>
         </div>
       </div>
 
