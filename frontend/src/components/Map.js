@@ -19,7 +19,8 @@ const center = {
 
 const Map = () => {
  const { isLoaded, loadError } = useLoadScript({
-   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+googleMapsApiKey: 'AIzaSyAquT4y7VbS6RKyYn6Nbpjrm5Wcng-O-oo',
+
    libraries,
  });
 
@@ -29,6 +30,8 @@ const Map = () => {
   const [directions, setDirections] = useState(null);
   const [gasStations, setGasStations] = useState([]);
   const [infoWindow, setInfoWindow] = useState(null);
+  const [distance, setDistance] = useState(null); 
+  const [duration, setDuration] = useState(null); 
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
   if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -88,6 +91,8 @@ useEffect(() => {
           console.log(result)
           setDirections(result);
           setPath(getFullRoute(result.routes[0]));
+          setDistance(result.routes[0].legs[0].distance.text); 
+          setDuration(result.routes[0].legs[0].duration.text); 
           getGasStations();
         } else {
           console.error('Failed to fetch directions. Status: ', status);
@@ -113,7 +118,8 @@ useEffect(() => {
       <div style={{ width: '30vw', marginBottom: '20px', marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', zIndex: 1 }}>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-
+        <div style={{ marginTop: '5px', marginLeft: '10px', fontSize: '0.9rem' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div> 
+        <div style={{ marginLeft: '10px', fontSize: '0.9rem' }}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
       </div>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
