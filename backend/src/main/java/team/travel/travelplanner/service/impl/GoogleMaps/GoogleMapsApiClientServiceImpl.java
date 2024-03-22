@@ -6,6 +6,7 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.PlaceType;
 import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.RankBy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
@@ -38,7 +39,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
             // Perform a nearby search for places of the specified type around the location
             PlacesSearchResponse placesResponse = PlacesApi.nearbySearchQuery(context, location)
                     .type(PlaceType.valueOf(type.toUpperCase()))
-                    .radius(radius)
+                    .rankby(RankBy.DISTANCE)
                     .await();
             return placesResponse;
         } catch (ApiException | InterruptedException | IOException e) {
