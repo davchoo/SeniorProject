@@ -1,9 +1,11 @@
 package team.travel.travelplanner.controller.auth;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +28,7 @@ public class SignUpController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody UserModel userModel){
+    public ResponseEntity<String> signUp(@RequestBody @Valid UserModel userModel){
         if(userRepository.existsByUsername(userModel.username())){
             return new ResponseEntity<>("Username, " + userModel.username() + ", already exists",
                     HttpStatus.BAD_REQUEST);
