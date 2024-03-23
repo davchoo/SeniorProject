@@ -17,7 +17,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = () => {
+const Map = ({showGasInfo}) => {
  const { isLoaded, loadError } = useLoadScript({
    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
    libraries,
@@ -49,7 +49,7 @@ const Map = () => {
   }
 };
 
-const getGasStations = () => {
+const getGasStations = async () => {
   if(directions != null) {
     // Make an HTTP POST request to your backend
     axios.post('http://localhost:8080/api/trip/gas', {
@@ -75,29 +75,37 @@ const getGasStations = () => {
 };
 
 useEffect(() => {
-  if (origin && destination) {
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: new window.google.maps.LatLng(origin.lat, origin.lng),
-        destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-        travelMode: 'DRIVING',
-      },
-      (result, status) => {
-        if (status === 'OK') {
-          console.log(result)
-          setDirections(result);
-          setPath(getFullRoute(result.routes[0]));
-          getGasStations();
-        } else {
-          console.error('Failed to fetch directions. Status: ', status);
-          setDirections(null);
-          setPath(null);
+  const fetchData = async () => {
+    if (origin && destination) {
+      // Wait for gas stations to be fetched
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: new window.google.maps.LatLng(origin.lat, origin.lng),
+          destination: new window.google.maps.LatLng(destination.lat, destination.lng),
+          waypoints: gasStations.map(station => ({
+            location: new window.google.maps.LatLng(station.location.lat, station.location.lng),
+            stopover: true
+          })),
+          travelMode: 'DRIVING',
+        },
+        async (result, status) => {
+          if (status === 'OK') {
+            console.log(result);
+            setDirections(result);
+            await getGasStations();
+            setPath(getFullRoute(result.routes[0]));
+          } else {
+            console.error('Failed to fetch directions. Status: ', status);
+            setDirections(null);
+            setPath(null);
+          }
         }
-      }
-    );
-  }
-}, [origin, destination]);
+      );
+    }
+  };
+  fetchData();
+}, [origin, destination, showGasInfo]);
 
 
   if (loadError) {
@@ -219,16 +227,18 @@ function decodePolyline(encoded) {
 }
 
 function getFullRoute(route) {
-  console.log(route);
-  let coordinates = []
+  let coordinates = [];
   for (let leg of route.legs) {
     for (let step of leg.steps) {
       for (let coordinate of decodePolyline(step.polyline.points)) {
-        coordinates.push(coordinate)
+    
+        coordinates.push(coordinate);
       }
     }
   }
-  return coordinates
+  
+  return coordinates;
 }
+
 
 export default Map;

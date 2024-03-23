@@ -54,15 +54,15 @@ function Plan() {
 
           <div style={{ position: 'absolute', left: '-100px', top: '300px' }}>
             <button
-              onClick={toggleGasInfo}
+              onClick={()=>setShowGasInfo(true)}
               className={`font-notosansjp font-extrabold mr-10 text-custom-black bg-${showGasInfo ? 'custom-green4' : 'custom-green3'} hover:bg-custom-green4 py-1 px-2 rounded-md mb-2`}
             >
               Gas Stations
             </button>
-            {showGasInfo && (
+            {/* {showGasInfo && (
               <Gas
               />
-            )}
+            )} */}
 
             <button
               onClick={toggleWeatherInfo}
