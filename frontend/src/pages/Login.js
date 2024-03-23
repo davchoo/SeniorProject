@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaLuggageCart, FaCar } from 'react-icons/fa';
+import { login } from '../AuthContext';
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [username, setUsername] = useState(null);
+  const [password, setPassword] = useState(null);
+  const navigate = useNavigate()
 
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevVisible) => !prevVisible);
@@ -23,7 +27,13 @@ const Login = () => {
       <div className="max-w-md w-full px-8 py-6 bg-white rounded-lg shadow-md">
         <h1 className="text-4xl md:text-5xl font-notosansjp font-bold text-center text-custom-black mb-6 md:mb-16">Login</h1>
         <h2 className="text-3xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Welcome Back!</h2>
-        <form>
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent default form submission
+            login(username, password, navigate);
+            
+          }}
+        >
           <div className="mb-4">
             <p className="font-notosansjp text-custom-black whitespace-pre-line mb-5">
               Login to continue your planning journey.
@@ -36,6 +46,7 @@ const Login = () => {
                 type="text"
                 id="username"
                 placeholder="Your username"
+                onChange={e => setUsername(e.target.value)}
                 className="input-field"
                 required
               />
@@ -51,6 +62,7 @@ const Login = () => {
                 type={inputType}
                 id="password"
                 placeholder="Your password"
+                onChange={e => setPassword(e.target.value)}
                 className="input-field pr-10"
                 required
               />
