@@ -26,10 +26,9 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpSuccess() throws Exception {
-        UserModel userModel = new UserModel("John", "Doe", "johndoe", "johndoe@gmail.com", "password123");
+        UserModel userModel = new UserModel("John", "Doe", "johndoe", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -42,7 +41,7 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpUsernameExists() throws Exception {
-        UserModel userModel = new UserModel("John", "Doe", "johndoe", "john@gmail.com", "password123");
+        UserModel userModel = new UserModel("John", "Doe", "johndoe", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(true);
 
@@ -54,37 +53,10 @@ public class RegistrationTests {
     }
 
     @Test
-    public void testEmailExists() throws Exception {
-        UserModel userModel = new UserModel("John", "Doe", "johndoe1", "john@gmail.com", "password123");
-
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(true);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(userModel)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.content().string("Email, john@gmail.com, is already taken."));
-    }
-
-    @Test
-    public void testInvalidEmail() throws Exception {
-        UserModel userModel = new UserModel("New", "User", "user1", "user1", "password123");
-
-        Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(false);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(userModel)))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-    }
-
-    @Test
     public void testMissingFields() throws Exception {
-        UserModel userModel = new UserModel("", "User", "user1", "user1@gmail.com", "password123");
+        UserModel userModel = new UserModel("", "User", "user1", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
-        Mockito.when(userRepository.existsByEmail(Mockito.anyString())).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
