@@ -14,10 +14,6 @@ public record UserModel(
         @NotEmpty
         String username,
 
-        @NotEmpty(message = "The email field cannot be empty!")
-        @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", message = "Please provide a valid email address")
-        String email,
-
         @NotEmpty(message = "The password field cannot be empty!")
         String password
 ) {

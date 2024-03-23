@@ -33,15 +33,10 @@ public class SignUpController {
             return new ResponseEntity<>("Username, " + userModel.username() + ", already exists",
                     HttpStatus.BAD_REQUEST);
         }
-        if(userRepository.existsByEmail(userModel.username())){
-            return new ResponseEntity<>("Email, " + userModel.email() + ", is already taken.",
-                    HttpStatus.BAD_REQUEST);
-        }
 
         User user = new User();
         user.setFirstName(userModel.firstName());
         user.setLastName(userModel.lastName());
-        user.setEmail(userModel.email());
         user.setUsername(userModel.username());
         user.setPassword(passwordEncoder.encode(userModel.password()));
         userRepository.save(user);
