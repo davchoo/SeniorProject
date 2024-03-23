@@ -31,7 +31,7 @@ const SignUp = () => {
         </p>
         <form className="space-y-4" onSubmit={(e) => {
           e.preventDefault(); // Prevent default form submission
-          signup(firstName, lastName, username, "test@gmail.com", password, navigate);
+          signup(firstName, lastName, username, password, navigate);
           
         }}>
           <div className="grid grid-cols-2 mr-24">
