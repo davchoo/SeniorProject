@@ -29,21 +29,21 @@ const Home = () => {
         <div className="container mx-auto">
           <h2 className="text-3xl font-notosansjp mb-6 ml-2">Why Choose TripEase?</h2>
           <div className="flex flex-wrap justify-around">
-            {/* First */}
+            {/* First Point */}
             <div className="w-full md:w-1/3 mb-8">
               <h3 className="text-xl font-notosansjp font-bold mb-4 ml-2">Efficient Planning</h3>
               <p className="text-grey ml-2">
                 Easily plan your trip with our user-friendly tools and features. This application is for individuals at all levels of travel experience.
               </p>
             </div>
-            {/* Second */}
+            {/* Second Point */}
             <div className="w-full md:w-1/3 mb-8">
               <h3 className="text-xl font-notosansjp font-bold mb-4 ml-2">Streamlined Services</h3>
               <p className="text-grey ml-2 font-roboto mr-2">
                 TripEase integrates with various APIs to provide users with convenient access to options within their budget. TripEase offers real-time weather updates and locates cost-effective gas stops along the route, empowering users to make informed decisions without sacrificing convenience.
               </p>
             </div>
-            {/* Third */}
+            {/* Third Point */}
             <div className="w-full md:w-1/3 mb-8">
               <h3 className="text-xl font-notosansjp font-bold mb-4 ml-2">Travel Assistance</h3>
               <p className="text-grey ml-2 font-roboto mr-4">
