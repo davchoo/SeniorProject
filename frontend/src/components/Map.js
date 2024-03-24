@@ -184,7 +184,7 @@ useEffect(() => {
             </div>
           </InfoWindow>
         )}
-
+        
         {path && (
           <>
             <Polyline
