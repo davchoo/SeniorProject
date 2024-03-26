@@ -16,12 +16,12 @@ function Plan() {
 
   const toggleGasInfo = () => {
     setShowGasInfo(!showGasInfo);
-    setShowWeatherInfo(false); // Close the Weather info when Gas Stations are opened
+    setShowWeatherInfo(false); 
   };
 
   const toggleWeatherInfo = () => {
     setShowWeatherInfo(!showWeatherInfo);
-    setShowGasInfo(false); // Close the Gas Stations info when Weather is opened
+    setShowGasInfo(false); 
   };
 
   const closeSidebar = () => {
@@ -31,7 +31,7 @@ function Plan() {
   return (
     <div className="min-h-screen bg-custom-green flex justify-center items-center font-notosansjp font-bold m-1 relative z-0">
       <div className="w-full max-w-screen-xl relative h-full"> 
-      <button onClick={toggleSidebar} className="fixed top-32 left-4 text-xl text-white">
+      <button onClick={toggleSidebar}  className="absolute top-2 left-[-6rem] z-0 text-xl text-white">
         <GiHamburgerMenu />
       </button>
 
@@ -62,13 +62,13 @@ function Plan() {
             <div className="flex"> 
               <button
                 onClick={toggleGasInfo}
-                className={`font-notosansjp font-extrabold mr-4 text-custom-black ${showGasInfo ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2`}
+                className={`font-notosansjp font-extrabold mr-4 text-custom-black ${showGasInfo ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
               >
                 Gas 
               </button>
               <button
                 onClick={toggleWeatherInfo}
-                className={`font-notosansjp font-extrabold ml-4 text-custom-black ${showWeatherInfo ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2`}
+                className={`font-notosansjp font-extrabold ml-4 text-custom-black ${showWeatherInfo ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
               >
                 Weather
               </button>
