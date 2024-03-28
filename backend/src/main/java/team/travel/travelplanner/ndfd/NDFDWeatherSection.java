@@ -1,6 +1,7 @@
 package team.travel.travelplanner.ndfd;
 
 import team.travel.travelplanner.ndfd.degrib.WeatherWord;
+import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherCode4;
 import ucar.nc2.grib.grib2.Grib2SectionLocalUse;
 
 import java.io.ByteArrayInputStream;
@@ -12,10 +13,12 @@ import java.util.List;
 
 public class NDFDWeatherSection {
     private final List<List<WeatherWord>> weatherStrings;
+    private final int[] simpleWeatherCodes;
 
     public NDFDWeatherSection(Grib2SectionLocalUse localUseSection) throws IOException {
         int[] intData = unpackMDLIntegerData(localUseSection);
         this.weatherStrings = unpackWeatherStringTable(intData);
+        this.simpleWeatherCodes = convertWeatherStrings(this.weatherStrings);
     }
 
     private int[] unpackMDLIntegerData(Grib2SectionLocalUse localUseSection) throws IOException {
@@ -96,8 +99,20 @@ public class NDFDWeatherSection {
         return table;
     }
 
+    private int[] convertWeatherStrings(List<List<WeatherWord>> weatherStrings) {
+        int[] codes = new int[weatherStrings.size()];
+        for (int i = 0; i < weatherStrings.size(); i++) {
+            codes[i] = SimpleWeatherCode4.NDFD_WxTable4(weatherStrings.get(i));
+        }
+        return codes;
+    }
+
     public List<WeatherWord> getWeatherString(int index) {
         return weatherStrings.get(index);
+    }
+
+    public int getSimpleWeatherCode(int index) {
+        return simpleWeatherCodes[index];
     }
 
     public int getNumWeatherStrings() {
