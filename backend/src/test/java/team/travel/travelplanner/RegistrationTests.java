@@ -11,7 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import team.travel.travelplanner.entity.User;
-import team.travel.travelplanner.model.UserModel;
+import team.travel.travelplanner.model.UserSignUpModel;
 import team.travel.travelplanner.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,13 +26,13 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpSuccess() throws Exception {
-        UserModel userModel = new UserModel("John", "Doe", "johndoe", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(userModel)))
+                        .content(asJsonString(userSignUpModel)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("User is registered successfully on TripEase!"));
 
@@ -41,26 +41,26 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpUsernameExists() throws Exception {
-        UserModel userModel = new UserModel("John", "Doe", "johndoe", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(true);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(userModel)))
+                        .content(asJsonString(userSignUpModel)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content().string("Username, johndoe, already exists"));
     }
 
     @Test
     public void testMissingFields() throws Exception {
-        UserModel userModel = new UserModel("", "User", "user1", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("", "User", "user1", "password123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(userModel)))
+                        .content(asJsonString(userSignUpModel)))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
