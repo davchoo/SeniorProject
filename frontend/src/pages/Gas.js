@@ -77,11 +77,22 @@ const Gas = ({ showGasInfo }) => {
           </select>
         </div>
       </div>
+    
+         <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+        <div>
+          <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip:</p>
+        </div>
+      </div>
+      <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+        <div>
+          <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed:</p>
+        </div>
+      </div>
 
-      <div style={{ padding: '10px' }}>
+      <div style={{ padding: '10px', marginTop: '-20px'  }}>
         <button
           onClick={toggleGasStations}
-          className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2`}
+          className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4` }
         >
           Show Gas Stations
         </button>
@@ -91,3 +102,4 @@ const Gas = ({ showGasInfo }) => {
 };
 
 export default Gas;
+
