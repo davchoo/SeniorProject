@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Map from '../components/Map';
 import Sidebar from '../components/SaveSidebar';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import Gas from '../pages/Gas';
 import Weather from '../pages/Weather';
+import { checkIsLoggedIn } from '../AuthContext';
 
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
   const [showWeatherInfo, setShowWeatherInfo] = useState(false);
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -27,6 +29,10 @@ function Plan() {
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  useEffect(() => {
+    checkIsLoggedIn()
+  }, [])
 
   return (
     <div className="min-h-screen bg-custom-green flex justify-center items-center font-notosansjp font-bold m-1">
