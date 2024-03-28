@@ -5,13 +5,16 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.model.CountyModel;
 import team.travel.travelplanner.model.RouteModel;
+import team.travel.travelplanner.model.weather.RasterWeatherModel;
 import team.travel.travelplanner.model.weather.RouteWeatherAlertsModel;
 import team.travel.travelplanner.model.weather.SegmentWeatherModel;
 import team.travel.travelplanner.model.weather.WeatherFeatureModel;
 import team.travel.travelplanner.service.CountyService;
+import team.travel.travelplanner.service.RasterWeatherDataService;
 import team.travel.travelplanner.service.WeatherAlertService;
 import team.travel.travelplanner.service.WeatherDataService;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +26,15 @@ import static team.travel.travelplanner.util.SRIDConstants.WGS84;
 public class WeatherController {
     private final GeometryFactory geometryFactory;
     private final CountyService countyService;
+    private final RasterWeatherDataService rasterWeatherDataService;
     private final WeatherAlertService weatherAlertService;
     private final WeatherDataService weatherDataService;
 
-    public WeatherController(CountyService countyService, WeatherAlertService weatherAlertService, WeatherDataService weatherDataService) {
+    public WeatherController(CountyService countyService, RasterWeatherDataService rasterWeatherDataService,
+                             WeatherAlertService weatherAlertService, WeatherDataService weatherDataService) {
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), WGS84);
         this.countyService = countyService;
+        this.rasterWeatherDataService = rasterWeatherDataService;
         this.weatherAlertService = weatherAlertService;
         this.weatherDataService = weatherDataService;
     }
@@ -56,5 +62,10 @@ public class WeatherController {
     @GetMapping("/county")
     public Map<String, CountyModel> getCounties(@RequestParam("fips_codes") List<String> fipsCodes) {
         return countyService.getCounties(fipsCodes);
+    }
+
+    @PostMapping("/raster/check_route")
+    public RasterWeatherModel checkRouteRaster(@RequestBody RouteModel route) throws IOException {
+        return rasterWeatherDataService.checkWeather(route.geometry(geometryFactory), route.durations(), route.startTime());
     }
 }

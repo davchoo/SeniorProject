@@ -32,7 +32,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.hibernate.orm:hibernate-spatial")
 
-    val geotoolsVersion = "30.2"
+    val geotoolsVersion = "31.0"
     implementation("org.geotools:gt-wms:${geotoolsVersion}")
     implementation("org.geotools:gt-wfs-ng:${geotoolsVersion}")
     // Load CRSs from a properties file
