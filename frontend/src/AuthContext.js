@@ -75,12 +75,20 @@ export async function login(username, password, navigate) {
 
 export async function checkIsLoggedIn() {
   try {
-   /**
-    * Maybe have to check this?
-    */
-  } catch (error) {
-    console.error(error)
-    return null // or some other appropriate error handling
+    await axios
+      .get(
+          `${process.env.REACT_APP_API_URL}/api/auth/check-login`,
+        { withCredentials: true },
+      )
+      .then((result) => {
+        console.log(result);
+        alert("Hello, " + result.data.firstName + " " + result.data.lastName)
+        })
+      .catch((fail) => {
+        console.error(fail)
+      })
+  } catch (err) {
+    alert(err)
   }
 }
 
