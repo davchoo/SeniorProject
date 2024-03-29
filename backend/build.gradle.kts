@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
+    id("io.freefair.aspectj.post-compile-weaving") version "8.6"
 }
 
 group = "team.travel"
@@ -41,7 +42,10 @@ dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
 
     // Reading GRIB2 files
-    implementation("edu.ucar:grib:5.5.3")
+    inpath("edu.ucar:grib:5.5.3") {
+        exclude("*") // Don't weave any of it's dependencies
+    }
+    implementation("edu.ucar:grib:5.5.3") // Add transitive dependencies
 
     runtimeOnly("org.postgresql:postgresql")
 
@@ -51,6 +55,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
 
     testImplementation("io.zonky.test:embedded-database-spring-test:2.5.0")
+
+    implementation("org.aspectj:aspectjrt")
 }
 
 tasks.withType<Test> {
