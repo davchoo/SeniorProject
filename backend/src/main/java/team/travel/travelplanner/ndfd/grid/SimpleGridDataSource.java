@@ -26,9 +26,9 @@ public class SimpleGridDataSource implements AutoCloseable {
 
     private void loadDataset(GridDataset dataset) {
         GridDatatype grid = dataset.getGrids().getFirst(); // TODO how to handle multiple grids?
-        GridCoordSystem crs = grid.getCoordinateSystem();
-        CoordinateAxis1DTime timeAxis = crs.getTimeAxis1D();
-        CoordinateAxis1DTime runTimeAxis = crs.getRunTimeAxis();
+        GridCoordSystem cs = grid.getCoordinateSystem();
+        CoordinateAxis1DTime timeAxis = cs.getTimeAxis1D();
+        CoordinateAxis1DTime runTimeAxis = cs.getRunTimeAxis();
 
         if (referenceTime == null) {
             referenceTime = Instant.ofEpochMilli(runTimeAxis.getCalendarDate(0).getMillis());
