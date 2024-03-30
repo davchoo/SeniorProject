@@ -8,12 +8,12 @@ public enum SimpleWeatherType {
     RAIN("Rain"),
     ICE("Ice"),
     SNOW("Snow"),
+    MIX("Mix"),
     SEVERE("Severe"),
     FOG("Fog"),
     SMOKE("Smoke"),
     BLOWING("Blowing"),
-    HAZE("Haze"),
-    MIX("Mix");
+    HAZE("Haze");
 
     private final String label;
 
