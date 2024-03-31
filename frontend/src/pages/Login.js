@@ -29,7 +29,7 @@ const Login = () => {
         <h2 className="text-3xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Welcome Back!</h2>
         <form 
           onSubmit={(e) => {
-            e.preventDefault(); // Prevent default form submission
+            e.preventDefault(); // Prevent default form submissionxx
             login(username, password, navigate);
             
           }}
