@@ -1,19 +1,50 @@
 import React, { useState } from 'react';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import gasStationsData from './gasStations.json';
+import axios from 'axios';
 
-const Gas = ({ showGasInfo, setSelectedGasStations }) => {
+const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress, getEndAddress }) => {
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [showGasStations, setShowGasStations] = useState(false);
   const [selectedFuelType, setSelectedFuelType] = useState('');
+  const [gasStations, setGasStations] = useState([]);
+  const [price, setPrice] = useState();
   
+
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
   };
 
   const handleFuelTypeChange = (event) => {
     setSelectedFuelType(event.target.value);
+  };
+
+  const getGasStations = async () => {
+    console.log(getPolyline)
+    const polyline = getPolyline; // Call the function to retrieve the polyline
+    console.log(getStartAddress)
+    console.log(selectedFuelType)
+    if (polyline && selectedFuelType) {
+      axios.post('http://localhost:8080/api/trip/gas', {
+        polyline: polyline, // Use the obtained polyline
+        startAddress: getStartAddress,
+        endAddress: getEndAddress,
+        type: selectedFuelType,
+        tankSizeInGallons: 18.56934615384615,
+        milesPerGallon: 26,
+      })
+        .then(response => {
+          setGasStations(response.data.gasStations)
+          setSelectedGasStations(response.data.gasStations)
+          setPrice((response.data.totalTripGasPrice * response.data.tankSizeInGallons).toFixed(2))
+          console.log(gasStations)
+          console.log("Response from backend:", response.data);
+        })
+        .catch(error => {
+          console.error("Error getting gas stations:", error);
+        });
+    }
   };
 
   // Function to filter gas stations based on fuel type
@@ -62,23 +93,26 @@ return (
 
           <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
         <div>
-          <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip:</p>
+          <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip: ${price}</p>
         </div>
       </div>
       <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
         <div>
-          <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed:</p>
+          <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed: {gasStations.length}</p>
         </div>
       </div>
         </div>
       </div>
 
       <div style={{ padding: '10px' }}>
-        <button
-          onClick={()=> {
-            toggleGasStations()
-            setSelectedGasStations(selectedGasStations)}}
+      <button
+  onClick={async () => {
+    toggleGasStations();
+    await getGasStations(); // Wait for getGasStations to finish
+    //setSelectedGasStations(gasStations);
+  }}
         
+
           className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
         >
           Show Gas Stations
@@ -94,12 +128,12 @@ export const GasStationsMarkers = ({ gasStations, onClick }) => (
       <Marker
         key={station.name}
         position={{
-          lat: station.location.latitude,
-          lng: station.location.longitude,
+          lat: station.location.lat,
+          lng: station.location.lng,
         }}
         title={station.formattedAddress}
         icon={{
-          url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+          url: 'http://maps.gstatic.com/mapfiles/ms2/micons/gas.png', 
           scaledSize: new window.google.maps.Size(30, 30),
         }}
         onClick={() => onClick(station)} 

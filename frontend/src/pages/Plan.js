@@ -10,7 +10,10 @@ function Plan() {
   const [showGasInfo, setShowGasInfo] = useState(false);
   const [showWeatherInfo, setShowWeatherInfo] = useState(false);
   const [data, setSelectedData] = useState([]);
-
+  const [polyline, setPolyline] = useState();
+  const [startAddress, setStartAddress] = useState("")
+  const [endAddress, setEndAddress] = useState("")
+ 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -73,11 +76,11 @@ function Plan() {
                 Weather
               </button>
             </div>
-            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData}/>}
+            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline}/>}
             {showWeatherInfo && <Weather />}
           </div>
 
-          <Map showGasInfo={showGasInfo} data={data}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress}/>
         </div>
       </div>
     </div>
