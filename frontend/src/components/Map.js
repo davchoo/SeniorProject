@@ -3,6 +3,8 @@ import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-g
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
+import ReactStars from "react-rating-stars-component";
+
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -18,11 +20,11 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
-  });
+  }); 
 
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
@@ -85,11 +87,33 @@ const Map = ({ data }) => {
         },
         (result, status) => {
           if (status === 'OK') {
-            setDirections(result);
-            setPath(getFullRoute(result.routes[0]));
-            setDistance(result.routes[0].legs[0].distance.text);
-            setDuration(result.routes[0].legs[0].duration.text);
-            getGasStations();
+            // Use promise chaining to ensure sequential execution
+            Promise.resolve()
+              .then(() => {
+                setDirections(result);
+              })
+              .then(() => {
+                setPath(getFullRoute(result.routes[0]));
+              })
+              .then(() => {
+                setDistance(result.routes[0].legs[0].distance.text);
+              })
+              .then(() => {
+                setDuration(result.routes[0].legs[0].duration.text);
+              })
+              .then(() => {
+                // Access the updated value of path after it's set
+                setPolyline(window.google.maps.geometry.encoding.encodePath(getFullRoute(result.routes[0])));
+              })
+              .then(() => {
+                setStartAddress(result.routes[0].legs[0].start_address);
+              })
+              .then(() => {
+                setEndAddress(result.routes[0].legs[0].end_address);
+              })
+              .catch((error) => {
+                console.error('Error setting state:', error);
+              });
           } else {
             console.error('Failed to fetch directions. Status: ', status);
             setDirections(null);
@@ -99,6 +123,7 @@ const Map = ({ data }) => {
       );
     }
   }, [origin, destination]);
+  
 
 
   const handleMarkerClick = (gasStation) => {
@@ -210,37 +235,33 @@ const Map = ({ data }) => {
         {selectedGasMarker && (
           <InfoWindow
             position={{
-              lat: selectedGasMarker.location.latitude,
-              lng: selectedGasMarker.location.longitude,
+              lat: selectedGasMarker.location.lat,
+              lng: selectedGasMarker.location.lng,
             }}
             onCloseClick={() => setSelectedGasMarker(null)}
           >
             <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
-              <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.displayName.text}</h3>
+              <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.name}</h3>
               <hr />
+              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false}/></p>
               <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
               <p><u>Fuel Price:</u></p>
               <ul>
-                {selectedGasMarker.fuelOptions && selectedGasMarker.fuelOptions.fuelPrices ?
-                  selectedGasMarker.fuelOptions.fuelPrices
-                    .map((fuel, index) => {
-                      return (
-                        <li key={index}>
-                          {fuel.type}: ${fuel.price.dollarPrice.toFixed(2)} per gallon
-                        </li>
-                      );
-                    }) : <li>No prices available</li>
-                }
+                {Object.entries(selectedGasMarker.prices).map(([type, price]) => (
+                  <li key={type}>
+                    {type}: ${price.toFixed(2)}
+                  </li>
+                ))}
               </ul>
-              <p><u>Rating:</u> {selectedGasMarker.rating || 'Not Available'}</p>
+             
               <p><u>Reviews:</u></p>
               <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
                 {selectedGasMarker.reviews && (
                   <ul>
                     {selectedGasMarker.reviews.map((review, index) => (
+                      
                       <li key={index}>
-                        <p><u>ID:</u> {review.id}</p>
-                        <p><u>Rating:</u> {review.rating}</p>
+                        <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false}/></p>
                         <p>{review.text.text}</p>
                       </li>
                     ))}
