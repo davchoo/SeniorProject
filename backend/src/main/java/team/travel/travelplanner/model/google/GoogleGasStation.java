@@ -14,6 +14,10 @@ public class GoogleGasStation {
     private String formattedAddress;
     private LatLng location;
     private List<FuelPrice> fuelPrices;
+    private double rating;
+    private List<Reviews> reviews;
+
+    private CurrentOpeningHours currentOpeningHours;
 
     public String getId() {
         return id;
@@ -55,6 +59,30 @@ public class GoogleGasStation {
         this.fuelPrices = fuelPrices;
     }
 
+    public CurrentOpeningHours getCurrentOpeningHours() {
+        return currentOpeningHours;
+    }
+
+    public void setCurrentOpeningHours(CurrentOpeningHours currentOpeningHours) {
+        this.currentOpeningHours = currentOpeningHours;
+    }
+
+    public double getRating(){
+        return this.rating;
+    }
+
+    public void setRating(double rating){
+        this.rating = rating;
+    }
+
+    public List<Reviews> getReviews(){
+        return reviews;
+    }
+
+    public void setReviews(List<Reviews> reviews){
+        this.reviews = reviews;
+    }
+
     @JsonProperty("displayName")
     private void unpackDisplayName(Map<String, String> displayName) {
         this.displayName = displayName.get("text");
@@ -84,5 +112,93 @@ public class GoogleGasStation {
             String units,
             long nanos
     ) {
+    }
+
+    public static class CurrentOpeningHours {
+        @JsonProperty("weekdayDescriptions")
+        private List<String> weekdayDescriptions;
+        @Override
+        public String toString() {
+
+            StringBuilder description = new StringBuilder();
+            for(String s : weekdayDescriptions){
+                description.append(s).append("\n");
+            }
+            return "CurrentOpeningHours{" +
+                    "weekdayDescriptions=" + description.toString() +
+                    '}';
+        }
+
+        public void setWeekdayDescriptions(List<String> weekdayDescriptions){
+            this.weekdayDescriptions = weekdayDescriptions;
+        }
+    }
+
+    public static class Reviews {
+        private int rating;
+        private String name;
+
+        private Text text;
+
+        public Reviews(int rating, String name, Text text) {
+            this.rating = rating;
+            this.name = name;
+            this.text = text;
+        }
+
+        public Reviews() {
+
+        }
+
+        @Override
+        public String toString() {
+            return "Reviews{" +
+                    "text=" + //text.toString() +
+                    ", rating=" + rating +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        public String getName(){
+            return name;
+        }
+
+        public int getRating(){
+            return rating;
+        }
+
+        public void setRating(int rating){
+            this.rating = rating;
+        }
+
+        public void setName(String name){
+            this.name = name;
+        }
+
+        public Text getText() {
+            return text;
+        }
+
+        public void setText(Text text) {
+            this.text = text;
+        }
+
+        public static class Text{
+
+            private String text;
+
+            @Override
+            public String toString(){
+                return text;
+            }
+
+            public String getText(){
+                return text;
+            }
+
+            public void setText(String text){
+                this.text = text;
+            }
+        }
     }
 }

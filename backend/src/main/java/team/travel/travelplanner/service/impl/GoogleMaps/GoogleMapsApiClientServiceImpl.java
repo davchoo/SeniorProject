@@ -58,7 +58,7 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
     @Override
     public GoogleGasStation getGasStation(String placeId) throws IOException {
         ResponseEntity<GoogleGasStation> response = restClient.get()
-                .uri("https://places.googleapis.com/v1/places/{place_id}?key={api_key}&fields=fuelOptions,displayName,id,formattedAddress,location", placeId, apiKey)
+                .uri("https://places.googleapis.com/v1/places/{place_id}?key={api_key}&fields=fuelOptions,displayName,id,formattedAddress,location,rating,currentOpeningHours,reviews", placeId, apiKey)
                 .retrieve()
                 .toEntity(GoogleGasStation.class);
         if (response.getStatusCode().isSameCodeAs(HttpStatus.OK)) {
