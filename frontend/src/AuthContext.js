@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import Navbar from './components/Navbar'
 
 const AuthContext = createContext()
 
@@ -58,7 +59,7 @@ export async function login(username, password, navigate) {
         )
         .then((result) => {
           if (result) {
-            navigate('/')
+            window.location = "/"
         }})
         .catch((fail) => {
           console.error(fail) // Error!
@@ -73,27 +74,24 @@ export async function login(username, password, navigate) {
     }
   }
 
-export async function checkIsLoggedIn() {
-  try {
-    await axios
-      .get(
-          `${process.env.REACT_APP_API_URL}/api/auth/check-login`,
-        { withCredentials: true },
-      )
-      .then((result) => {
-        console.log(result);
-        alert("Hello, " + result.data.firstName + " " + result.data.lastName)
-        })
-      .catch((fail) => {
-        console.error(fail)
-      })
-  } catch (err) {
-    alert(err)
+
+  export async function checkIsLoggedIn() {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/auth/check-login`,
+        { withCredentials: true }
+      );
+      console.log(response.data);
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
-}
+  
 
 export function logout() {
-  axios.get('/api/auth/logout', {
+  axios.get(`${process.env.REACT_APP_API_URL}/api/logout`, {
     withCredentials: true,
   })
   alert('You have now been Logged Out. ')
