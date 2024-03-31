@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import gasStationsData from './gasStations.json';
 
-const Gas = ({ showGasInfo }) => {
+const Gas = ({ showGasInfo, setSelectedGasStations }) => {
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [showGasStations, setShowGasStations] = useState(false);
   const [selectedFuelType, setSelectedFuelType] = useState('');
-
+  
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
   };
@@ -22,26 +23,9 @@ const Gas = ({ showGasInfo }) => {
     });
   };
 
-  const GasStationsMarkers = ({ gasStations }) => (
-    <>
-      {gasStations.map((station) => (
-        <Marker
-          key={station.name}
-          position={{
-            lat: station.location.latitude,
-            lng: station.location.longitude,
-          }}
-          title={station.formattedAddress}
-          icon={{
-            url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
-            scaledSize: new window.google.maps.Size(30, 30),
-          }}
-        />
-      ))}
-    </>
-  );
+  const selectedGasStations = filterGasStations();
 
-  return (
+return (
     <div>
       <div style={{ position: 'absolute', right: '12px', top: '130px' }}>
         <p className="text-sm text-custom-black font-notosansjp">Enter Information About Your Vehicle:</p>
@@ -75,10 +59,8 @@ const Gas = ({ showGasInfo }) => {
             <option value="PREMIUM">Premium</option>
             <option value="DIESEL">Diesel</option>
           </select>
-        </div>
-      </div>
-    
-         <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+
+          <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
         <div>
           <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip:</p>
         </div>
@@ -88,11 +70,16 @@ const Gas = ({ showGasInfo }) => {
           <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed:</p>
         </div>
       </div>
+        </div>
+      </div>
 
-      <div style={{ padding: '10px', marginTop: '-20px'  }}>
+      <div style={{ padding: '10px' }}>
         <button
-          onClick={toggleGasStations}
-          className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4` }
+          onClick={()=> {
+            toggleGasStations()
+            setSelectedGasStations(selectedGasStations)}}
+        
+          className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
         >
           Show Gas Stations
         </button>
@@ -101,5 +88,24 @@ const Gas = ({ showGasInfo }) => {
   );
 };
 
-export default Gas;
+export const GasStationsMarkers = ({ gasStations, onClick }) => (
+  <>
+    {gasStations.map((station) => (
+      <Marker
+        key={station.name}
+        position={{
+          lat: station.location.latitude,
+          lng: station.location.longitude,
+        }}
+        title={station.formattedAddress}
+        icon={{
+          url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+          scaledSize: new window.google.maps.Size(30, 30),
+        }}
+        onClick={() => onClick(station)} 
+      />
+    ))}
+  </>
+);
 
+export default Gas;
