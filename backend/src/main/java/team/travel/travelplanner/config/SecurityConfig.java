@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
@@ -57,10 +59,13 @@ public class SecurityConfig {
                 authorize -> authorize
                         .requestMatchers(mvc.pattern("/api/auth/signup")).permitAll()
                         .requestMatchers(mvc.pattern("/api/auth/login")).permitAll()
-                        .requestMatchers(mvc.pattern("/api/auth/logout")).permitAll()
+                        .requestMatchers(mvc.pattern("/api/logout")).permitAll()
                         .requestMatchers(mvc.pattern("/actuator/**")).permitAll() // Only accessible through the management port
                         .anyRequest().authenticated()
         );
+        http.logout(logout -> logout
+                .logoutUrl("/api/logout")
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK)));
         http.securityContext(securityContext -> securityContext
                 .requireExplicitSave(true)
                 .securityContextRepository(securityContextRepository()));
