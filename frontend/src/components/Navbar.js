@@ -57,7 +57,6 @@ const Navbar = () => {
         {!loggedIn ? (
          
           <div className="md:flex mt-3 text-sm font-notosansjp font-bold text-custom-black space-x-4 md:space-x-8">
-             {console.log(loggedIn)}
             <Link to="/login" className="hover:underline">
               <button className="bg-custom-green3 text-custom-green3 border border-custom-green2 rounded-md px-3 py-1 hover:bg-custom-green hover:text-white transition duration-300 ease-in-out">
                 Login
@@ -70,6 +69,11 @@ const Navbar = () => {
             </Link>
           </div>
         ) : (
+          <div className="md:flex mt-3 text-sm font-notosansjp font-extrabold text-custom-black space-x-4 md:space-x-8">
+            
+
+            <text className=' font-large'>Welcome {loggedIn.firstName + " " + loggedIn.lastName}!</text>
+            
           <button
             onClick={() => {
               logout();
@@ -79,6 +83,7 @@ const Navbar = () => {
           >
             Logout
           </button>
+          </div>
         )}
       </div>
     </nav>
