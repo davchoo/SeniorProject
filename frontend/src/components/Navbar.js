@@ -28,6 +28,10 @@ const Navbar = () => {
     fetchLoggedInStatus();
   }, []);
 
+  const isLoggedIn = () => {
+    return loggedIn;
+  }
+
   if (loading || loggedIn===undefined) {
     return <div>Loading...</div>;
   }
@@ -91,3 +95,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+export const loggedIn = Navbar.isLoggedIn;
