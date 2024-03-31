@@ -47,15 +47,6 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
     }
   };
 
-  // Function to filter gas stations based on fuel type
-  const filterGasStations = () => {
-    return gasStationsData.gasStationList.filter(station => {
-      return station.fuelOptions.fuelPrices.some(fuel => fuel.type === selectedFuelType);
-    });
-  };
-
-  const selectedGasStations = filterGasStations();
-
 return (
     <div>
       <div style={{ position: 'absolute', right: '12px', top: '130px' }}>
@@ -106,13 +97,11 @@ return (
 
       <div style={{ padding: '10px' }}>
       <button
-  onClick={async () => {
-    toggleGasStations();
-    await getGasStations(); // Wait for getGasStations to finish
-    //setSelectedGasStations(gasStations);
-  }}
-        
-
+          onClick={async () => {
+            toggleGasStations();
+            await getGasStations(); // Wait for getGasStations to finish
+            //setSelectedGasStations(gasStations);
+          }}
           className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
         >
           Show Gas Stations

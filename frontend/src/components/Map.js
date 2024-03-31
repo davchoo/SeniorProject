@@ -24,7 +24,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
-  }); 
+  });
 
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
@@ -52,27 +52,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
       } else {
         setDestination(null);
       }
-    }
-  };
-
-  const getGasStations = () => {
-    if (directions != null) {
-      axios.post('http://localhost:8080/api/trip/gas', {
-        polyline: window.google.maps.geometry.encoding.encodePath(path),
-        startAddress: directions.routes[0].legs[0].start_address,
-        endAddress: directions.routes[0].legs[0].end_address,
-        type: "REGULAR_UNLEADED",
-        tankSizeInGallons: 18.56934615384615,
-        milesPerGallon: 26,
-        travelersMeterCapacity: 482803
-      })
-        .then(response => {
-          setGasStations(response.data.gasStations)
-          console.log("Response from backend:", response.data);
-        })
-        .catch(error => {
-          console.error("Error getting gas stations:", error);
-        });
     }
   };
 
@@ -123,7 +102,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
       );
     }
   }, [origin, destination]);
-  
+
 
 
   const handleMarkerClick = (gasStation) => {
@@ -243,7 +222,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
             <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
               <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.name}</h3>
               <hr />
-              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false}/></p>
+              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
               <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
               <p><u>Fuel Price:</u></p>
               <ul>
@@ -253,15 +232,15 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
                   </li>
                 ))}
               </ul>
-             
+
               <p><u>Reviews:</u></p>
               <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
                 {selectedGasMarker.reviews && (
                   <ul>
                     {selectedGasMarker.reviews.map((review, index) => (
-                      
+
                       <li key={index}>
-                        <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false}/></p>
+                        <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false} /></p>
                         <p>{review.text.text}</p>
                       </li>
                     ))}
