@@ -9,6 +9,7 @@ function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
   const [showWeatherInfo, setShowWeatherInfo] = useState(false);
+  const [data, setSelectedData] = useState([]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -31,11 +32,10 @@ function Plan() {
   return (
     <div className="min-h-screen bg-custom-green flex justify-center items-center font-notosansjp font-bold m-1 relative z-0">
       <div className="w-full max-w-screen-xl relative h-full"> 
-      <button onClick={toggleSidebar}  className="absolute top-2 left-[-6rem] z-0 text-xl text-white">
-        <GiHamburgerMenu />
-      </button>
-
-
+        <button onClick={toggleSidebar} className="absolute top-2 left-[-6rem] z-0 text-xl text-white">
+          <GiHamburgerMenu />
+        </button>
+        
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
           <div style={{ padding: '20px', borderRight: '2px solid white' }}>
             <h2 className="font-notosansjp font-extrabold text-custom-black">Saved Trips</h2>
@@ -73,11 +73,11 @@ function Plan() {
                 Weather
               </button>
             </div>
-            {showGasInfo && <Gas showGasInfo={showGasInfo} />}
+            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData}/>}
             {showWeatherInfo && <Weather />}
           </div>
 
-          <Map showGasInfo={showGasInfo} />
+          <Map showGasInfo={showGasInfo} data={data}/>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
+import { GasStationsMarkers } from '../pages/Gas';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -17,12 +18,11 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = () => {
- const { isLoaded, loadError } = useLoadScript({
-googleMapsApiKey: 'AIzaSyAquT4y7VbS6RKyYn6Nbpjrm5Wcng-O-oo',
-
-   libraries,
- });
+const Map = ({ data }) => {
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
 
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
@@ -30,80 +30,80 @@ googleMapsApiKey: 'AIzaSyAquT4y7VbS6RKyYn6Nbpjrm5Wcng-O-oo',
   const [directions, setDirections] = useState(null);
   const [gasStations, setGasStations] = useState([]);
   const [infoWindow, setInfoWindow] = useState(null);
-  const [distance, setDistance] = useState(null); 
-  const [duration, setDuration] = useState(null); 
+  const [distance, setDistance] = useState(null);
+  const [duration, setDuration] = useState(null);
+  const [selectedGasMarker, setSelectedGasMarker] = useState(null);
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
-  if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
-    const lat = selectedPlace.geometry.location.lat();
-    const lng = selectedPlace.geometry.location.lng();
-    if (isOrigin) {
-      setOrigin({ lat, lng });
+    if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
+      const lat = selectedPlace.geometry.location.lat();
+      const lng = selectedPlace.geometry.location.lng();
+      if (isOrigin) {
+        setOrigin({ lat, lng });
+      } else {
+        setDestination({ lat, lng });
+      }
     } else {
-      setDestination({ lat, lng });
+      console.error('Invalid place object:', selectedPlace);
+      if (isOrigin) {
+        setOrigin(null);
+      } else {
+        setDestination(null);
+      }
     }
-  } else {
-    console.error('Invalid place object:', selectedPlace);
-    if (isOrigin) {
-      setOrigin(null); 
-    } else {
-      setDestination(null); 
-    }
-  }
-};
+  };
 
-const getGasStations = () => {
-  if(directions != null) {
-    // Make an HTTP POST request to your backend
-    axios.post('http://localhost:8080/api/trip/gas', {
+  const getGasStations = () => {
+    if (directions != null) {
+      axios.post('http://localhost:8080/api/trip/gas', {
         polyline: window.google.maps.geometry.encoding.encodePath(path),
         startAddress: directions.routes[0].legs[0].start_address,
         endAddress: directions.routes[0].legs[0].end_address,
-        type: "REGULAR_UNLEADED", // need to get this from what Kaan is working on
+        type: "REGULAR_UNLEADED",
         tankSizeInGallons: 18.56934615384615,
         milesPerGallon: 26,
-        travelersMeterCapacity: 482803 // need to get this from what Kaan is working on
-    })
+        travelersMeterCapacity: 482803
+      })
         .then(response => {
-          // Handle success
           setGasStations(response.data.gasStations)
           console.log("Response from backend:", response.data);
-      
         })
         .catch(error => {
-          // Handle error
           console.error("Error getting gas stations:", error);
         });
-  }
-};
+    }
+  };
 
-useEffect(() => {
-  if (origin && destination) {
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: new window.google.maps.LatLng(origin.lat, origin.lng),
-        destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-        travelMode: 'DRIVING',
-      },
-      (result, status) => {
-        if (status === 'OK') {
-          console.log(result)
-          setDirections(result);
-          setPath(getFullRoute(result.routes[0]));
-          setDistance(result.routes[0].legs[0].distance.text); 
-          setDuration(result.routes[0].legs[0].duration.text); 
-          getGasStations();
-        } else {
-          console.error('Failed to fetch directions. Status: ', status);
-          setDirections(null);
-          setPath(null);
+  useEffect(() => {
+    if (origin && destination) {
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: new window.google.maps.LatLng(origin.lat, origin.lng),
+          destination: new window.google.maps.LatLng(destination.lat, destination.lng),
+          travelMode: 'DRIVING',
+        },
+        (result, status) => {
+          if (status === 'OK') {
+            setDirections(result);
+            setPath(getFullRoute(result.routes[0]));
+            setDistance(result.routes[0].legs[0].distance.text);
+            setDuration(result.routes[0].legs[0].duration.text);
+            getGasStations();
+          } else {
+            console.error('Failed to fetch directions. Status: ', status);
+            setDirections(null);
+            setPath(null);
+          }
         }
-      }
-    );
-  }
-}, [origin, destination]);
+      );
+    }
+  }, [origin, destination]);
 
+
+  const handleMarkerClick = (gasStation) => {
+    setSelectedGasMarker(gasStation);
+  };
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -118,15 +118,16 @@ useEffect(() => {
       <div style={{ width: '30vw', marginBottom: '20px', marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', zIndex: 1 }}>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div style={{ marginTop: '5px', marginLeft: '10px', fontSize: '0.9rem' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div> 
+        <div style={{ marginTop: '5px', marginLeft: '10px', fontSize: '0.9rem' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
         <div style={{ marginLeft: '10px', fontSize: '0.9rem' }}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
       </div>
+
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         zoom={4.6}
         center={center}
       >
-        {origin != null ? (
+        {origin != null && (
           <Marker
             position={{
               lat: origin.lat,
@@ -140,7 +141,7 @@ useEffect(() => {
             }}
             onClick={() => setInfoWindow({ type: 'origin', location: origin })}
           />
-        ) : null}
+        )}
         {infoWindow && infoWindow.type === 'origin' && (
           <InfoWindow
             position={{
@@ -156,7 +157,7 @@ useEffect(() => {
           </InfoWindow>
         )}
 
-        {destination != null ? (
+        {destination != null && (
           <Marker
             position={{
               lat: destination.lat,
@@ -170,7 +171,7 @@ useEffect(() => {
             }}
             onClick={() => setInfoWindow({ type: 'destination', location: destination })}
           />
-        ) : null}
+        )}
         {infoWindow && infoWindow.type === 'destination' && (
           <InfoWindow
             position={{
@@ -185,7 +186,7 @@ useEffect(() => {
             </div>
           </InfoWindow>
         )}
-        
+
         {path && (
           <>
             <Polyline
@@ -199,33 +200,68 @@ useEffect(() => {
           </>
         )}
 
-        {gasStations != null ?
-          gasStations.map(station => (
-            <Marker
-              key={station.name}
-              position={{
-                lat: station.location.lat,
-                lng: station.location.lng
-              }}
-              title={station.formattedAddress}
-              icon={{
-                url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
-                scaledSize: new window.google.maps.Size(30, 30)
-              }}
-            />
-          ))
-          : null}
+        {data != null && (
+          <GasStationsMarkers
+            gasStations={data}
+            onClick={handleMarkerClick}
+          />
+        )}
+
+        {selectedGasMarker && (
+          <InfoWindow
+            position={{
+              lat: selectedGasMarker.location.latitude,
+              lng: selectedGasMarker.location.longitude,
+            }}
+            onCloseClick={() => setSelectedGasMarker(null)}
+          >
+            <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
+              <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.displayName.text}</h3>
+              <hr />
+              <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
+              <p><u>Fuel Price:</u></p>
+              <ul>
+                {selectedGasMarker.fuelOptions && selectedGasMarker.fuelOptions.fuelPrices ?
+                  selectedGasMarker.fuelOptions.fuelPrices
+                    .map((fuel, index) => {
+                      return (
+                        <li key={index}>
+                          {fuel.type}: ${fuel.price.dollarPrice.toFixed(2)} per gallon
+                        </li>
+                      );
+                    }) : <li>No prices available</li>
+                }
+              </ul>
+              <p><u>Rating:</u> {selectedGasMarker.rating || 'Not Available'}</p>
+              <p><u>Reviews:</u></p>
+              <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                {selectedGasMarker.reviews && (
+                  <ul>
+                    {selectedGasMarker.reviews.map((review, index) => (
+                      <li key={index}>
+                        <p><u>ID:</u> {review.id}</p>
+                        <p><u>Rating:</u> {review.rating}</p>
+                        <p>{review.text.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </InfoWindow>
+        )}
       </GoogleMap>
     </div>
   );
 };
 
+
 function decodePolyline(encoded) {
   return window.google.maps.geometry.encoding.decodePath(encoded);
 }
 
+
 function getFullRoute(route) {
-  console.log(route);
   let coordinates = []
   for (let leg of route.legs) {
     for (let step of leg.steps) {
@@ -236,5 +272,6 @@ function getFullRoute(route) {
   }
   return coordinates
 }
+
 
 export default Map;
