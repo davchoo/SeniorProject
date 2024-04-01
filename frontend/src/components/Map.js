@@ -118,7 +118,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', height: '100vh', marginTop: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', height: '100vh' }}>
       <div style={{ width: '30vw', marginBottom: '20px', marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', zIndex: 1 }}>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
@@ -211,7 +211,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
           />
         )}
 
-        {selectedGasMarker && (
+{selectedGasMarker && (
           <InfoWindow
             position={{
               lat: selectedGasMarker.location.lat,
@@ -222,8 +222,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
             <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
               <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.name}</h3>
               <hr />
-              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
-              <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
               <p><u>Fuel Price:</u></p>
               <ul>
                 {Object.entries(selectedGasMarker.prices).map(([type, price]) => (
@@ -232,7 +230,16 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
                   </li>
                 ))}
               </ul>
-
+              <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
+              <p><u>Hours:</u></p>
+              <ul>
+               {selectedGasMarker.currentOpeningHours?.weekdayDescriptions?.map((description, index) => (
+                 <li key={index}>
+                  {description}
+                </li>
+                 ))}
+              </ul>
+              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
               <p><u>Reviews:</u></p>
               <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
                 {selectedGasMarker.reviews && (
