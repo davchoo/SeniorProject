@@ -21,11 +21,13 @@ function Plan() {
   const toggleGasInfo = () => {
     setShowGasInfo(!showGasInfo);
     setShowWeatherInfo(false);
+    setSelectedData([]); 
   };
 
   const toggleWeatherInfo = () => {
     setShowWeatherInfo(!showWeatherInfo);
     setShowGasInfo(false);
+    setSelectedData([]); 
   };
 
   const closeSidebar = () => {
