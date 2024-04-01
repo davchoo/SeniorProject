@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import gasStationsData from './gasStations.json';
 import axios from 'axios';
+import Car from '../components/Car';
 
 const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress, getEndAddress }) => {
   const [selectedMake, setSelectedMake] = useState('');
@@ -10,6 +11,9 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
   const [selectedFuelType, setSelectedFuelType] = useState('');
   const [gasStations, setGasStations] = useState([]);
   const [price, setPrice] = useState();
+  const [type, setType] = useState();
+  const[milesPerGallon, setMilesPerGallon] = useState();
+  const [tankSizeInGallons, setTankSizeInGallons] = useState();
   
 
   const toggleGasStations = () => {
@@ -31,8 +35,8 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
         startAddress: getStartAddress,
         endAddress: getEndAddress,
         type: selectedFuelType,
-        tankSizeInGallons: 18.56934615384615,
-        milesPerGallon: 26,
+        tankSizeInGallons: tankSizeInGallons,
+        milesPerGallon: milesPerGallon,
       })
         .then(response => {
           setGasStations(response.data.gasStations)
@@ -49,29 +53,12 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
 
 return (
     <div>
-      <div style={{ position: 'absolute', right: '12px', top: '130px' }}>
+      <div  >
         <p className="text-sm text-custom-black font-notosansjp">Enter Information About Your Vehicle:</p>
       </div>
+      
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', marginTop: '50px' }}>
-        <div>
-          <p className="text-sm text-custom-black font-notosansjp">Car Make:</p>
-          <select value={selectedMake} onChange={(e) => setSelectedMake(e.target.value)}>
-            <option value="">Select Make</option>
-          </select>
-        </div>
-
-        <div>
-          <div style={{ marginLeft: '30px' }}>
-            <p className="text-sm text-custom-black font-notosansjp">Car Model:</p>
-            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}>
-              <option value="">Select Model</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+      <div>
         <div>
           <p className="text-sm text-custom-black font-notosansjp">Select Fuel Type:</p>
           <select id="fuelType" onChange={handleFuelTypeChange} value={selectedFuelType}>
@@ -82,17 +69,20 @@ return (
             <option value="DIESEL">Diesel</option>
           </select>
 
-          <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+          <div>
         <div>
           <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip: ${price}</p>
         </div>
       </div>
-      <div style={{ display: 'flex', marginTop: '10px', marginLeft: '10px' }}>
+      <div >
         <div>
           <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed: {gasStations.length}</p>
         </div>
       </div>
         </div>
+      </div>
+      <div>
+        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons}/>
       </div>
 
       <div style={{ padding: '10px' }}>
@@ -122,8 +112,8 @@ export const GasStationsMarkers = ({ gasStations, onClick }) => (
         }}
         title={station.formattedAddress}
         icon={{
-          url: 'http://maps.gstatic.com/mapfiles/ms2/micons/gas.png', 
-          scaledSize: new window.google.maps.Size(30, 30),
+          url: 'https://maps.gstatic.com/mapfiles/place_api/icons/gas_station-71.png',
+          scaledSize: new window.google.maps.Size(25, 25),
         }}
         onClick={() => onClick(station)} 
       />
