@@ -12,14 +12,13 @@ import team.travel.travelplanner.ndfd.grid.TimeSliceData;
 import team.travel.travelplanner.service.RasterWeatherDataService;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.grid.GridDataset;
-import ucar.nc2.grib.grib2.Grib2Index;
-import ucar.nc2.grib.grib2.Grib2Record;
-import ucar.nc2.grib.grib2.table.Grib2Tables;
-import ucar.nc2.time.CalendarDate;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
@@ -27,7 +26,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     public RasterWeatherModel checkWeather(LineString route, int[] durations, Instant startTime) throws IOException {
         List<GridDataset> datasets = getWeatherDatasets();
         try (SimpleGridDataSource ds = new SimpleGridDataSource(datasets)) {
-            Map<Instant, NDFDWeatherSection> weatherSections = loadWeatherSections(datasets);
+            Map<Instant, NDFDWeatherSection> weatherSections = NDFDWeatherSection.loadWeatherSections(datasets);
             Instant dataStartTime = ds.getDataStartTime();
 
             Instant currentTime = startTime;
@@ -78,24 +77,5 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                 GridDataset.open("ndfd/AR.conus/VP.001-003/ds.wx.bin", EnumSet.of(NetcdfDataset.Enhance.CoordSystems)), // TODO need other enhancements?
                 GridDataset.open("ndfd/AR.conus/VP.004-007/ds.wx.bin", EnumSet.of(NetcdfDataset.Enhance.CoordSystems))
         );
-    }
-
-    private Map<Instant, NDFDWeatherSection> loadWeatherSections(List<GridDataset> datasets) throws IOException {
-        Map<Instant, NDFDWeatherSection> weatherSections = new HashMap<>();
-        for (GridDataset dataset : datasets) {
-            Grib2Index index = new Grib2Index();
-            index.readIndex(dataset.getLocation(), dataset.getLastModified());
-            for (Grib2Record record : index.getRecords()) {
-                Grib2Tables tables = Grib2Tables.factory(record);
-                CalendarDate date = tables.getForecastDate(record);
-                if (date == null) {
-                    // ERROR missing forecast date??
-                    continue;
-                }
-                Instant instant = Instant.ofEpochMilli(date.getMillis());
-                weatherSections.put(instant, new NDFDWeatherSection(record.getLocalUseSection()));
-            }
-        }
-        return weatherSections;
     }
 }

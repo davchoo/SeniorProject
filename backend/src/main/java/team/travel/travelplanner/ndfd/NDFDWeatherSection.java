@@ -2,14 +2,18 @@ package team.travel.travelplanner.ndfd;
 
 import team.travel.travelplanner.ndfd.degrib.WeatherWord;
 import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherCode4;
+import ucar.nc2.dt.grid.GridDataset;
+import ucar.nc2.grib.grib2.Grib2Index;
+import ucar.nc2.grib.grib2.Grib2Record;
 import ucar.nc2.grib.grib2.Grib2SectionLocalUse;
+import ucar.nc2.grib.grib2.table.Grib2Tables;
+import ucar.nc2.time.CalendarDate;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 
 public class NDFDWeatherSection {
     private final List<List<WeatherWord>> weatherStrings;
@@ -117,5 +121,24 @@ public class NDFDWeatherSection {
 
     public int getNumWeatherStrings() {
         return weatherStrings.size();
+    }
+
+    public static Map<Instant, NDFDWeatherSection> loadWeatherSections(List<GridDataset> datasets) throws IOException {
+        Map<Instant, NDFDWeatherSection> weatherSections = new HashMap<>();
+        for (GridDataset dataset : datasets) {
+            Grib2Index index = new Grib2Index();
+            index.readIndex(dataset.getLocation(), dataset.getLastModified());
+            for (Grib2Record record : index.getRecords()) {
+                Grib2Tables tables = Grib2Tables.factory(record);
+                CalendarDate date = tables.getForecastDate(record);
+                if (date == null) {
+                    // ERROR missing forecast date??
+                    continue;
+                }
+                Instant instant = Instant.ofEpochMilli(date.getMillis());
+                weatherSections.put(instant, new NDFDWeatherSection(record.getLocalUseSection()));
+            }
+        }
+        return weatherSections;
     }
 }
