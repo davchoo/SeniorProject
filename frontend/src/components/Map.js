@@ -118,12 +118,12 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', height: '100vh' }}>
-      <div style={{ width: '30vw', marginBottom: '20px', marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', zIndex: 1 }}>
+    <div className='flex-col'>
+      <div>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div style={{ marginTop: '5px', marginLeft: '10px', fontSize: '0.9rem' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
-        <div style={{ marginLeft: '10px', fontSize: '0.9rem' }}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+        <div>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
+        <div>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
       </div>
 
       <GoogleMap
