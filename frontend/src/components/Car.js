@@ -88,6 +88,8 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     switch(fuelType){
       case 'Regular Gasoline':
         return "REGULAR_UNLEADED"
+      case 'Midgrade Gasoline':
+        return "REGULAR_UNLEADED"
     }
   }
 
@@ -123,6 +125,8 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
         return 20; // Estimated tank size for Passenger Vans: 20 gallons
       case 'Two Seaters':
         return 8; // Estimated tank size for Two Seaters: 8 gallons
+      case 'Sport Utility Vehicle - 4WD':
+          return 18; // Estimated tank size for SUVs: 18 gallons
       default:
         return 14; // Default estimated tank size: 14 gallons
     }
