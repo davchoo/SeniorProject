@@ -59,6 +59,12 @@ dependencies {
     testImplementation("io.zonky.test:embedded-database-spring-test:2.5.0")
 
     implementation("org.aspectj:aspectjrt")
+
+    // Downloading files from AWS S3 bucket
+    implementation(platform("software.amazon.awssdk:bom:2.25.21"))
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:s3-transfer-manager")
+    implementation("software.amazon.awssdk.crt:aws-crt:0.29.14")
 }
 
 tasks.withType<Test> {
