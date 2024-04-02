@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse'; // Import PapaParse library for parsing CSV
 
-const Car = ({setType,setTankSizeInGallons,setMilesPerGallon}) => {
+const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [vehicleInfo, setVehicleInfo] = useState(null);
@@ -54,12 +54,15 @@ const Car = ({setType,setTankSizeInGallons,setMilesPerGallon}) => {
         const rangeEstimation = getRangeEstimation(selectedModelData.VClass, selectedModelData.year);
         const totalMiles = mpgData * rangeEstimation;
         const totalMeters = totalMiles * 1609.34;
+        const transformedFuelType = transformFuelType(selectedModelData.fuelType1)
+        setFuelType(transformedFuelType)
         setVehicleInfo({
           ...selectedModelData,
           totalMiles: totalMiles.toFixed(2),
           totalMeters: totalMeters.toFixed(2),
           mpg: mpgData,
-          tankSize: tankSize
+          tankSize: tankSize,
+          fuelType: transformedFuelType
         });
         setError('');
       } else {
@@ -71,6 +74,13 @@ const Car = ({setType,setTankSizeInGallons,setMilesPerGallon}) => {
       setError('Failed to get vehicle information. Please try again later with valid information.');
     }
   };
+
+  const transformFuelType = (fuelType) =>{
+    switch(fuelType){
+      case 'Regular Gasoline':
+        return "REGULAR_UNLEADED"
+    }
+  }
 
   const getTankSizeEstimation = (vehicleClass, year) => {
     switch (vehicleClass) {
@@ -187,6 +197,7 @@ const Car = ({setType,setTankSizeInGallons,setMilesPerGallon}) => {
             <ul>
               <li>MPG: {vehicleInfo.mpg}</li>
               <li>Estimated Tank Size In Gallons: {vehicleInfo.tankSize}</li>
+              <li>Fuel Type: {vehicleInfo.fuelType}</li>
             </ul>
           </p>
         </div>

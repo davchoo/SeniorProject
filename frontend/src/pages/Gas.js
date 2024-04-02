@@ -8,7 +8,6 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [showGasStations, setShowGasStations] = useState(false);
-  const [selectedFuelType, setSelectedFuelType] = useState('');
   const [gasStations, setGasStations] = useState([]);
   const [price, setPrice] = useState();
   const [type, setType] = useState();
@@ -20,21 +19,17 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
     setShowGasStations(!showGasStations);
   };
 
-  const handleFuelTypeChange = (event) => {
-    setSelectedFuelType(event.target.value);
-  };
 
   const getGasStations = async () => {
     console.log(getPolyline)
     const polyline = getPolyline; // Call the function to retrieve the polyline
     console.log(getStartAddress)
-    console.log(selectedFuelType)
-    if (polyline && selectedFuelType) {
+    if (polyline) {
       axios.post('http://localhost:8080/api/trip/gas', {
         polyline: polyline, // Use the obtained polyline
         startAddress: getStartAddress,
         endAddress: getEndAddress,
-        type: selectedFuelType,
+        type: type,
         tankSizeInGallons: tankSizeInGallons,
         milesPerGallon: milesPerGallon,
       })
@@ -56,33 +51,12 @@ return (
       <div  >
         <p className="text-sm text-custom-black font-notosansjp">Enter Information About Your Vehicle:</p>
       </div>
-      
-
       <div>
-        <div>
-          <p className="text-sm text-custom-black font-notosansjp">Select Fuel Type:</p>
-          <select id="fuelType" onChange={handleFuelTypeChange} value={selectedFuelType}>
-            <option value="">Select...</option>
-            <option value="REGULAR_UNLEADED">Regular Unleaded</option>
-            <option value="MIDGRADE">Midgrade</option>
-            <option value="PREMIUM">Premium</option>
-            <option value="DIESEL">Diesel</option>
-          </select>
-
-          <div>
-        <div>
-          <p className="text-sm text-custom-black font-notosansjp">Estimated Total Fuel Cost of the Trip: ${price}</p>
-        </div>
+        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType}/>
       </div>
-      <div >
-        <div>
-          <p className="text-sm text-custom-black font-notosansjp">Number of Fuel Stops Needed: {gasStations.length}</p>
-        </div>
-      </div>
-        </div>
-      </div>
-      <div>
-        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons}/>
+      <div className='flex-col'>
+        <p>Estimated Price: ${price}</p>
+        <p>Total Stops: {gasStations.length}</p>
       </div>
 
       <div style={{ padding: '10px' }}>
