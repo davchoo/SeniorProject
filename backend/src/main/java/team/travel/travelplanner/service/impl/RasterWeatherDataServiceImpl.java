@@ -26,6 +26,7 @@ import ucar.nc2.dt.grid.GridDataset;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.*;
@@ -55,7 +56,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
 
     @Override
     public RasterWeatherModel checkWeather(LineString route, int[] durations, Instant startTime) throws IOException {
-        List<GridDataset> datasets = getDatasets("conus", "wx");
+        List<GridDataset> datasets = getDatasets("conus", "wx"); // TODO move to parameters
         try (SimpleGridDataSource ds = new SimpleGridDataSource(datasets)) {
             Map<Instant, NDFDWeatherSection> weatherSections = NDFDWeatherSection.loadWeatherSections(datasets);
             Instant dataStartTime = ds.getDataStartTime();
@@ -156,44 +157,64 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
 
     public void checkForUpdates() {
         LOGGER.info("Checking NDFD S3 Bucket for updated objects");
-        AtomicInteger fileCount = new AtomicInteger();
-        s3Client.listObjectsV2(builder -> builder
+        Integer fileCount = s3Client.listObjectsV2(builder -> builder
                         .bucket(config.getNdfdS3Bucket())
                         .prefix("opnl")
                         .build())
-                .thenComposeAsync(response -> downloadObjects(response.contents(), fileCount))
+                .thenComposeAsync(response -> downloadObjects(response.contents()))
                 .join();
         lastUpdate = Instant.now();
-        LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount.get());
+        LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
     }
 
-    private CompletableFuture<Void> downloadObjects(List<S3Object> objects, AtomicInteger fileCount) {
-        List<CompletableFuture<?>> futures = new ArrayList<>();
-        for (S3Object object : objects) {
-            if (!shouldDownload(object)) {
-                continue;
-            }
-            Path destination = getDestination(object.key());
-            try {
+    private CompletableFuture<Integer> downloadObjects(List<S3Object> objects) {
+        try {
+            AtomicInteger fileCount = new AtomicInteger();
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+            Path tmpDir = Files.createTempDirectory(Path.of("."), "tmp-raster-data"); // TODO need config?
+            int i = 0;
+            for (S3Object object : objects) {
+                if (!shouldDownload(object)) {
+                    continue;
+                }
+                Path tmpDestination = tmpDir.resolve(System.currentTimeMillis() + "_" + i++ + ".tmp");
+                Path destination = getDestination(object.key());
                 Files.createDirectories(destination.getParent());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                DownloadFileRequest request = DownloadFileRequest.builder()
+                        .getObjectRequest(builder -> builder
+                                .bucket(config.getNdfdS3Bucket())
+                                .key(object.key()))
+                        .destination(tmpDestination)
+                        .build();
+                futures.add(transferManager.downloadFile(request)
+                        .completionFuture()
+                        .handle((result, throwable) -> {
+                            if (throwable != null) {
+                                LOGGER.error("Failed to download {}", object.key(), throwable);
+                                return null;
+                            }
+                            try {
+                                Files.move(tmpDestination, destination, StandardCopyOption.ATOMIC_MOVE);
+                                fileCount.incrementAndGet();
+                            } catch (IOException e) {
+                                LOGGER.error("Failed to move file to final destination. Key: {} Destination: {}", object.key(), destination, e);
+                            }
+                            return null;
+                        }));
             }
-            DownloadFileRequest request = DownloadFileRequest.builder()
-                    .getObjectRequest(builder -> builder
-                            .bucket(config.getNdfdS3Bucket())
-                            .key(object.key()))
-                    .destination(destination)
-                    .build();
-            futures.add(transferManager.downloadFile(request)
-                    .completionFuture()
-                    .exceptionally(throwable -> {
-                        LOGGER.warn("Failed to download {}", object.key(), throwable);
-                        return null;
-                    })
-                    .thenAccept(x -> fileCount.incrementAndGet()));
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                    .thenApply((x) -> {
+                        try {
+                            Files.delete(tmpDir);
+                        } catch (IOException e) {
+                            LOGGER.warn("Failed to delete temp directory", e);
+                        }
+                        return fileCount.get();
+                    });
+        } catch (IOException e) {
+            LOGGER.error("Failed to download objects", e);
+            return CompletableFuture.completedFuture(0);
         }
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     private Path getDestination(String key) {
