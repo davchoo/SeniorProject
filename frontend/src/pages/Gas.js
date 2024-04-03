@@ -3,8 +3,9 @@ import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import gasStationsData from './gasStations.json';
 import axios from 'axios';
 import Car from '../components/Car';
+import ClipLoader from "react-spinners/ClipLoader";
 
-const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress, getEndAddress }) => {
+const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination }) => {
   const [selectedMake, setSelectedMake] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [showGasStations, setShowGasStations] = useState(false);
@@ -13,6 +14,8 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
   const [type, setType] = useState();
   const[milesPerGallon, setMilesPerGallon] = useState();
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
+  const [clicked, setClicked] = useState(false);
+  const [loading, setLoading] = useState(true);
   
 
   const toggleGasStations = () => {
@@ -23,12 +26,12 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
   const getGasStations = async () => {
     console.log(getPolyline)
     const polyline = getPolyline; // Call the function to retrieve the polyline
-    console.log(getStartAddress)
+    console.log(origin)
     if (polyline) {
       axios.post('http://localhost:8080/api/trip/gas', {
         polyline: polyline, // Use the obtained polyline
-        startAddress: getStartAddress,
-        endAddress: getEndAddress,
+        startAddress: origin,
+        endAddress: destination,
         type: type,
         tankSizeInGallons: tankSizeInGallons,
         milesPerGallon: milesPerGallon,
@@ -39,6 +42,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
           setPrice((response.data.totalTripGasPrice * response.data.tankSizeInGallons).toFixed(2))
           console.log(gasStations)
           console.log("Response from backend:", response.data);
+          setLoading(false)
         })
         .catch(error => {
           console.error("Error getting gas stations:", error);
@@ -62,6 +66,7 @@ return (
       <div style={{ padding: '10px' }}>
       <button
           onClick={async () => {
+            setClicked(true)
             toggleGasStations();
             await getGasStations(); // Wait for getGasStations to finish
             //setSelectedGasStations(gasStations);
@@ -71,6 +76,13 @@ return (
           Show Gas Stations
         </button>
       </div>
+      {clicked ? 
+        <ClipLoader
+        loading={loading}
+        size={150}
+        aria-label="Loading Spinner"
+        data-testid="loader"
+      /> : null}
     </div>
   );
 };
