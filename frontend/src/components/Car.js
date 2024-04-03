@@ -9,66 +9,75 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState({});
   const [filteredModels, setFilteredModels] = useState([]);
+  const [filteredMakes, setFilteredMakes] = useState([])
+  const [year, setYear] = useState();
+  const [yearOptions, setYearOptions] = useState([])
 
   useEffect(() => {
     const fetchMakesAndModels = async () => {
       try {
-        console.log("hello")
-        const response = await fetch("/vehicles.csv"); // Fetch CSV file
+        const response = await fetch("/vehicles_mpg.json");
         console.log(response)
-        const csv = await response.text();
+        const data = await response.json();
+  
+        const selectedYearData = data[year];
+        if (selectedYearData) {
+          const makes = Object.keys(selectedYearData);
+          setMakes(makes);
+  
+          const models = {};
+          makes.forEach(make => {
+            models[make] = Object.keys(selectedYearData[make]);
+          });
+          setModels(models);
+        } else {
+          console.error('Data for selected year not found.');
+          setMakes([]);
+          setModels({});
+        }
+      } catch (error) {
+        console.error('Error fetching makes and models:', error);
+      }
+    };
+  
+    fetchMakesAndModels();
+  }, [year]);
 
-        // Parse CSV using PapaParse
-        const results = Papa.parse(csv, { header: true });
-        const uniqueMakes = [...new Set(results.data.map(entry => entry.make))];
-        const uniqueModels = {};
-        uniqueMakes.forEach(make => {
-          // Filter out duplicate models for each make
-          uniqueModels[make] = [...new Set(results.data.filter(entry => entry.make === make).map(entry => entry.model))];
-        });
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const response = await fetch("/vehicles_mpg.json");
+        console.log(response)
+        const data = await response.json();
 
-        setMakes(uniqueMakes);
-        setModels(uniqueModels);
+        const years = Object.keys(data);
+        setYearOptions(years);
       } catch (error) {
         console.error('Error fetching makes and models:', error);
       }
     };
 
-    fetchMakesAndModels();
+    fetchYears();
   }, []);
 
   const fetchVehicleInfo = async () => {
     try {
-      console.log("here");
-      const response = await fetch('/vehicles.csv'); // Fetch CSV file
-      const csv = await response.text();
-      const results = Papa.parse(csv, { header: true });
-
-      const selectedModelData = results.data.find(entry => entry.make === make && entry.model === model);
-      if (selectedModelData) {
-        const mpgData = parseFloat(selectedModelData.comb08);
-        console.log(mpgData)
-        setMilesPerGallon(mpgData);
-        const tankSize = getTankSizeEstimation(selectedModelData.VClass, selectedModelData.year)
-        setTankSizeInGallons(tankSize)
-        const rangeEstimation = getRangeEstimation(selectedModelData.VClass, selectedModelData.year);
-        const totalMiles = mpgData * rangeEstimation;
-        const totalMeters = totalMiles * 1609.34;
-        const transformedFuelType = transformFuelType(selectedModelData.fuelType1)
-        setFuelType(transformedFuelType)
-        setVehicleInfo({
-          ...selectedModelData,
-          totalMiles: totalMiles.toFixed(2),
-          totalMeters: totalMeters.toFixed(2),
-          mpg: mpgData,
-          tankSize: tankSize,
-          fuelType: transformedFuelType
-        });
-        setError('');
-      } else {
-        setVehicleInfo(null);
-        setError('No vehicle found for the provided make and model.');
-      }
+      console.log();
+      const response = await fetch('/vehicles_mpg.json'); // Fetch CSV file
+      const data = await response.json();
+      const car = data[year][make][model];
+      setMilesPerGallon(car[0])
+      const tankSize = getTankSizeEstimation(car[1])
+      setTankSizeInGallons(tankSize)
+      const fuelType = transformFuelType(car[2])
+      setFuelType(fuelType)
+      setVehicleInfo({
+            mpg: car[0],
+            tankSize: tankSize,
+            fuelType: fuelType
+      });
+      
+      console.log(car);
     } catch (error) {
       console.error('Error getting the vehicles information:', error);
       setError('Failed to get vehicle information. Please try again later with valid information.');
@@ -78,6 +87,8 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
   const transformFuelType = (fuelType) =>{
     switch(fuelType){
       case 'Regular Gasoline':
+        return "REGULAR_UNLEADED"
+      case 'Midgrade Gasoline':
         return "REGULAR_UNLEADED"
     }
   }
@@ -114,6 +125,8 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
         return 20; // Estimated tank size for Passenger Vans: 20 gallons
       case 'Two Seaters':
         return 8; // Estimated tank size for Two Seaters: 8 gallons
+      case 'Sport Utility Vehicle - 4WD':
+          return 18; // Estimated tank size for SUVs: 18 gallons
       default:
         return 14; // Default estimated tank size: 14 gallons
     }
@@ -159,6 +172,14 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     setModel(event.target.value);
   };
 
+  const handleYearChange = (event) => {
+    const selectedYear = event.target.value;
+    setYear(selectedYear);
+    const filteredMakes = makes[selectedYear] || [];
+    setFilteredMakes(filteredMakes);
+  };
+    
+
   const handleSubmit = (event) => {
     event.preventDefault();
     fetchVehicleInfo();
@@ -168,6 +189,15 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
       <h1 className="text-center text-blue-500 text-3xl font-semibold mb-8">Vehicle Information</h1>
       <form onSubmit={handleSubmit} className="flex flex-col">
+      <div className="mb-4">
+          <label className="font-bold">Year:</label>
+          <select value={year} onChange={handleYearChange} className="p-2 mt-1 border border-gray-300 rounded-md">
+            <option value="">--Select Year--</option>
+            {yearOptions.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        </div>
         <div className="mb-4">
           <label className="font-bold">Make:</label>
           <select value={make} onChange={handleMakeChange} className="p-2 mt-1 border border-gray-300 rounded-md">
@@ -193,7 +223,7 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
         <div className="mt-8 border border-gray-300 p-4 rounded-md bg-white shadow-md">
           <h2 className="text-blue-500 text-xl font-semibold mb-2">Vehicle Details</h2>
           <p>
-            <strong>{vehicleInfo.make} {vehicleInfo.model} Info:</strong>
+            <strong>{year} {make} {model} Info:</strong>
             <ul>
               <li>MPG: {vehicleInfo.mpg}</li>
               <li>Estimated Tank Size In Gallons: {vehicleInfo.tankSize}</li>
