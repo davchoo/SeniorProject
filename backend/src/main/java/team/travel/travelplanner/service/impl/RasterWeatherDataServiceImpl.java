@@ -15,6 +15,9 @@ import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
 import team.travel.travelplanner.config.RasterWeatherDataConfig;
 import team.travel.travelplanner.model.weather.RasterWeatherModel;
 import team.travel.travelplanner.ndfd.NDFDWeatherSection;
+import team.travel.travelplanner.ndfd.converter.AbstractGridConverter;
+import team.travel.travelplanner.ndfd.converter.NoOpGridConverter;
+import team.travel.travelplanner.ndfd.converter.WeatherGridConverter;
 import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherTable4;
 import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherType;
 import team.travel.travelplanner.ndfd.grid.SimpleGridDataSource;
@@ -103,7 +106,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     }
 
     private List<GridDataset> getDatasets(String area, String dataset) throws IOException {
-        Path base = config.getStoragePath().resolve("AR." + area);
+        Path base = config.getGribStoragePath().resolve("AR." + area);
         List<String> paths;
         try (Stream<Path> stream = Files.walk(base)) {
             paths = stream
@@ -130,12 +133,12 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     }
 
     private void checkLastUpdate() {
-        if (!Files.isDirectory(config.getStoragePath())) {
+        if (!Files.isDirectory(config.getGribStoragePath())) {
             // No files downloaded, set to epoch to make sure files are downloaded regardless of modification time
             lastUpdate = Instant.EPOCH;
             return;
         }
-        try (Stream<Path> stream = Files.walk(config.getStoragePath())) {
+        try (Stream<Path> stream = Files.walk(config.getGribStoragePath())) {
             lastUpdate = stream.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().endsWith(".bin"))
                     .map(path -> {
@@ -159,19 +162,22 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
         LOGGER.info("Checking NDFD S3 Bucket for updated objects");
         Integer fileCount = s3Client.listObjectsV2(builder -> builder
                         .bucket(config.getNdfdS3Bucket())
-                        .prefix("opnl")
+                        .prefix("opnl/")
                         .build())
                 .thenComposeAsync(response -> downloadObjects(response.contents()))
                 .join();
         lastUpdate = Instant.now();
         LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
+        if (fileCount != null && fileCount > 0) {
+            updateGrids();
+        }
     }
 
     private CompletableFuture<Integer> downloadObjects(List<S3Object> objects) {
         try {
             AtomicInteger fileCount = new AtomicInteger();
             List<CompletableFuture<?>> futures = new ArrayList<>();
-            Path tmpDir = Files.createTempDirectory(Path.of("."), "tmp-raster-data"); // TODO need config?
+            Path tmpDir = Files.createTempDirectory(config.getTemporaryStoragePath(), "tmp-raster-data");
             int i = 0;
             for (S3Object object : objects) {
                 if (!shouldDownload(object)) {
@@ -222,7 +228,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             throw new IllegalArgumentException("Expected key to start with 'opnl/' Key: " + key);
         }
         String relPath = key.substring("opnl/".length());
-        return config.getStoragePath().resolve(relPath);
+        return config.getGribStoragePath().resolve(relPath);
     }
 
     private boolean shouldDownload(S3Object object) {
@@ -262,5 +268,42 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
         }
         // Check if was modified since our last update
         return object.lastModified().isAfter(lastUpdate);
+    }
+
+    private void updateGrids() {
+        LOGGER.info("Updating grids");
+        for (String area : config.getAreas()) {
+            for (String dataset : config.getDatasets()) {
+                List<GridDataset> datasets = List.of();
+                try {
+                    datasets = getDatasets(area, dataset);
+                    if (datasets.isEmpty()) {
+                        LOGGER.info("No datasets for Area: {} Dataset: {}", area, dataset);
+                        continue;
+                    }
+                    AbstractGridConverter converter;
+                    if (dataset.equals("wx")) {
+                        converter = new WeatherGridConverter(datasets);
+                    } else {
+                        converter = new NoOpGridConverter(datasets);
+                    }
+                    Path destination = config.getNetcdfStoragePath().resolve(Path.of(area, dataset + ".nc"));
+                    Files.createDirectories(destination.getParent());
+                    converter.convert(destination.toString());
+                }  catch (Exception e) {
+                    LOGGER.error("Failed to update raster. Area: {} Dataset: {}", area, dataset, e);
+                } finally {
+                    for (GridDataset ds : datasets) {
+                        try {
+                            ds.close();
+                        } catch (IOException e) {
+                            LOGGER.error("Failed to close dataset", e);
+                        }
+                    }
+                }
+            }
+        }
+        LOGGER.info("Finished updating grids");
+        // TODO notify geoserver?
     }
 }
