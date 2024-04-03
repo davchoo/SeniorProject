@@ -49,7 +49,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, getStartAddress
 return (
     <div>
       <div  >
-        <p className="text-sm text-custom-black font-notosansjp">Enter Information About Your Vehicle:</p>
+        <p className="font-notosansjp text-custom-black text-sm">Enter Information About Your Vehicle:</p>
       </div>
       <div>
         <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType}/>
@@ -66,7 +66,7 @@ return (
             await getGasStations(); // Wait for getGasStations to finish
             //setSelectedGasStations(gasStations);
           }}
-          className={`font-notosansjp font-extrabold mr-10 mt-10 text-custom-black ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
+          className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10  ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
         >
           Show Gas Stations
         </button>

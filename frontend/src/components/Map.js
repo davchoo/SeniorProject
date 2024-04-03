@@ -122,8 +122,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
       <div>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
-        <div>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+        <div style={{ marginTop: '15px', marginLeft: '10px'}}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
+        <div style={{ marginBottom: '20px', marginLeft: '10px'}}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
       </div>
 
       <GoogleMap
