@@ -9,23 +9,20 @@
 ### postgres
 A container running Postgres with the PostGIS extension installed. All data is stored in the `postgres` folder.
 
-### mapserver
-A container running an Apache HTTP Server with the MapServer CGI program. Map layers are configured through the
-`mapserver/weather.map` and additional maps can be added to `mapserver/mapserver.conf`. This server is accessible
-through `http://localhost:4242`
+### geoserver
+A container running GeoServer. The web panel is accessible at `http://localhost:8085/geoserver`. This container is
+configured to show the qpf, temp, and wx datasets for CONUS.
 #### Viewing the map using WMS and QGIS
-Add a new WMS connection with the URL `http://localhost:4242/cgi-bin/mapserv.fcgi?map=weather`
+Add a new WMS connection with the URL `http://localhost:8085/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities`
 
 #### Viewing the map using Google Maps
 Use the following template tile URL
 ```
-http://localhost:4242/cgi-bin/mapserv.fcgi?
-        MAP=weather
-        &MODE=tile
-        &TILEMODE=gmap
-        &TILE={tile x}+{tile y}+{zoom}
-        &LAYERS={a layer from mapserver/weather.map EX: conus.temperature}
-        &vtit={valid time of the layer to display EX: 2024-03-04T01:00}
+http://localhost:8085/geoserver/gwc/service/gmaps?
+        layers={a layer EX: ndfd:conus.wx}
+        &zoom={z}
+        &x={x}
+        &y={y}
+        &format=image/png
+        &time={valid time of the layer to display EX: 2024-04-03T17:00:00.000Z}
 ```
-
-Available NDFD layers and their `vtit` values can be found [here](https://digital.mdl.nws.noaa.gov/ndfd/wms?REQUEST=GetCapabilities).
