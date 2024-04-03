@@ -161,7 +161,8 @@ public abstract class AbstractGridConverter {
             Preconditions.checkArgument(cs.getYHorizAxis().getSize() == yLength, "Datasets have different y lengths");
 
             VariableDS variable = grid.getVariable();
-            Preconditions.checkArgument(Objects.equals(baseVariable.getShortName(), variable.getShortName()), "Dataset grid variables have different short names");
+            // For some reason conus mint and maxt can have different shortnames
+            // Preconditions.checkArgument(Objects.equals(baseVariable.getShortName(), variable.getShortName()), "Dataset grid variables have different short names");
             Preconditions.checkArgument(Objects.equals(baseVariable.getDataType(), variable.getDataType()), "Datasets grid variables different data types");
             Preconditions.checkArgument(
                     Objects.equals(

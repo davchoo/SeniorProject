@@ -17,7 +17,11 @@ public class RasterWeatherDataConfig {
 
     private String ndfdS3Bucket = "noaa-ndfd-pds";
 
-    private Path storagePath = Path.of("./ndfd");
+    private Path gribStoragePath = Path.of("./ndfd");
+
+    private Path netcdfStoragePath = Path.of("./ndfd-nc");
+
+    private Path temporaryStoragePath = Path.of(".");
 
     private Set<String> areas = Set.of("conus");
 
@@ -50,12 +54,28 @@ public class RasterWeatherDataConfig {
         this.ndfdS3Bucket = ndfdS3Bucket;
     }
 
-    public Path getStoragePath() {
-        return storagePath;
+    public Path getGribStoragePath() {
+        return gribStoragePath;
     }
 
-    public void setStoragePath(Path storagePath) {
-        this.storagePath = storagePath;
+    public void setGribStoragePath(Path gribStoragePath) {
+        this.gribStoragePath = gribStoragePath;
+    }
+
+    public Path getNetcdfStoragePath() {
+        return netcdfStoragePath;
+    }
+
+    public void setNetcdfStoragePath(Path netcdfStoragePath) {
+        this.netcdfStoragePath = netcdfStoragePath;
+    }
+
+    public Path getTemporaryStoragePath() {
+        return temporaryStoragePath;
+    }
+
+    public void setTemporaryStoragePath(Path temporaryStoragePath) {
+        this.temporaryStoragePath = temporaryStoragePath;
     }
 
     public Set<String> getAreas() {
