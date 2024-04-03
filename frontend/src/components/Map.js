@@ -42,8 +42,10 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
       const lng = selectedPlace.geometry.location.lng();
       if (isOrigin) {
         setOrigin({ lat, lng });
+        setStartAddress(selectedPlace.formatted_address)
       } else {
         setDestination({ lat, lng });
+        setEndAddress(selectedPlace.formatted_address)
       }
     } else {
       console.error('Invalid place object:', selectedPlace);

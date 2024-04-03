@@ -76,7 +76,7 @@ function Plan() {
                 Weather
               </button>
             </div>
-            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline}/>}
+            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
             {showWeatherInfo && <Weather />}
           </div>
           <div>

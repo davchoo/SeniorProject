@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse'; // Import PapaParse library for parsing CSV
 
-const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
+const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon }) => {
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [vehicleInfo, setVehicleInfo] = useState(null);
@@ -19,12 +19,12 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
         const response = await fetch("/vehicles_mpg.json");
         console.log(response)
         const data = await response.json();
-  
+
         const selectedYearData = data[year];
         if (selectedYearData) {
           const makes = Object.keys(selectedYearData);
           setMakes(makes);
-  
+
           const models = {};
           makes.forEach(make => {
             models[make] = Object.keys(selectedYearData[make]);
@@ -39,7 +39,7 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
         console.error('Error fetching makes and models:', error);
       }
     };
-  
+
     fetchMakesAndModels();
   }, [year]);
 
@@ -72,11 +72,11 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
       const fuelType = transformFuelType(car[2])
       setFuelType(fuelType)
       setVehicleInfo({
-            mpg: car[0],
-            tankSize: tankSize,
-            fuelType: fuelType
+        mpg: car[0],
+        tankSize: tankSize,
+        fuelType: fuelType
       });
-      
+
       console.log(car);
     } catch (error) {
       console.error('Error getting the vehicles information:', error);
@@ -84,8 +84,8 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     }
   };
 
-  const transformFuelType = (fuelType) =>{
-    switch(fuelType){
+  const transformFuelType = (fuelType) => {
+    switch (fuelType) {
       case 'Regular Gasoline':
         return "REGULAR_UNLEADED"
       case 'Midgrade Gasoline':
@@ -126,12 +126,12 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
       case 'Two Seaters':
         return 8; // Estimated tank size for Two Seaters: 8 gallons
       case 'Sport Utility Vehicle - 4WD':
-          return 18; // Estimated tank size for SUVs: 18 gallons
+        return 18; // Estimated tank size for SUVs: 18 gallons
       default:
         return 14; // Default estimated tank size: 14 gallons
     }
   };
-  
+
 
   const getRangeEstimation = (vehicleClass, year) => {
     switch (vehicleClass) {
@@ -178,7 +178,7 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     const filteredMakes = makes[selectedYear] || [];
     setFilteredMakes(filteredMakes);
   };
-    
+
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -189,13 +189,14 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
     <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
       <h4 className="text-center text-custom-black text-md font-semibold mb-3 mt-1">Vehicle Information</h4>
       <form onSubmit={handleSubmit} className="flex flex-col">
-      <div className="mb-4">
+        <div className="mb-4">
           <label className="font-bold">Year:</label>
           <select value={year} onChange={handleYearChange} className="p-2 mt-1 border border-gray-300 rounded-md">
             <option value="">--Select Year--</option>
-            {yearOptions.map(year => (
+            {yearOptions.slice().reverse().map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
+
           </select>
         </div>
         <div className="mb-4">
@@ -216,12 +217,12 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
             ))}
           </select>
         </div>
-        <button 
-          type="submit" 
-          disabled={!make || !model} 
+        <button
+          type="submit"
+          disabled={!make || !model}
           className={`bg-custom-green${(!make || !model) ? '3' : '4'} font-notosansjp text-custom-black font-semibold px-4 py-2 rounded-md cursor-pointer transition duration-300 hover:bg-custom-green4`}
 
-          >
+        >
           Get Vehicle Details
         </button></form>
       {error && <p className="text-red-500 mt-4">{error}</p>}
