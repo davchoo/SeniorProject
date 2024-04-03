@@ -44,9 +44,12 @@ function Plan() {
             <h2 className="font-notosansjp text-custom-black font-bold">Saved Trips</h2>
           </div>
         </Sidebar>
-        <p className="font-notosansjp text-custom-black font-bold mt-2 text-3xl text-center">
-          Let's Start Planning Your Trip!
-        </p>
+        <div className="flex flex-col justify-center items-center m-2">
+          <p className="font-notosansjp text-custom-black font-bold mt-4 text-3xl text-center">
+            Let's Start Planning Your Trip!
+          </p>
+        </div>
+
         <p className="font-notosansjp text-custom-black font-semibold text-sm text-center">
           Provide your origin and destination locations to begin.
         </p>
@@ -54,7 +57,7 @@ function Plan() {
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
           <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress}/>
           <div className='flex flex-col'>
-            <p className="font-notosansjp text-custom-black font-sem  text-sm ">
+            <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}
               {showWeatherInfo && <div className='text-center'>Viewing Weather.</div>} 
               {!showGasInfo && !showWeatherInfo && "Select an option below."}
