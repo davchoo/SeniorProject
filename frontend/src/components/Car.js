@@ -187,7 +187,7 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
-      <h1 className="text-center text-blue-500 text-3xl font-semibold mb-8">Vehicle Information</h1>
+      <h4 className="text-center text-custom-black text-md font-semibold mb-3 mt-1">Vehicle Information</h4>
       <form onSubmit={handleSubmit} className="flex flex-col">
       <div className="mb-4">
           <label className="font-bold">Year:</label>
@@ -216,16 +216,23 @@ const Car = ({setFuelType,setTankSizeInGallons,setMilesPerGallon}) => {
             ))}
           </select>
         </div>
-        <button type="submit" disabled={!make || !model} className="bg-blue-500 text-white font-semibold px-4 py-2 rounded-md cursor-pointer transition duration-300 hover:bg-blue-600">Get Vehicle Info</button>
-      </form>
+        <button 
+          type="submit" 
+          disabled={!make || !model} 
+          className={`bg-custom-green${(!make || !model) ? '3' : '4'} font-notosansjp text-custom-black font-semibold px-4 py-2 rounded-md cursor-pointer transition duration-300 hover:bg-custom-green4`}
+
+          >
+          Get Vehicle Details
+        </button></form>
       {error && <p className="text-red-500 mt-4">{error}</p>}
       {vehicleInfo && (
-        <div className="mt-8 border border-gray-300 p-4 rounded-md bg-white shadow-md">
-          <h2 className="text-blue-500 text-xl font-semibold mb-2">Vehicle Details</h2>
+        <div className="mt-8 border light-gray p-4 rounded-md bg-white shadow-md">
+          <h2 className="text-custom-black text-lg font-semibold mb-2 text-center">Vehicle Details</h2>
+          <hr />
           <p>
-            <strong>{year} {make} {model} Info:</strong>
+            <strong>{year} {make} {model} Information:</strong>
             <ul>
-              <li>MPG: {vehicleInfo.mpg}</li>
+              <li>Miles Per Gallon(MPG): {vehicleInfo.mpg}</li>
               <li>Estimated Tank Size In Gallons: {vehicleInfo.tankSize}</li>
               <li>Fuel Type: {vehicleInfo.fuelType}</li>
             </ul>
