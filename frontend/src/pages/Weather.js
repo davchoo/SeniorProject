@@ -15,11 +15,11 @@ const Weather = () => {
   };
 
   return (
-    <div style={{ marginTop: '20px', position: 'relative', fontFamily: 'Noto Sans JP', fontSize: '14px', display: 'flex', justifyContent: 'space-between' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', }}>
-        <p style={{ marginLeft: '10px' }}> Select Weather View:</p>
-        <div style={{ display: 'flex', marginBottom: '10px', marginTop:'10px' }}>
-          <div style={{ marginLeft: '10px', marginRight: '20px' }}>
+    <div>
+      <div>
+        <p className="font-notosansjp text-custom-black font-semibold text-sm">Select Weather View:</p>
+        <div className="flex flex-row items-center">
+          <div className="mr-4">
             <input
               type="radio"
               id="overlay"
@@ -27,9 +27,9 @@ const Weather = () => {
               value="overlay"
               checked={selectedOption === 'overlay'}
               onChange={() => handleOptionChange('overlay')}
-              style={{ marginRight: '5px' }}
+              className="mr-1"
             />
-            <label> Weather Overlay </label>
+            <label>Weather Overlay</label>
           </div>
           <div>
             <input
@@ -39,37 +39,43 @@ const Weather = () => {
               value="radar"
               checked={selectedOption === 'radar'}
               onChange={() => handleOptionChange('radar')}
-              style={{ marginRight: '5px' }}
+              className="mr-1"
             />
-            <label> Weather Radar </label>
+            <label>Weather Radar</label>
           </div>
         </div>
 
         {selectedOption === 'radar' && (
-          <div style={{ marginTop: '15px', marginBottom: '20px', marginLeft: '30px' }}>
-            <label style={{ fontWeight: 'bold', fontSize: '14px', color: '#000' }}>Select A Radar View:</label>
-            <select value={selectedRadar} onChange={(e) => setSelectedRadar(e.target.value)} style={{ marginLeft: '10px', fontSize: '14px' }}>
+          <div className="mt-4 ml-4">
+            <label className="font-notosansjp text-custom-black font-semibold text-md">Select A Radar View:</label>
+            <select
+              value={selectedRadar}
+              onChange={(e) => setSelectedRadar(e.target.value)}
+              className="ml-2 text-md"
+            >
               <option value="">Radar View</option>
             </select>
           </div>
         )}
-
-        <div style={{ position: 'absolute', left: '10px', bottom: '-10px', top: '180px' }}>
-          <p>Alerts Along Your Route:</p>
-        </div>
       </div>
 
-      <div style={{ marginTop: '310px', marginLeft: '220px'}}>
+      <div className="mt-20">
+        <p className="font-notosansjp text-custom-black font-semibold">Alerts Along Your Route:</p>
+      </div>
+
+      <div>
         <button
-          className={`font-notosansjp font-extrabold text-custom-black py-1 px-2 rounded-md mb-2 ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'} hover:bg-custom-green4`}
+          className={`font-notosansjp text-custom-black font-semibold py-1 px-2 rounded-md mb-2 mt-20 ${
+            showLegend ? 'bg-custom-green4' : 'bg-custom-green3'
+          } hover:bg-custom-green4`}
           onClick={toggleLegend}
         >
           {showLegend ? 'Hide' : 'Show'} Legend
         </button>
 
         {showLegend && (
-          <div style={{ marginTop: '10px', marginRight: '-400px' }}>
-            <p style={{ color: 'text_custom_black' }}>Legend Content Here</p>
+          <div className="mt-4">
+            <p className="font-notosansjp text-custom-black">Legend Content Here</p>
           </div>
         )}
       </div>
