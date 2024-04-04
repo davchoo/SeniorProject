@@ -124,7 +124,7 @@
   <defaultInterpolationMethod>nearest neighbor</defaultInterpolationMethod>
   <dimensions>
     <coverageDimension>
-      <name>Total precipitation (360_Minute Accumulation) @ Ground or water surface</name>
+      <name>qpf</name>
       <description>GridSampleDimension(kg/m²)[-Infinity,Infinity]</description>
       <range>
         <min>-inf</min>
@@ -149,5 +149,5 @@
       <null/>
     </entry>
   </parameters>
-  <nativeCoverageName>Total_precipitation_surface_360_Minute_Accumulation</nativeCoverageName>
+  <nativeCoverageName>qpf</nativeCoverageName>
 </coverage>

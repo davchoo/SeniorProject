@@ -14,17 +14,25 @@ import java.util.List;
 
 public class NoOpGridConverter extends AbstractGridConverter {
     private final int[] origin;
+    private final String shortName;
 
-    public NoOpGridConverter(List<GridDataset> datasets) {
+    private final String longName;
+
+    public NoOpGridConverter(List<GridDataset> datasets, String shortName, String longName) {
         super(datasets);
         this.origin = new int[3];
+        this.shortName = shortName;
+        this.longName = longName;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected void addDataVariable(NetcdfFormatWriter.Builder writerBuilder) {
         VariableDS dataVariable = baseGrid.getVariable();
-        writerBuilder.addVariable(dataVariable.getShortName(), dataVariable.getDataType(), "time y x").addAttributes(dataVariable.attributes()).addAttribute(new Attribute(CF.COORDINATES, "time y x"));
+        writerBuilder.addVariable(shortName, dataVariable.getDataType(), "time y x")
+                .addAttributes(dataVariable.attributes())
+                .addAttribute(new Attribute(CF.COORDINATES, "time y x"))
+                .addAttribute(new Attribute(CF.LONG_NAME, longName));
     }
 
     @Override
@@ -33,6 +41,6 @@ public class NoOpGridConverter extends AbstractGridConverter {
         int[] originalShape = volumeData.getShape();
         int[] shape = new int[]{1, originalShape[0], originalShape[1]}; // Add time axis
         volumeData = volumeData.reshapeNoCopy(shape);
-        writer.write(baseGrid.getVariable().getShortName(), origin, volumeData);
+        writer.write(shortName, origin, volumeData);
     }
 }

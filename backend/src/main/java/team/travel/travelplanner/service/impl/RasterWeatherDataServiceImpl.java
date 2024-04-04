@@ -307,7 +307,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     if (dataset.equals("wx")) {
                         converter = new WeatherGridConverter(datasets);
                     } else {
-                        converter = new NoOpGridConverter(datasets);
+                        converter = new NoOpGridConverter(datasets, dataset, dataset);
                     }
                     converter.convert(tmpDestination.toString());
                     Files.move(tmpDestination, destination, StandardCopyOption.ATOMIC_MOVE);
