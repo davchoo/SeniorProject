@@ -3,6 +3,7 @@ package team.travel.travelplanner.entity;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import org.hibernate.annotations.Type;
 import org.locationtech.jts.geom.LineString;
 import team.travel.travelplanner.model.GasStationModel;
@@ -27,8 +28,8 @@ public class GasTrip extends Trip{
 
     public GasTrip(String origin, String destination, LineString lineString,
                    List<GasStationModel> gasStationList, String fuelType,
-                   double tankSizeInGallons, double milesPerGallon, double travelersMeterCapacity) {
-        super(origin, destination, lineString);
+                   double tankSizeInGallons, double milesPerGallon, double travelersMeterCapacity, User user) {
+        super(origin, destination, lineString, user);
         this.gasStations = gasStationList;
         this.fuelType = fuelType;
         this.tankSizeInGallons = tankSizeInGallons;
