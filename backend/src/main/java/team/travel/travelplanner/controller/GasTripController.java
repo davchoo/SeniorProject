@@ -40,7 +40,7 @@ public class GasTripController {
     }
     @PostMapping("/gas")
     public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel, Authentication authentication) throws IOException {
-        boolean save = authentication.isAuthenticated();
+        boolean save = authentication!=null;
         LineString lineString = gasRequestModel.geometry(geometryFactory);
         double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
 
@@ -69,6 +69,5 @@ public class GasTripController {
     private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon){
         return tankSizeInGallons*milesPerGallon*1000;
     }
-
 
 }
