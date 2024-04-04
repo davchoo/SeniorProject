@@ -3,19 +3,21 @@ package team.travel.travelplanner.controller;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.entity.GasTrip;
+import team.travel.travelplanner.entity.User;
 import team.travel.travelplanner.model.GasRequestModel;
 import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.GasTripModel;
 import team.travel.travelplanner.repository.GasTripRepository;
+import team.travel.travelplanner.repository.UserRepository;
 import team.travel.travelplanner.service.GasStationService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/trip")
@@ -27,14 +29,18 @@ public class GasTripController {
 
     private final GeometryFactory geometryFactory;
 
+    private final UserRepository userRepository;
+
     public GasTripController(GasStationService gasStationService,
-                             GasTripRepository gasTripRepository) {
+                             GasTripRepository gasTripRepository, UserRepository userRepository) {
         this.gasStationService = gasStationService;
         this.gasTripRepository = gasTripRepository;
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+        this.userRepository = userRepository;
     }
     @PostMapping("/gas")
-    public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel) throws IOException {
+    public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel, Authentication authentication) throws IOException {
+        boolean save = authentication.isAuthenticated();
         LineString lineString = gasRequestModel.geometry(geometryFactory);
         double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
 
@@ -43,9 +49,21 @@ public class GasTripController {
 
         String origin = gasRequestModel.startAddress();
         String destination = gasRequestModel.endAddress();
-        GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity);
-        gasTrip = gasTripRepository.save(gasTrip);
+        User user = save ? userRepository.findByUsername(authentication.getName()) : null;
+        GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity, user);
+        if(save) {
+            gasTrip = gasTripRepository.save(gasTrip);
+        }
         return GasTripModel.fromEntity(gasTrip);
+    }
+
+    @GetMapping("/gas/myTrips")
+    public List<GasTripModel> getSavedGasTrips(Authentication authentication){
+        User user = userRepository.findByUsername(authentication.getName());
+        List<GasTrip> gasTrips = gasTripRepository.findAllByUser(user);
+        return gasTrips.stream()
+                .map(GasTripModel::fromEntity)
+                .toList();
     }
 
     private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon){
