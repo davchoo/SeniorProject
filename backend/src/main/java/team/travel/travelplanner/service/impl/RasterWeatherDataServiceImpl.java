@@ -272,6 +272,15 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
 
     private void updateGrids() {
         LOGGER.info("Updating grids");
+        Path tmpDir;
+        try {
+            tmpDir = Files.createTempDirectory(config.getTemporaryStoragePath(), "tmp-grid");
+        } catch (IOException e) {
+            LOGGER.error("Unable to create temporary directory", e);
+            return;
+        }
+
+        int i = 0;
         for (String area : config.getAreas()) {
             for (String dataset : config.getDatasets()) {
                 List<GridDataset> datasets = List.of();
@@ -281,17 +290,29 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                         LOGGER.info("No datasets for Area: {} Dataset: {}", area, dataset);
                         continue;
                     }
+                    long dataSetLastModified = datasets.stream()
+                            .mapToLong(GridDataset::getLastModified)
+                            .max()
+                            .orElse(0);
+
+                    Path tmpDestination = tmpDir.resolve(System.currentTimeMillis() + "_" + i++ + ".tmp");
+                    Path destination = config.getNetcdfStoragePath().resolve(Path.of(area, dataset + ".nc"));
+                    Files.createDirectories(destination.getParent());
+                    if (Files.exists(destination) && Files.getLastModifiedTime(destination).toMillis() > dataSetLastModified) {
+                        continue;
+                    }
+
+                    LOGGER.info("Updating grid for Area: {} Dataset: {}", area, dataset);
                     AbstractGridConverter converter;
                     if (dataset.equals("wx")) {
                         converter = new WeatherGridConverter(datasets);
                     } else {
                         converter = new NoOpGridConverter(datasets);
                     }
-                    Path destination = config.getNetcdfStoragePath().resolve(Path.of(area, dataset + ".nc"));
-                    Files.createDirectories(destination.getParent());
-                    converter.convert(destination.toString());
-                }  catch (Exception e) {
-                    LOGGER.error("Failed to update raster. Area: {} Dataset: {}", area, dataset, e);
+                    converter.convert(tmpDestination.toString());
+                    Files.move(tmpDestination, destination, StandardCopyOption.ATOMIC_MOVE);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to update grid. Area: {} Dataset: {}", area, dataset, e);
                 } finally {
                     for (GridDataset ds : datasets) {
                         try {
@@ -302,6 +323,11 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     }
                 }
             }
+        }
+        try {
+            Files.delete(tmpDir);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to delete temp directory", e);
         }
         LOGGER.info("Finished updating grids");
         // TODO notify geoserver?
