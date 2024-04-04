@@ -124,7 +124,7 @@
   <defaultInterpolationMethod>nearest neighbor</defaultInterpolationMethod>
   <dimensions>
     <coverageDimension>
-      <name>Temperature @ Specified height level above ground</name>
+      <name>temp</name>
       <description>GridSampleDimension(K)[-Infinity,Infinity]</description>
       <range>
         <min>-inf</min>
@@ -149,5 +149,5 @@
       <null/>
     </entry>
   </parameters>
-  <nativeCoverageName>Temperature_height_above_ground</nativeCoverageName>
+  <nativeCoverageName>temp</nativeCoverageName>
 </coverage>
