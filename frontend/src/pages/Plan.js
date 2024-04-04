@@ -6,6 +6,7 @@ import { checkIsLoggedIn } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
 import Weather from '../pages/Weather';
+import axios from 'axios';
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
@@ -15,6 +16,7 @@ function Plan() {
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
+  const [myTrips, setMyTrips] = useState([]);
   const navigate = useNavigate()
 
 
@@ -36,6 +38,17 @@ function Plan() {
     setIsSidebarOpen(false);
   };
 
+  const getSavedTrips = async () => {
+    axios.get('http://localhost:8080/api/trip/gas/myTrips', {withCredentials: true})
+        .then(response => {
+          console.log(response.data)
+          setMyTrips(response.data);
+        })
+        .catch(error => {
+          console.error("Error getting gas stations:", error);
+        });
+  }
+
   useEffect(() => {
     const fetchLoggedInStatus = async () => {
       try {
@@ -47,6 +60,7 @@ function Plan() {
       } 
     };
     fetchLoggedInStatus();
+    getSavedTrips();
   }, []);
 
   return (
@@ -58,8 +72,19 @@ function Plan() {
         
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
           {loggedIn ? 
-          <div style={{ padding: '20px', borderRight: '2px solid white' }}>
+          <div className='p-2'>
             <h2 className="font-notosansjp font-extrabold text-custom-black">Saved Trips</h2>
+            <div className=' overflow-y-scroll'>
+              {myTrips.map((trip) => (
+              <div className='border-solid border-2 p-2 m-2'>
+                <div className="flex-col">
+                  <p><strong>Origin: </strong>{trip.destination}</p>
+                  <p><strong>Destination: </strong>{trip.destination}</p>
+                  </div>
+                </div>
+            ))}
+
+            </div>
           </div>
           : 
           <div className="flex flex-col items-center pt-24">

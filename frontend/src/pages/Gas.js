@@ -35,7 +35,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
         type: type,
         tankSizeInGallons: tankSizeInGallons,
         milesPerGallon: milesPerGallon,
-      })
+      }, {withCredentials: true})
         .then(response => {
           setGasStations(response.data.gasStations)
           setSelectedGasStations(response.data.gasStations)
