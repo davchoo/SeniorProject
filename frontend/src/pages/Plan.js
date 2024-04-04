@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { GiHamburgerMenu } from 'react-icons/gi';
+import React, { useEffect, useState } from 'react';
 import Map from '../components/Map';
 import Sidebar from '../components/SaveSidebar';
+import { GiHamburgerMenu } from 'react-icons/gi';
+import { checkIsLoggedIn } from '../AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
 import Weather from '../pages/Weather';
-
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
@@ -13,6 +14,9 @@ function Plan() {
   const [polyline, setPolyline] = useState("");
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
+  const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate()
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -32,6 +36,19 @@ function Plan() {
     setIsSidebarOpen(false);
   };
 
+  useEffect(() => {
+    const fetchLoggedInStatus = async () => {
+      try {
+        const isLoggedIn = await checkIsLoggedIn();
+        console.log("isLoggedIn:", isLoggedIn);
+        setLoggedIn(isLoggedIn);
+      } catch (error) {
+        console.error('Error checking login status:', error);
+      } 
+    };
+    fetchLoggedInStatus();
+  }, []);
+
   return (
     <div className='bg-custom-green'>
       <div>
@@ -40,9 +57,17 @@ function Plan() {
         </button>
         
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
-          <div style={{ padding: '20px'}}>
-            <h2 className="font-notosansjp text-custom-black font-bold">Saved Trips</h2>
+          {loggedIn ? 
+          <div style={{ padding: '20px', borderRight: '2px solid white' }}>
+            <h2 className="font-notosansjp font-extrabold text-custom-black">Saved Trips</h2>
           </div>
+          : 
+          <div className="flex flex-col items-center pt-24">
+            <p className="text-center">You have to be logged in to an account to see saved trips.</p>
+            <button onClick={() => navigate("/login")} className="mt-4 bg-custom-green3 text-custom-green3 border border-custom-green2 rounded-md px-3 py-1 hover:bg-custom-green hover:text-white transition duration-300 ease-in-out text-lg">
+              Login
+            </button>
+          </div>}
         </Sidebar>
         <div className="flex flex-col justify-center items-center m-2">
           <p className="font-notosansjp text-custom-black font-bold mt-4 text-3xl text-center">
