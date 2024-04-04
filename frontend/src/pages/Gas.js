@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
-import gasStationsData from './gasStations.json';
 import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";

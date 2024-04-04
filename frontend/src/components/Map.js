@@ -105,8 +105,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
     }
   }, [origin, destination]);
 
-
-
   const handleMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
   };
