@@ -1,4 +1,4 @@
-package team.travel.travelplanner.service.impl.GoogleMaps;
+package team.travel.travelplanner.service.impl;
 
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;

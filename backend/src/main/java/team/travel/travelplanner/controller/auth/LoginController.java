@@ -2,7 +2,6 @@ package team.travel.travelplanner.controller.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,16 +20,15 @@ import team.travel.travelplanner.repository.UserRepository;
 @RequestMapping("api/auth")
 public class LoginController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private SecurityContextRepository securityContextRepository;
+    private final SecurityContextRepository securityContextRepository;
 
     private final UserRepository userRepository;
 
-    public LoginController(AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public LoginController(AuthenticationManager authenticationManager, SecurityContextRepository securityContextRepository, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
+        this.securityContextRepository = securityContextRepository;
         this.userRepository = userRepository;
     }
 
