@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import team.travel.travelplanner.service.impl.GoogleMaps.GoogleMapsApiClientServiceImpl;
+import team.travel.travelplanner.service.impl.GoogleMapsApiClientServiceImpl;
 
 @Configuration
 @ConfigurationProperties(prefix = "googlemaps")

@@ -17,7 +17,7 @@ import team.travel.travelplanner.repository.UserRepository;
 public class SignUpController {
     private final UserRepository userRepository;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public SignUpController(UserRepository userRepository,
                             PasswordEncoder passwordEncoder){

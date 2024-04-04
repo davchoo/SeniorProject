@@ -6,7 +6,6 @@ import com.google.maps.model.PlacesSearchResult;
 import org.geotools.referencing.GeodeticCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.google.GoogleGasStation;
@@ -16,9 +15,7 @@ import team.travel.travelplanner.service.GoogleMapsApiPlacesClientService;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class GasStationServiceImpl implements GasStationService {
@@ -27,7 +24,6 @@ public class GasStationServiceImpl implements GasStationService {
 
     private final GoogleMapsApiPlacesClientService placesService;
 
-    @Autowired
     public GasStationServiceImpl(GoogleMapsApiFuelPriceService apiGasClient,
                                  GoogleMapsApiPlacesClientService apiPlacesClient){
         this.gasService = apiGasClient;
