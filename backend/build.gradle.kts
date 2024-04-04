@@ -31,6 +31,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.hibernate.orm:hibernate-spatial")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
     implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
 
     val geotoolsVersion = "30.2"

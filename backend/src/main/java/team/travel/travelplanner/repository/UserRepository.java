@@ -1,16 +1,12 @@
 package team.travel.travelplanner.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import team.travel.travelplanner.entity.Users;
+import team.travel.travelplanner.entity.User;
 
-public interface UserRepository extends JpaRepository<Users, Long> {
-    Users findByUsernameOrEmail(String username, String email);
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    Users findByEmail(String email);
+    User findByUsername(String username);
 
-    Users findByUsername(String username);
-
-    boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
 }
