@@ -49,12 +49,26 @@ const Navbar = () => {
 
         {/* Center aligned */}
         <ul className="flex md:flex-row md:justify-center mt-3 text-sm font-notosansjp font-bold text-custom-black list-none space-x-8">
-          <li>
+        <li>
             <Link to="/" className="hover:underline">
               Home
             </Link>
           </li>
-          {/* Other list items... */}
+          <li>
+            <Link to="/about" className="hover:underline">
+              About
+            </Link>
+          </li>
+          <li>
+            <Link to="/plan" className="hover:underline">
+              Plan Your Trip
+            </Link>
+          </li>
+          <li>
+            <Link to="/contact" className="hover:underline">
+              Contact
+            </Link>
+          </li>
         </ul>
 
         {/* Right aligned */}
