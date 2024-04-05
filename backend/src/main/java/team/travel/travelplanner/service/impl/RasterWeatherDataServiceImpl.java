@@ -6,8 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
@@ -27,6 +30,7 @@ import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.grid.GridDataset;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -34,6 +38,7 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -45,14 +50,16 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     private final S3TransferManager transferManager;
 
     private final RasterWeatherDataConfig config;
+    private final RestClient restClient;
     private final TaskScheduler taskScheduler;
 
     private Instant lastUpdate;
 
-    public RasterWeatherDataServiceImpl(S3AsyncClient s3Client, S3TransferManager transferManager, RasterWeatherDataConfig config, TaskScheduler taskScheduler) {
+    public RasterWeatherDataServiceImpl(S3AsyncClient s3Client, S3TransferManager transferManager, RasterWeatherDataConfig config, RestClient.Builder restClientBuilder, TaskScheduler taskScheduler) {
         this.s3Client = s3Client;
         this.transferManager = transferManager;
         this.config = config;
+        this.restClient = restClientBuilder.build();
         this.taskScheduler = taskScheduler;
         this.lastUpdate = Instant.EPOCH;
     }
@@ -160,16 +167,20 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
 
     public void checkForUpdates() {
         LOGGER.info("Checking NDFD S3 Bucket for updated objects");
-        Integer fileCount = s3Client.listObjectsV2(builder -> builder
-                        .bucket(config.getNdfdS3Bucket())
-                        .prefix("opnl/")
-                        .build())
-                .thenComposeAsync(response -> downloadObjects(response.contents()))
-                .join();
-        lastUpdate = Instant.now();
-        LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
-        if (fileCount != null && fileCount > 0) {
-            updateGrids();
+        try {
+            Integer fileCount = s3Client.listObjectsV2(builder -> builder
+                            .bucket(config.getNdfdS3Bucket())
+                            .prefix("opnl/")
+                            .build())
+                    .thenComposeAsync(response -> downloadObjects(response.contents()))
+                    .get();
+            lastUpdate = Instant.now();
+            LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
+            if (fileCount != null && fileCount > 0) {
+                updateGrids();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Failed to check NDFD S3 bucket", e);
         }
     }
 
@@ -280,6 +291,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             return;
         }
 
+        boolean updatedGrid = false;
         int i = 0;
         for (String area : config.getAreas()) {
             for (String dataset : config.getDatasets()) {
@@ -311,6 +323,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     }
                     converter.convert(tmpDestination.toString());
                     Files.move(tmpDestination, destination, StandardCopyOption.ATOMIC_MOVE);
+                    updatedGrid = true;
                 } catch (Exception e) {
                     LOGGER.error("Failed to update grid. Area: {} Dataset: {}", area, dataset, e);
                 } finally {
@@ -330,6 +343,28 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             LOGGER.warn("Failed to delete temp directory", e);
         }
         LOGGER.info("Finished updating grids");
-        // TODO notify geoserver?
+        if (updatedGrid) {
+            notifyGeoserver();
+        }
+    }
+
+    private void notifyGeoserver() {
+        RasterWeatherDataConfig.GeoServerConfig gsConfig = config.getGeoServer();
+        if (gsConfig != null) {
+            LOGGER.info("Notifying GeoServer of updated grids");
+            String credentials = gsConfig.getUsername() + ":" + gsConfig.getPassword();
+            String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+            ResponseEntity<Void> response = restClient.post()
+                    .uri(config.getGeoServer().getResetEndpoint())
+                    .header(HttpHeaders.AUTHORIZATION, authorization)
+                    .retrieve()
+                    .toBodilessEntity();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                LOGGER.info("Successfully notified GeoServer");
+            } else {
+                LOGGER.error("Failed to notify GeoServer. Status Code: {}", response.getStatusCode());
+            }
+        }
     }
 }

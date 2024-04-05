@@ -3,6 +3,7 @@ package team.travel.travelplanner.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Set;
@@ -26,6 +27,8 @@ public class RasterWeatherDataConfig {
     private Set<String> areas = Set.of("conus");
 
     private Set<String> datasets = Set.of("wx");
+
+    private GeoServerConfig geoServer;
 
     public boolean isAutoUpdate() {
         return autoUpdate;
@@ -92,5 +95,45 @@ public class RasterWeatherDataConfig {
 
     public void setDatasets(Set<String> datasets) {
         this.datasets = datasets;
+    }
+
+    public GeoServerConfig getGeoServer() {
+        return geoServer;
+    }
+
+    public void setGeoServer(GeoServerConfig geoServer) {
+        this.geoServer = geoServer;
+    }
+
+    public static class GeoServerConfig {
+        private URI resetEndpoint;
+
+        private String username;
+
+        private String password;
+
+        public URI getResetEndpoint() {
+            return resetEndpoint;
+        }
+
+        public void setResetEndpoint(URI resetEndpoint) {
+            this.resetEndpoint = resetEndpoint;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 }
