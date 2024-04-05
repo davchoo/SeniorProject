@@ -114,15 +114,26 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
         segmentAlerts.forEach(segmentAlert -> alertIds.add(segmentAlert.alertId()));
 
         List<WeatherAlert> alerts = weatherAlertRepository.findAllById(alertIds);
-        Map<String, WeatherAlertModel> alertModels = new HashMap<>();
-        for (WeatherAlert alert : alerts) {
+        Map<String, Integer> alertIndex = new HashMap<>();
+        List<WeatherAlertModel> alertModels = new ArrayList<>();
+
+        for (int i = 0; i < alerts.size(); i++) {
+            WeatherAlert alert = alerts.get(i);
+            alertIndex.put(alert.getId(), i);
+
             WeatherAlertModel alertModel = new WeatherAlertModel();
             BeanUtils.copyProperties(alert, alertModel, "geocodeSame", "references");
             alertModel.setGeocodeSAME(new ArrayList<>(alert.getGeocodeSAME()));
             alertModel.setReferences(new ArrayList<>(alert.getReferences()));
-            alertModels.put(alertModel.getId(), alertModel);
+            alertModels.add(alertModel);
         }
 
-        return new RouteWeatherAlertsModel(segmentAlerts, alertModels);
+        int[] packedSegmentAlerts = new int[2 * segmentAlerts.size()];
+        for (int i = 0; i < segmentAlerts.size(); i++) {
+            SegmentWeatherAlertModel model = segmentAlerts.get(i);
+            packedSegmentAlerts[2 * i] = model.segmentId();
+            packedSegmentAlerts[2 * i + 1] = alertIndex.getOrDefault(model.alertId(), -1);
+        }
+        return new RouteWeatherAlertsModel(packedSegmentAlerts, alertModels);
     }
 }
