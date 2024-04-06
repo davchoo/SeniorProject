@@ -15,8 +15,15 @@ public record GasRequestModel(
         String endAddress,
         @NotBlank
         String type,
+        @NotBlank
+        String make,
+        @NotBlank
+        String model,
+        int year,
         double tankSizeInGallons,
-        double milesPerGallon
+        double milesPerGallon,
+        double distance,
+        String duration
 ){
         public LineString geometry(GeometryFactory geometryFactory) {
                 CoordinateSequence coordinateSequence = EncodedPolylineUtils.decodePolyline(polyline);
