@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse'; // Import PapaParse library for parsing CSV
 
-const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon }) => {
+const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelectedMake, setSelectedModel, setSelectedYear }) => {
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [vehicleInfo, setVehicleInfo] = useState(null);
@@ -66,6 +66,10 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon }) => {
       const response = await fetch('/vehicles_mpg.json'); // Fetch CSV file
       const data = await response.json();
       const car = data[year][make][model];
+      console.log(car)
+      setSelectedYear(year)
+      setSelectedMake(make)
+      setSelectedModel(model)
       setMilesPerGallon(car[0])
       const tankSize = getTankSizeEstimation(car[1])
       setTankSizeInGallons(tankSize)

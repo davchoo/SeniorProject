@@ -4,9 +4,10 @@ import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";
 
-const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination }) => {
-  const [selectedMake, setSelectedMake] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
+const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination, distance, duration}) => {
+  const [selectedMake, setSelectedMake] = useState();
+  const [selectedModel, setSelectedModel] = useState();
+  const [year, setYear] = useState();
   const [showGasStations, setShowGasStations] = useState(false);
   const [gasStations, setGasStations] = useState([]);
   const [price, setPrice] = useState();
@@ -15,7 +16,6 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
   const [clicked, setClicked] = useState(false);
   const [loading, setLoading] = useState(true);
-  
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
@@ -34,11 +34,16 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
         type: type,
         tankSizeInGallons: tankSizeInGallons,
         milesPerGallon: milesPerGallon,
+        make: selectedMake,
+        model: selectedModel,
+        year: year,
+        distance: parseFloat(distance),
+        duration: duration
       }, {withCredentials: true})
         .then(response => {
           setGasStations(response.data.gasStations)
           setSelectedGasStations(response.data.gasStations)
-          setPrice((response.data.totalTripGasPrice * response.data.tankSizeInGallons).toFixed(2))
+          setPrice((response.data.totalTripGasPrice * response.data.car.tankSizeInGallons).toFixed(2))
           console.log(gasStations)
           console.log("Response from backend:", response.data);
           setLoading(false)
@@ -55,7 +60,7 @@ return (
         <p className="font-notosansjp text-custom-black text-sm">Enter Information About Your Vehicle:</p>
       </div>
       <div>
-        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType}/>
+        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType} setSelectedMake={setSelectedMake} setSelectedModel={setSelectedModel} setSelectedYear={setYear}/>
       </div>
       <div className='flex-col'>
         <p>Estimated Price: ${price}</p>
