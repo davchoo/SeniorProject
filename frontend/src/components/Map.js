@@ -20,7 +20,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistance, setPlanDuration }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -78,9 +78,11 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
               })
               .then(() => {
                 setDistance(result.routes[0].legs[0].distance.text);
+                setPlanDistance(result.routes[0].legs[0].distance.text)
               })
               .then(() => {
                 setDuration(result.routes[0].legs[0].duration.text);
+                setPlanDuration(result.routes[0].legs[0].duration.text)
               })
               .then(() => {
                 // Access the updated value of path after it's set
