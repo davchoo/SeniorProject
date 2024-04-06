@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.entity.GasTrip;
 import team.travel.travelplanner.entity.User;
+import team.travel.travelplanner.model.CarModel;
 import team.travel.travelplanner.model.GasRequestModel;
 import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.GasTripModel;
@@ -50,7 +51,8 @@ public class GasTripController {
         String origin = gasRequestModel.startAddress();
         String destination = gasRequestModel.endAddress();
         User user = save ? userRepository.findByUsername(authentication.getName()) : null;
-        GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, gasRequestModel.type(), gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon(), travelersMeterCapacity, user);
+        CarModel carModel = new CarModel(gasRequestModel.year(), gasRequestModel.make(), gasRequestModel.model(), gasRequestModel.type(), gasRequestModel.milesPerGallon(), gasRequestModel.tankSizeInGallons());
+        GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, travelersMeterCapacity, user, carModel, gasRequestModel.distance(), gasRequestModel.duration());
         if(save) {
             gasTrip = gasTripRepository.save(gasTrip);
         }
