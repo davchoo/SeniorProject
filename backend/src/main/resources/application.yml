@@ -32,6 +32,7 @@ travel-planner:
   weather:
     data:
       national-weather-forecast-wfc-url: https://mapservices.weather.noaa.gov/vector/services/outlooks/natl_fcst_wx_chart/MapServer/WFSServer?request=GetCapabilities&service=WFS
+      auto-update: false
     raster-data:
       datasets:
         - qpf

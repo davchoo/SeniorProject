@@ -2,6 +2,7 @@ package team.travel.travelplanner.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -14,6 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClient;
 import team.travel.travelplanner.config.WeatherAlertConfig;
 import team.travel.travelplanner.entity.WeatherAlert;
+import team.travel.travelplanner.model.RouteModel;
 import team.travel.travelplanner.model.geojson.Feature;
 import team.travel.travelplanner.model.geojson.FeatureCollection;
 import team.travel.travelplanner.model.geojson.GeoJSONObject;
@@ -30,6 +32,8 @@ import java.util.*;
 public class WeatherAlertServiceImpl implements WeatherAlertService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WeatherAlertServiceImpl.class);
 
+    private final GeometryFactory geometryFactory;
+
     private final ObjectMapper objectMapper;
 
     private final RestClient restClient;
@@ -42,7 +46,12 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
 
     private final WeatherAlertRepository weatherAlertRepository;
 
-    public WeatherAlertServiceImpl(ObjectMapper objectMapper, RestClient.Builder restClientBuilder, PlatformTransactionManager platformTransactionManager, TaskScheduler taskScheduler, WeatherAlertConfig weatherAlertConfig, WeatherAlertRepository weatherAlertRepository) {
+    public WeatherAlertServiceImpl(GeometryFactory geometryFactory, ObjectMapper objectMapper,
+                                   RestClient.Builder restClientBuilder,
+                                   PlatformTransactionManager platformTransactionManager,
+                                   TaskScheduler taskScheduler, WeatherAlertConfig weatherAlertConfig,
+                                   WeatherAlertRepository weatherAlertRepository) {
+        this.geometryFactory = geometryFactory;
         this.objectMapper = objectMapper;
         this.restClient = restClientBuilder.build();
         this.taskScheduler = taskScheduler;
@@ -107,33 +116,24 @@ public class WeatherAlertServiceImpl implements WeatherAlertService {
     }
 
     @Override
-    public RouteWeatherAlertsModel checkRouteWeatherAlerts(Geometry route, int[] durations, Instant startTime) {
-        List<SegmentWeatherAlertModel> segmentAlerts = weatherAlertRepository.checkRouteWeatherAlerts(route, durations, startTime);
+    public RouteWeatherAlertsModel checkRouteWeatherAlerts(RouteModel route) {
+        Geometry geometry = route.geometry(geometryFactory);
+        List<SegmentWeatherAlertModel> segmentAlerts = weatherAlertRepository.checkRouteWeatherAlerts(geometry, route.durations(), route.startTime());
 
-        Set<String> alertIds = new HashSet<>();
-        segmentAlerts.forEach(segmentAlert -> alertIds.add(segmentAlert.alertId()));
-
-        List<WeatherAlert> alerts = weatherAlertRepository.findAllById(alertIds);
         Map<String, Integer> alertIndex = new HashMap<>();
-        List<WeatherAlertModel> alertModels = new ArrayList<>();
-
-        for (int i = 0; i < alerts.size(); i++) {
-            WeatherAlert alert = alerts.get(i);
-            alertIndex.put(alert.getId(), i);
-
-            WeatherAlertModel alertModel = new WeatherAlertModel();
-            BeanUtils.copyProperties(alert, alertModel, "geocodeSame", "references");
-            alertModel.setGeocodeSAME(new ArrayList<>(alert.getGeocodeSAME()));
-            alertModel.setReferences(new ArrayList<>(alert.getReferences()));
-            alertModels.add(alertModel);
-        }
-
         int[] packedSegmentAlerts = new int[2 * segmentAlerts.size()];
         for (int i = 0; i < segmentAlerts.size(); i++) {
             SegmentWeatherAlertModel model = segmentAlerts.get(i);
             packedSegmentAlerts[2 * i] = model.segmentId();
-            packedSegmentAlerts[2 * i + 1] = alertIndex.getOrDefault(model.alertId(), -1);
+            packedSegmentAlerts[2 * i + 1] = alertIndex.computeIfAbsent(model.alertId(), k -> alertIndex.size());
         }
-        return new RouteWeatherAlertsModel(packedSegmentAlerts, alertModels);
+
+        List<WeatherAlert> alerts = weatherAlertRepository.findAllById(alertIndex.keySet());
+        WeatherAlertModel[] alertModels = new WeatherAlertModel[alerts.size()];
+        for (WeatherAlert alert : alerts) {
+            int index = alertIndex.get(alert.getId());
+            alertModels[index] = WeatherAlertModel.from(alert);
+        }
+        return new RouteWeatherAlertsModel(packedSegmentAlerts, List.of(alertModels));
     }
 }
