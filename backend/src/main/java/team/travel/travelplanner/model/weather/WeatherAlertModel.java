@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.locationtech.jts.geom.Geometry;
+import org.springframework.beans.BeanUtils;
+import team.travel.travelplanner.entity.WeatherAlert;
 import team.travel.travelplanner.entity.type.alert.*;
 import team.travel.travelplanner.serializer.WKB64GeometrySerializer;
 
@@ -264,5 +266,13 @@ public class WeatherAlertModel {
                 this.references.add(String.valueOf(reference.get("identifier")));
             }
         }
+    }
+
+    public static WeatherAlertModel from(WeatherAlert weatherAlert) {
+        WeatherAlertModel model = new WeatherAlertModel();
+        BeanUtils.copyProperties(weatherAlert, model, "geocodeSAME", "references");
+        model.setGeocodeSAME(new ArrayList<>(weatherAlert.getGeocodeSAME()));
+        model.setReferences(new ArrayList<>(weatherAlert.getReferences()));
+        return model;
     }
 }

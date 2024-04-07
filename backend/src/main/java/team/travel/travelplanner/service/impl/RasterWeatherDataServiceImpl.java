@@ -1,7 +1,7 @@
 package team.travel.travelplanner.service.impl;
 
 import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
 import team.travel.travelplanner.config.RasterWeatherDataConfig;
+import team.travel.travelplanner.model.RouteModel;
 import team.travel.travelplanner.model.weather.RasterWeatherModel;
 import team.travel.travelplanner.ndfd.NDFDWeatherSection;
 import team.travel.travelplanner.ndfd.converter.AbstractGridConverter;
@@ -46,6 +47,8 @@ import java.util.stream.Stream;
 public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RasterWeatherDataServiceImpl.class);
 
+    private final GeometryFactory geometryFactory;
+
     private final S3AsyncClient s3Client;
     private final S3TransferManager transferManager;
 
@@ -55,7 +58,10 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
 
     private Instant lastUpdate;
 
-    public RasterWeatherDataServiceImpl(S3AsyncClient s3Client, S3TransferManager transferManager, RasterWeatherDataConfig config, RestClient.Builder restClientBuilder, TaskScheduler taskScheduler) {
+    public RasterWeatherDataServiceImpl(GeometryFactory geometryFactory, S3AsyncClient s3Client,
+                                        S3TransferManager transferManager, RasterWeatherDataConfig config,
+                                        RestClient.Builder restClientBuilder, TaskScheduler taskScheduler) {
+        this.geometryFactory = geometryFactory;
         this.s3Client = s3Client;
         this.transferManager = transferManager;
         this.config = config;
@@ -65,14 +71,22 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
     }
 
     @Override
-    public RasterWeatherModel checkWeather(LineString route, int[] durations, Instant startTime) throws IOException {
-        List<GridDataset> datasets = getDatasets("conus", "wx"); // TODO move to parameters
+    public RasterWeatherModel checkWeather(RouteModel route, String area, String dataset) throws IOException {
+        List<GridDataset> datasets = openDatasets(area, dataset);
         try (SimpleGridDataSource ds = new SimpleGridDataSource(datasets)) {
-            Map<Instant, NDFDWeatherSection> weatherSections = NDFDWeatherSection.loadWeatherSections(datasets);
+            List<String> labels = null;
+            Map<Instant, NDFDWeatherSection> weatherSections = null;
+            if (dataset.equals("wx")) {
+                weatherSections = NDFDWeatherSection.loadWeatherSections(datasets);
+                labels = Arrays.stream(SimpleWeatherType.values())
+                        .map(SimpleWeatherType::getLabel)
+                        .toList();
+            }
+
             Instant dataStartTime = ds.getDataStartTime();
 
-            Instant currentTime = startTime;
-            CoordinateSequence sequence = route.getCoordinateSequence();
+            Instant currentTime = route.startTime();
+            CoordinateSequence sequence = route.geometry(geometryFactory).getCoordinateSequence();
             float[] data = new float[sequence.size()];
             Arrays.fill(data, Float.NaN);
 
@@ -82,14 +96,13 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                 if (currentTime.isAfter(dataStartTime)) {
                     break;
                 }
-                currentTime = currentTime.plusMillis(durations[i]);
+                currentTime = currentTime.plusMillis(route.durations()[i]);
             }
 
             TimeSliceData timeSlice = ds.getTimeSlice(currentTime);
             if (timeSlice == null) {
                 return null; // No data?
             }
-            NDFDWeatherSection section = weatherSections.get(timeSlice.getTime());
             for (; i < sequence.size(); i++) {
                 if (currentTime.isAfter(timeSlice.getTime())) {
                     // Need next time slice
@@ -97,22 +110,34 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     if (timeSlice == null) {
                         break; // Too far into the future, no more data available
                     }
-                    section = weatherSections.get(timeSlice.getTime());
                 }
                 float value = timeSlice.getFloat(sequence.getY(i), sequence.getX(i));
-                if (!Float.isNaN(value)) {
+                if (weatherSections != null && !Float.isNaN(value)) {
+                    NDFDWeatherSection section = weatherSections.get(timeSlice.getTime());
                     SimpleWeatherType type = SimpleWeatherTable4.getLabel2(section.getSimpleWeatherCode((int) value));
                     data[i] = type.ordinal();
+                } else {
+                    data[i] = value;
                 }
                 if (i < sequence.size() - 1) {
-                    currentTime = currentTime.plusMillis(durations[i]);
+                    currentTime = currentTime.plusMillis(route.durations()[i]);
                 }
             }
-            return new RasterWeatherModel(data, Arrays.stream(SimpleWeatherType.values()).map(SimpleWeatherType::getLabel).toList());
+            return new RasterWeatherModel(data, labels);
         }
     }
 
-    private List<GridDataset> getDatasets(String area, String dataset) throws IOException {
+    @Override
+    public Collection<String> getAvailableAreas() {
+        return config.getAreas(); // TODO walk GRIB storage to get available areas
+    }
+
+    @Override
+    public Collection<String> getAvailableDatasets() {
+        return config.getDatasets(); // TODO walk GRIB storage to get available datasets for an area
+    }
+
+    private List<GridDataset> openDatasets(String area, String dataset) throws IOException {
         Path base = config.getGribStoragePath().resolve("AR." + area);
         List<String> paths;
         try (Stream<Path> stream = Files.walk(base)) {
@@ -122,6 +147,9 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                 .map(Path::toAbsolutePath)
                 .map(Path::toString)
                 .toList();
+        } catch (IOException ex) {
+            LOGGER.debug("Failed to walk GRIB storage path for Area: {} Dataset: {}", area, dataset, ex);
+            return List.of();
         }
         List<GridDataset> datasets = new ArrayList<>(paths.size());
         for (String path : paths) {
@@ -297,7 +325,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             for (String dataset : config.getDatasets()) {
                 List<GridDataset> datasets = List.of();
                 try {
-                    datasets = getDatasets(area, dataset);
+                    datasets = openDatasets(area, dataset);
                     if (datasets.isEmpty()) {
                         LOGGER.info("No datasets for Area: {} Dataset: {}", area, dataset);
                         continue;

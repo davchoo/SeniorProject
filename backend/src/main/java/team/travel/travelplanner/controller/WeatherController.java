@@ -1,7 +1,6 @@
 package team.travel.travelplanner.controller;
 
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.model.CountyModel;
 import team.travel.travelplanner.model.RouteModel;
@@ -16,10 +15,9 @@ import team.travel.travelplanner.service.WeatherDataService;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import static team.travel.travelplanner.util.SRIDConstants.WGS84;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -30,9 +28,11 @@ public class WeatherController {
     private final WeatherAlertService weatherAlertService;
     private final WeatherDataService weatherDataService;
 
-    public WeatherController(CountyService countyService, RasterWeatherDataService rasterWeatherDataService,
-                             WeatherAlertService weatherAlertService, WeatherDataService weatherDataService) {
-        this.geometryFactory = new GeometryFactory(new PrecisionModel(), WGS84);
+    public WeatherController(GeometryFactory geometryFactory, CountyService countyService,
+                             RasterWeatherDataService rasterWeatherDataService, WeatherAlertService weatherAlertService,
+                             WeatherDataService weatherDataService) {
+        this.geometryFactory = geometryFactory;
+
         this.countyService = countyService;
         this.rasterWeatherDataService = rasterWeatherDataService;
         this.weatherAlertService = weatherAlertService;
@@ -56,7 +56,7 @@ public class WeatherController {
 
     @PostMapping("/alerts/check_route")
     public RouteWeatherAlertsModel checkRouteAlerts(@RequestBody RouteModel route) {
-        return weatherAlertService.checkRouteWeatherAlerts(route.geometry(geometryFactory), route.durations(), route.startTime());
+        return weatherAlertService.checkRouteWeatherAlerts(route);
     }
 
     @GetMapping("/county")
@@ -66,6 +66,23 @@ public class WeatherController {
 
     @PostMapping("/raster/check_route")
     public RasterWeatherModel checkRouteRaster(@RequestBody RouteModel route) throws IOException {
-        return rasterWeatherDataService.checkWeather(route.geometry(geometryFactory), route.durations(), route.startTime());
+        return rasterWeatherDataService.checkWeather(route, "conus", "wx");
+    }
+
+    @PostMapping("/raster/check_route/{area}/{dataset}")
+    public RasterWeatherModel checkRouteRaster(@RequestBody RouteModel route,
+                                               @PathVariable(name = "area") String area,
+                                               @PathVariable(name = "dataset") String dataset) throws IOException {
+        return rasterWeatherDataService.checkWeather(route, area, dataset);
+    }
+
+    @GetMapping("/raster/areas")
+    public Collection<String> getRasterAreas() {
+        return rasterWeatherDataService.getAvailableAreas();
+    }
+
+    @GetMapping("/raster/datasets")
+    public Collection<String> getRasterDatasets() {
+        return rasterWeatherDataService.getAvailableDatasets();
     }
 }
