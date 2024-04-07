@@ -72,16 +72,19 @@ return (
           }}
           className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10  ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
         >
-          Show Gas Stations
+         Show Gas Stations
         </button>
       </div>
-      {clicked ? 
-        <ClipLoader
-        loading={loading}
-        size={150}
-        aria-label="Loading Spinner"
-        data-testid="loader"
-      /> : null}
+    {clicked ? 
+  <div className="flex justify-center items-center mt-4">
+    <ClipLoader
+      loading={loading}
+      size={50} 
+      aria-label="Loading Spinner"
+      data-testid="loader"
+    />
+  </div>
+: null}
     </div>
   );
 };
