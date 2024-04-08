@@ -204,9 +204,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     .get();
             lastUpdate = Instant.now();
             LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
-            if (fileCount != null && fileCount > 0) {
-                updateGrids();
-            }
+            updateGrids();
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error("Failed to check NDFD S3 bucket", e);
         }
