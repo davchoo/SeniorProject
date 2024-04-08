@@ -1,9 +1,7 @@
 package team.travel.travelplanner.ndfd.converter;
 
 import team.travel.travelplanner.ndfd.NDFDWeatherSection;
-import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherProbability;
 import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherTable4;
-import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherType;
 import ucar.ma2.*;
 import ucar.nc2.Attribute;
 import ucar.nc2.constants.CF;
@@ -46,10 +44,7 @@ public class WeatherGridConverter extends AbstractGridConverter {
             for (int x = 0; x < xLength; x++) {
                 int tableIdx = volumeData.getInt(index.set(y, x));
                 int code = wxSection.getSimpleWeatherCode(tableIdx);
-                SimpleWeatherType type = SimpleWeatherTable4.getLabel2(code);
-                SimpleWeatherProbability probability = SimpleWeatherTable4.getProbability(code);
-                byte val = (byte) (3 * type.ordinal() + probability.ordinal());
-                wxData.set(0, y, x, val);
+                wxData.set(0, y, x, SimpleWeatherTable4.getPackedCode(code));
             }
         }
 

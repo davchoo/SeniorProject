@@ -23,7 +23,6 @@ import team.travel.travelplanner.ndfd.converter.AbstractGridConverter;
 import team.travel.travelplanner.ndfd.converter.NoOpGridConverter;
 import team.travel.travelplanner.ndfd.converter.WeatherGridConverter;
 import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherTable4;
-import team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherType;
 import team.travel.travelplanner.ndfd.grid.SimpleGridDataSource;
 import team.travel.travelplanner.ndfd.grid.TimeSliceData;
 import team.travel.travelplanner.service.RasterWeatherDataService;
@@ -78,9 +77,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             Map<Instant, NDFDWeatherSection> weatherSections = null;
             if (dataset.equals("wx")) {
                 weatherSections = NDFDWeatherSection.loadWeatherSections(datasets);
-                labels = Arrays.stream(SimpleWeatherType.values())
-                        .map(SimpleWeatherType::getLabel)
-                        .toList();
+                labels = SimpleWeatherTable4.getPackedCodeLabels();
             }
 
             Instant dataStartTime = ds.getDataStartTime();
@@ -114,8 +111,8 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                 float value = timeSlice.getFloat(sequence.getY(i), sequence.getX(i));
                 if (weatherSections != null && !Float.isNaN(value)) {
                     NDFDWeatherSection section = weatherSections.get(timeSlice.getTime());
-                    SimpleWeatherType type = SimpleWeatherTable4.getLabel2(section.getSimpleWeatherCode((int) value));
-                    data[i] = type.ordinal();
+                    int code = section.getSimpleWeatherCode((int) value);
+                    data[i] = SimpleWeatherTable4.getPackedCode(code);
                 } else {
                     data[i] = value;
                 }

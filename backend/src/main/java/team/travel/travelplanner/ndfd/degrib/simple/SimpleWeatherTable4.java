@@ -1,11 +1,14 @@
 package team.travel.travelplanner.ndfd.degrib.simple;
 
+import java.util.List;
+
 import static team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherProbability.*;
 import static team.travel.travelplanner.ndfd.degrib.simple.SimpleWeatherType.*;
 
 /**
  * Look Up Table mapping Simple Weather Codes to labels
  * https://vlab.noaa.gov/web/mdl/degrib-simple-weather-table-v4
+ * https://digital.mdl.nws.noaa.gov/staticpages/definitions.php
  * @author David Choo
  */
 public class SimpleWeatherTable4 {
@@ -13,6 +16,8 @@ public class SimpleWeatherTable4 {
     private static final SimpleWeatherProbability[] PROBABILITY = new SimpleWeatherProbability[NUM_CODES];
     private static final String[] LABEL_1 = new String[NUM_CODES];
     private static final SimpleWeatherType[] LABEL_2 = new SimpleWeatherType[NUM_CODES];
+
+    private static final String[] PACKED_LABEL;
 
     /**
      * For Rain, Ice, Snow, Severe, and Mix weather types, get the probability associated with this code
@@ -38,7 +43,7 @@ public class SimpleWeatherTable4 {
 
     /**
      * The full label1 associated with this code.
-     * Just a concatination of the probability and type label.
+     * Just a concatenation of the probability and type label.
      * @param code the Simple Weather Code
      * @return the full label1 for the code
      */
@@ -57,6 +62,28 @@ public class SimpleWeatherTable4 {
      */
     public static SimpleWeatherType getLabel2(int code) {
         return LABEL_2[code];
+    }
+
+    /**
+     * A packed representation with the probability and weather type associated with the
+     * Simple Weather Code.
+     * Probability:  LoProb = 0, HiProb = 1, UnknownProb = 2
+     * Weather Type: None = 0, Rain = 1, Ice = 2, Snow = 3, Mix = 4, Severe = 5, Fog = 6, Smoke = 7, Blowing = 8, Haze = 9
+     * Result = 3 * (Weather Type) + Probability
+     * @param code the Simple Weather Code
+     * @return the probability and weather type packed into a single byte
+     */
+    public static byte getPackedCode(int code) {
+        SimpleWeatherType type = SimpleWeatherTable4.getLabel2(code);
+        SimpleWeatherProbability probability = SimpleWeatherTable4.getProbability(code);
+        return (byte) (3 * type.ordinal() + probability.ordinal());
+    }
+
+    /**
+     * @return A List of labels associated with each packed code of probability and weather type
+     */
+    public static List<String> getPackedCodeLabels() {
+        return List.of(PACKED_LABEL);
     }
 
     private static void register(int code, SimpleWeatherProbability probability, String label1, SimpleWeatherType label2) {
@@ -1950,5 +1977,40 @@ public class SimpleWeatherTable4 {
         register(2196, HIGH_PROBABILITY, "F/F+", FOG);
         register(2197, HIGH_PROBABILITY, "F-/F+", FOG);
         register(2198, HIGH_PROBABILITY, "F+/F+", FOG);
+    }
+
+    static {
+        PACKED_LABEL = new String[] {
+                "None",
+                "None",
+                "None",
+                "LoProb Rain",
+                "HiProb Rain",
+                "None",
+                "LoProb Ice",
+                "HiProb Ice",
+                "None",
+                "LoProb Snow",
+                "HiProb Snow",
+                "None",
+                "LoProb Mix",
+                "HiProb Mix",
+                "None",
+                "Severe",
+                "Severe",
+                "Severe",
+                "Fog",
+                "Fog",
+                "Fog",
+                "Smoke",
+                "Smoke",
+                "Smoke",
+                "Blowing",
+                "Blowing",
+                "Blowing",
+                "Haze",
+                "Haze",
+                "Haze"
+        };
     }
 }
