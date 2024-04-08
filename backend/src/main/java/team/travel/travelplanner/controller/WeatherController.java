@@ -1,6 +1,8 @@
 package team.travel.travelplanner.controller;
 
+import org.hibernate.validator.constraints.Length;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.model.CountyModel;
 import team.travel.travelplanner.model.RouteModel;
@@ -40,7 +42,7 @@ public class WeatherController {
     }
 
     @PostMapping("/check_route")
-    public List<SegmentWeatherModel> checkRoute(@RequestBody RouteModel route) {
+    public List<SegmentWeatherModel> checkRoute(@RequestBody @Validated RouteModel route) {
         return weatherDataService.checkRouteWeather(route.geometry(geometryFactory), route.durations(), route.startTime());
     }
 
@@ -55,22 +57,22 @@ public class WeatherController {
     }
 
     @PostMapping("/alerts/check_route")
-    public RouteWeatherAlertsModel checkRouteAlerts(@RequestBody RouteModel route) {
+    public RouteWeatherAlertsModel checkRouteAlerts(@RequestBody @Validated RouteModel route) {
         return weatherAlertService.checkRouteWeatherAlerts(route);
     }
 
     @GetMapping("/county")
-    public Map<String, CountyModel> getCounties(@RequestParam("fips_codes") List<String> fipsCodes) {
+    public Map<String, CountyModel> getCounties(@RequestParam("fips_codes") List<@Length(min = 6, max = 6) String> fipsCodes) {
         return countyService.getCounties(fipsCodes);
     }
 
     @PostMapping("/raster/check_route")
-    public RasterWeatherModel checkRouteRaster(@RequestBody RouteModel route) throws IOException {
+    public RasterWeatherModel checkRouteRaster(@RequestBody @Validated RouteModel route) throws IOException {
         return rasterWeatherDataService.checkWeather(route, "conus", "wx");
     }
 
     @PostMapping("/raster/check_route/{area}/{dataset}")
-    public RasterWeatherModel checkRouteRaster(@RequestBody RouteModel route,
+    public RasterWeatherModel checkRouteRaster(@RequestBody @Validated RouteModel route,
                                                @PathVariable(name = "area") String area,
                                                @PathVariable(name = "dataset") String dataset) throws IOException {
         return rasterWeatherDataService.checkWeather(route, area, dataset);
