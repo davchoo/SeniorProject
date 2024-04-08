@@ -8,6 +8,8 @@ travel-planner:
       pulling-enabled: false
     data:
       auto-update: false
+    raster-data:
+      auto-update: false
 zonky:
   test:
     database:
