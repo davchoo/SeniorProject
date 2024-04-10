@@ -35,6 +35,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
+  const [distancesBetweenEachStop, setDistancesBetweenEachStop] = useState([]);
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -52,7 +53,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       if (isOrigin) {
         setOrigin(null);
       } else {
-        setDestination(null);
+        setDestination(null); 
       }
     }
   };
@@ -64,6 +65,13 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
         {
           origin: new window.google.maps.LatLng(origin.lat, origin.lng),
           destination: new window.google.maps.LatLng(destination.lat, destination.lng),
+          waypoints: data.map(gasStation => ({
+            location: {
+              lat: gasStation.location.lat,
+              lng: gasStation.location.lng
+            },
+            stopover: true,
+          })),
           travelMode: 'DRIVING',
         },
         (result, status) => {
@@ -72,17 +80,29 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
             Promise.resolve()
               .then(() => {
                 setDirections(result);
+                console.log(result)
               })
               .then(() => {
                 setPath(getFullRoute(result.routes[0]));
               })
               .then(() => {
-                setDistance(result.routes[0].legs[0].distance.text);
-                setPlanDistance(result.routes[0].legs[0].distance.text)
-              })
-              .then(() => {
-                setDuration(result.routes[0].legs[0].duration.text);
-                setPlanDuration(result.routes[0].legs[0].duration.text)
+                let distances = [];
+                let duration = 0;
+                let totalDistance = 0;
+                result.routes[0].legs.forEach(leg => {
+                  // Collect distance and duration for each leg
+                  distances.push(leg.distance.text);
+                  duration+=(leg.duration.value/3600);
+                  totalDistance+=(leg.distance.value/1609.34) // Value of meters
+                });
+                
+                setDistancesBetweenEachStop(distances);
+
+                setDistance(totalDistance);
+                setPlanDistance(totalDistance)
+              
+                setDuration(duration);
+                setPlanDuration(duration)
               })
               .then(() => {
                 // Access the updated value of path after it's set
@@ -105,7 +125,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
         }
       );
     }
-  }, [origin, destination]);
+  }, [origin, destination, data]);
 
   const handleMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
@@ -124,8 +144,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       <div>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div style={{ marginTop: '15px', marginLeft: '10px'}}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
-        <div style={{ marginBottom: '20px', marginLeft: '10px'}}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+        <div style={{ marginTop: '15px', marginLeft: '10px'}}>Distance: {distance ? `${Math.round(distance)} miles` : ''}</div>
+        <div style={{ marginBottom: '20px', marginLeft: '10px'}}>Duration: {duration ? `${Math.floor(duration)} hours and ${Math.round((duration - Math.floor(duration)) * 60)} minutes` : ''}</div>
       </div>
 
       <GoogleMap
@@ -260,6 +280,14 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
           </InfoWindow>
         )}
       </GoogleMap>
+      <div>
+        Distances between each stop:
+        <ul>
+          {distancesBetweenEachStop.map((distance, index) => (
+            <li key={index}>{distance}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
