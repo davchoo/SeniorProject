@@ -106,7 +106,7 @@ const Weather = () => {
                       </div>
                     )}
                     <button onClick={() => toggleExpand(alert)}>
-                      {expandedAlert === alert ? 'Collapse Directions and Instructions' : 'Expand Directions and Instructions'}
+                      {expandedAlert === alert ? 'Collapse Description and Instructions' : 'Expand Description and Instructions'}
                     </button>
                   </li>
                 ))}
