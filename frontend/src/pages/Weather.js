@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import weatherAlerts from '../pages/weather_alert.json'; // Importing the JSON for testing  
 
 const Weather = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showLegend, setShowLegend] = useState(false);
   const [selectedRadar, setSelectedRadar] = useState('');
+  const [expandedAlert, setExpandedAlert] = useState(null);
+
+  useEffect(() => {
+    setSelectedOption(null);
+    setShowLegend(false);
+    setSelectedRadar('');
+  }, []);
 
   const handleOptionChange = (value) => {
     setSelectedOption(value);
@@ -12,6 +20,12 @@ const Weather = () => {
 
   const toggleLegend = () => {
     setShowLegend(!showLegend);
+  };
+
+  const sortedAlerts = Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent));
+
+  const toggleExpand = (alert) => {
+    setExpandedAlert(expandedAlert === alert ? null : alert);
   };
 
   return (
@@ -61,6 +75,45 @@ const Weather = () => {
 
       <div className="mt-20">
         <p className="font-notosansjp text-custom-black font-semibold">Alerts Along Your Route:</p>
+        <div className="alert-container" style={{ maxHeight: '80vh', width: '300px', overflowY: 'auto' }}>
+          {Object.entries(sortedAlerts.reduce((acc, alert) => {
+            if (!acc[alert.event]) {
+              acc[alert.event] = [];
+            }
+            acc[alert.event].push(alert);
+            return acc;
+          }, {})).map(([event, alertsForEvent], index) => (
+            <div key={index}>
+              <p className="font-notosansjp text-custom-black font-semibold underline">{event}:</p>
+              <ul className="list-disc pl-8">
+                {alertsForEvent.map((alert, idx) => (
+                  <li key={idx} className="mt-2">
+                    <p className="font-notosansjp text-custom-black font-semibold">
+                      Sent: {new Date(alert.sent).toLocaleString()}
+                    </p>
+                    <p className="font-notosansjp text-custom-black font-semibold">
+                      Expires: {new Date(alert.expires).toLocaleString()}
+                    </p>
+
+                    <p className="font-notosansjp text-custom-black font-semibold">Status: {alert.status}</p>
+                    <p className="font-notosansjp text-custom-black">Area Description: {alert.areaDescription}</p>
+                    <p className="font-notosansjp text-custom-black">Severity: {alert.severity}</p>
+                    <p className="font-notosansjp text-custom-black">Headline: {alert.headline}</p>
+                    {expandedAlert === alert && (
+                      <div>
+                        <p className="font-notosansjp text-custom-black">Description: {alert.description}</p>
+                        <p className="font-notosansjp text-custom-black">Instruction: {alert.instruction}</p>
+                      </div>
+                    )}
+                    <button onClick={() => toggleExpand(alert)}>
+                      {expandedAlert === alert ? 'Collapse Directions and Instructions' : 'Expand Directions and Instructions'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div>
