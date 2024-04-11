@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindow } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
@@ -65,7 +65,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
         {
           origin: new window.google.maps.LatLng(origin.lat, origin.lng),
           destination: new window.google.maps.LatLng(destination.lat, destination.lng),
-          waypoints: data.map(gasStation => ({
+
+          waypoints: data?.map(gasStation => ({
             location: {
               lat: gasStation.location.lat,
               lng: gasStation.location.lng
@@ -216,7 +217,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
 
         {path && (
           <>
-            <Polyline
+            <PolylineF
               path={path}
               options={{
                 strokeColor: '#FF0000',
