@@ -20,7 +20,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistance, setPlanDuration }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistance, setPlanDuration, setDistanceBetweenStops }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -97,6 +97,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
                 });
                 
                 setDistancesBetweenEachStop(distances);
+                setDistanceBetweenStops(distances);
 
                 setDistance(totalDistance);
                 setPlanDistance(totalDistance)
@@ -112,7 +113,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
                 setStartAddress(result.routes[0].legs[0].start_address);
               })
               .then(() => {
-                setEndAddress(result.routes[0].legs[0].end_address);
+                setEndAddress(result.routes[0].legs[result.routes[0].legs.length-1].end_address);
               })
               .catch((error) => {
                 console.error('Error setting state:', error);
@@ -280,14 +281,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
           </InfoWindow>
         )}
       </GoogleMap>
-      <div>
-        Distances between each stop:
-        <ul>
-          {distancesBetweenEachStop.map((distance, index) => (
-            <li key={index}>{distance}</li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 };

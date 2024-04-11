@@ -23,6 +23,7 @@ function Plan() {
   const [clickedTrip, setClickedTrip] = useState({});
   const [duration, setDuration] = useState();
   const [distance, setDistance] = useState();
+  const [distanceBetweenStops, setDistanceBetweenStops] = useState([]);
   const navigate = useNavigate()
 
 
@@ -81,7 +82,7 @@ function Plan() {
           {loggedIn ? 
           <div className='p-2'>
             <h2 className="font-notosansjp font-extrabold text-custom-black">Saved Trips</h2>
-            <div className=' overflow-y-scroll'>
+            <div className='overflow-y-scroll max-h-[90vh]'>
               {myTrips.map((trip) => (
               <TripCard trip={trip} setOpen={setOpenTrip}  setTrip={setClickedTrip}/>
             ))}
@@ -107,7 +108,7 @@ function Plan() {
         </p>
 
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} setPlanDuration={setDuration} setPlanDistance={setDistance}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} setPlanDuration={setDuration} setPlanDistance={setDistance} setDistanceBetweenStops={setDistanceBetweenStops}/>
           <div className='flex flex-col'>
             <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}
@@ -128,8 +129,11 @@ function Plan() {
                 Weather
               </button>
             </div>
-            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration}/>}
+            <div className='p-4'>
+            {showGasInfo && <Gas  showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
             {showWeatherInfo && <Weather />}
+            </div>
+          
           </div>
           <div>
           </div>
