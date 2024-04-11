@@ -48,7 +48,7 @@ public class GasTrip extends Trip{
     private double calculateTotalGasTripCost() {
         double total = 0;
         for (GasStationModel gasStation : gasStations) {
-            double price = gasStation.prices().getOrDefault(carModel.fuelType(), 0.0);
+            double price = gasStation.prices().getOrDefault(carModel.fuelType().toString(), 0.0);
             total += price;
         }
         return total;
