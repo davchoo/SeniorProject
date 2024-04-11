@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, MarkerF } from '@react-google-maps/api';
 import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";
@@ -121,7 +121,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
 export const GasStationsMarkers = ({ gasStations, onClick }) => (
   <>
     {gasStations.map((station) => (
-      <Marker
+      <MarkerF
         key={station.name}
         position={{
           lat: station.location.lat,
