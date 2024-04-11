@@ -94,6 +94,16 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
         return "REGULAR_UNLEADED"
       case 'Midgrade Gasoline':
         return "REGULAR_UNLEADED"
+      case 'Natural Gas':
+        return "REGULAR_UNLEADED"
+      case 'Midgrade Gasoline':
+        return 'MIDGRADE'
+      case 'Diesel':
+        return 'DIESEL'
+      case 'Premium Gasoline':
+        return "PREMIUM"
+      default:
+        return fuelType
     }
   }
 
