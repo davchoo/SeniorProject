@@ -101,7 +101,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
             //setSelectedGasStations(gasStations);
           }}
 
-          className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10 ${showGasStations ? 'bg-custom-green4 ' : 'bg-custom-green3 hover:bg-custom-green4'} py-1 px-2 rounded-md mb-2 ${(!origin || !destination || !type || !selectedMake || !selectedModel) ? 'disabled bg-gray-400 ' : ''}`}
+          className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10 ${showGasStations ? 'bg-custom-green4 ' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 ${(!origin || !destination || !type || !selectedMake || !selectedModel) ? 'disabled bg-gray-400' : 'hover:bg-custom-green4'}`}
           disabled={!origin || !destination || !type || !selectedMake || !selectedModel}
         >
           Show Gas Stations
