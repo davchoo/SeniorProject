@@ -5,7 +5,7 @@ import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";
 
-const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination, distance, duration}) => {
+const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination, distance, duration, distanceBetweenStops }) => {
   const [selectedMake, setSelectedMake] = useState();
   const [selectedModel, setSelectedModel] = useState();
   const [year, setYear] = useState();
@@ -17,6 +17,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
   const [clicked, setClicked] = useState(false);
   const [loading, setLoading] = useState(true);
+
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
@@ -67,6 +68,20 @@ return (
         <p>Estimated Price: ${price}</p>
         <p>Total Stops: {gasStations.length}</p>
       </div>
+      {distanceBetweenStops.length>0 && gasStations.length>0 && !loading ?
+      <div>
+      Distances between each stop:
+      <ul>
+        {distanceBetweenStops.map((distance, index) => (
+          <li key={index}>
+            {distance}
+            {index === 0 && gasStations[0] ? ` From ${origin} to ${gasStations[0].name}: ${gasStations[0].formattedAddress}` : ''}
+            {index > 0 && index < gasStations.length ? ` From ${gasStations[index - 1].name} to ${gasStations[index].name}: ${gasStations[index].formattedAddress}` : ''}
+            {index === gasStations.length && gasStations[gasStations.length - 1] ? ` From ${gasStations[gasStations.length - 1].name} to ${destination}:` : ''}
+          </li>
+        ))}
+      </ul>
+    </div> : null}
 
       <div style={{ padding: '10px' }}>
       <button
