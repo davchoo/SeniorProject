@@ -57,9 +57,12 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
           setPrice((response.data.totalTripGasPrice * response.data.car.tankSizeInGallons).toFixed(2))
           console.log(gasStations)
           console.log("Response from backend:", response.data);
-          setLoading(false)
+          setLoading(false) 
         })
         .catch(error => {
+          if(error.response.data.message.includes("not one of the values accepted for Enum class: [DIESEL, MIDGRADE, PREMIUM, REGULAR_UNLEADED]")){
+            window.alert("At this time, we cannot support your car's fuel type: " + type)
+          }
           console.error("Error getting gas stations:", error);
         });
     }
