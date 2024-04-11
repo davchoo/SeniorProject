@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
 import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.google.GoogleGasStation;
+import team.travel.travelplanner.model.type.FuelType;
 import team.travel.travelplanner.service.GasStationService;
 import team.travel.travelplanner.service.GoogleMapsApiFuelPriceService;
 import team.travel.travelplanner.service.GoogleMapsApiPlacesClientService;
@@ -37,7 +38,8 @@ public class GasStationServiceImpl implements GasStationService {
      * @throws IOException          If there's an error communicating with the Google Maps API.
      */
     @Override
-    public List<GasStationModel> getGasStationsAlongRoute(LineString route, double rangeMeters, String type) throws IOException {
+    public List<GasStationModel> getGasStationsAlongRoute(LineString route, double rangeMeters, FuelType type) throws IOException {
+        String stringType = type.toString();
         List<GasStationModel> stops = new ArrayList<>();
         List<Coordinate> stopsAlongRoute = findNeededStops(route, rangeMeters);
 
@@ -46,9 +48,9 @@ public class GasStationServiceImpl implements GasStationService {
             LatLng location = new LatLng(coordinate.getY(), coordinate.getX());
 
             PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 50000);
-            List<GoogleGasStation> gasStations = findGasStationsWithTypeAndPrice(response, type);
+            List<GoogleGasStation> gasStations = findGasStationsWithTypeAndPrice(response, stringType);
 
-            GasStationModel lowestPriceGasStation = GasStationModel.from(findLowestPriceGasStation(gasStations, type));
+            GasStationModel lowestPriceGasStation = GasStationModel.from(findLowestPriceGasStation(gasStations, stringType));
             stops.add(lowestPriceGasStation);
         }
 
