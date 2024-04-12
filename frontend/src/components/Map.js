@@ -9,6 +9,9 @@ import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
 
+import { ImageMapType, OverlayMapTypes } from './ImageOverlay';
+
+
 const libraries = ['places'];
 const mapContainerStyle = {
   width: '65vw',
@@ -117,6 +120,17 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   const handleMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
+  };
+  
+  let [times, setTimes] = useState({"ndfd:conus.wx": "2024-04-11T03:00:00.000Z"});
+  let [layerOrder, setLayerOrder] = useState(["ndfd:conus.wx"]);
+
+  let createOverlayOptions = (layerName, time) => {
+    return {
+      getTileUrl: (coord, zoom) => `http://localhost:8085/geoserver/gwc/service/gmaps?layers=${layerName}&zoom=${zoom}&x=${coord.x}&y=${coord.y}&format=image/png&time=${time}`,
+      name: layerName + " " + time,
+      time
+    }
   };
 
   if (loadError) {
@@ -229,6 +243,12 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             onClick={handleMarkerClick}
           />
         )}
+
+        <OverlayMapTypes>
+          {layerOrder.map(layerName => (
+            <ImageMapType key={layerName} id={layerName} options={createOverlayOptions(layerName, times[layerName])} opacity={0.5}></ImageMapType>
+          ))}
+        </OverlayMapTypes>
 
         {selectedGasMarker && (
           <InfoWindow
