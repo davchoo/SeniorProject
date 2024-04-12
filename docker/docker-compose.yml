@@ -22,5 +22,6 @@ services:
       - ./geoserver/additional_libs:/opt/additional_libs
       - ./geoserver/data:/opt/geoserver_data
       - ./geoserver/workspaces:/opt/geoserver_data/workspaces
+      - ./geoserver/gwc-layers:/opt/geoserver_data/gwc-layers
       - ./geoserver/ndfd-nc:/opt/geoserver_data/ndfd-nc:ro
       - ./geoserver/netcdf_cache:/opt/netcdf_cache
