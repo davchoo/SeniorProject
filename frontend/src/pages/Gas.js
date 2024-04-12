@@ -27,7 +27,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
     const polyline = getPolyline; // Call the function to retrieve the polyline
     console.log(origin)
     if (polyline) {
-      axios.post('http://localhost:8080/api/trip/gas', {
+      axios.post('/api/trip/gas', {
         polyline: polyline, // Use the obtained polyline
         startAddress: origin,
         endAddress: destination,
