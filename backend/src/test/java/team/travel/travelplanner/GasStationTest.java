@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import team.travel.travelplanner.model.GasStationModel;
+import team.travel.travelplanner.model.type.FuelType;
 import team.travel.travelplanner.service.impl.GasStationServiceImpl;
 import team.travel.travelplanner.util.EncodedPolylineUtils;
 
@@ -31,7 +32,7 @@ public class GasStationTest {
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         LineString lineString = geometryFactory.createLineString(EncodedPolylineUtils.decodePolyline(polyline));
 
-        List<GasStationModel> gasStations = gasStationService.getGasStationsAlongRoute(lineString, 482803, "REGULAR_UNLEADED");
+        List<GasStationModel> gasStations = gasStationService.getGasStationsAlongRoute(lineString, 482803, FuelType.REGULAR_UNLEADED);
         assertEquals(4, gasStations.size());
     }
 }

@@ -1,8 +1,6 @@
 package team.travel.travelplanner.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import org.locationtech.jts.geom.LineString;
 
 @Entity
@@ -17,10 +15,14 @@ public abstract class Trip {
 
     private LineString lineString;
 
-    public Trip(String origin, String destination, LineString linestring) {
+    @ManyToOne
+    private User user;
+
+    public Trip(String origin, String destination, LineString linestring, User user) {
         this.origin = origin;
         this.destination = destination;
         this.lineString = linestring;
+        this.user = user;
     }
 
     public Trip() {
@@ -57,5 +59,13 @@ public abstract class Trip {
 
     public void setLineString(LineString lineString) {
         this.lineString = lineString;
+    }
+
+    public User getUser(){
+        return user;
+    }
+
+    public void setUser(User user){
+        this.user = user;
     }
 }
