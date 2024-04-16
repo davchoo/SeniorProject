@@ -3,8 +3,10 @@ package team.travel.travelplanner.entity;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import org.hibernate.annotations.Type;
 import org.locationtech.jts.geom.LineString;
+import team.travel.travelplanner.model.CarModel;
 import team.travel.travelplanner.model.GasStationModel;
 
 import java.util.List;
@@ -15,26 +17,28 @@ public class GasTrip extends Trip{
     @Column(columnDefinition = "jsonb")
     private List<GasStationModel> gasStations;
 
-    private String fuelType;
-
     private double totalTripGasPrice;
 
     private double travelersMeterCapacity;
 
-    private double tankSizeInGallons;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private CarModel carModel;
 
-    private double milesPerGallon;
+    private double distance;
+
+    private String duration;
 
     public GasTrip(String origin, String destination, LineString lineString,
-                   List<GasStationModel> gasStationList, String fuelType,
-                   double tankSizeInGallons, double milesPerGallon, double travelersMeterCapacity) {
-        super(origin, destination, lineString);
+                   List<GasStationModel> gasStationList, double travelersMeterCapacity,
+                   User user, CarModel carModel, double distance, String duration) {
+        super(origin, destination, lineString, user);
         this.gasStations = gasStationList;
-        this.fuelType = fuelType;
-        this.tankSizeInGallons = tankSizeInGallons;
-        this.milesPerGallon = milesPerGallon;
         this.travelersMeterCapacity = travelersMeterCapacity;
+        this.carModel = carModel;
         this.totalTripGasPrice = calculateTotalGasTripCost();
+        this.distance = distance;
+        this.duration = duration;
     }
 
     public GasTrip() {
@@ -43,19 +47,21 @@ public class GasTrip extends Trip{
 
     private double calculateTotalGasTripCost() {
         double total = 0;
-        for (GasStationModel gasStation : gasStations) {
-            double price = gasStation.prices().getOrDefault(fuelType, 0.0);
-            total += price;
+        if(gasStations!=null && !gasStations.isEmpty()){
+            for (GasStationModel gasStation : gasStations) {
+                double price = gasStation.prices().getOrDefault(carModel.fuelType().toString(), 0.0);
+                total += price;
+            }
         }
         return total;
     }
 
     private double calculateTravelersMeterCapacity(){
-        return tankSizeInGallons * milesPerGallon * 1000;
+        return carModel.tankSizeInGallons() * carModel.milesPerGallon() * 1000;
     }
 
     private double calculateQuarterTank(){
-        return tankSizeInGallons - tankSizeInGallons*.25;
+        return carModel.tankSizeInGallons()-carModel.tankSizeInGallons()*.25;
     }
 
 
@@ -65,14 +71,6 @@ public class GasTrip extends Trip{
 
     public void setGasStations(List<GasStationModel> gasStationList) {
         this.gasStations = gasStationList;
-    }
-
-    public String getFuelType(){
-        return fuelType;
-    }
-
-    public void setFuelType(String fuelType){
-        this.fuelType = fuelType;
     }
 
     public double getTotalTripGasPrice(){
@@ -91,19 +89,27 @@ public class GasTrip extends Trip{
         this.travelersMeterCapacity = travelersMeterCapacity;
     }
 
-    public double getTankSizeInGallons(){
-        return tankSizeInGallons;
+    public CarModel getCarModel(){
+        return carModel;
     }
 
-    public void setTankSizeInGallons(double tankSizeInGallons){
-        this.tankSizeInGallons = tankSizeInGallons;
+    public void setCarModel(CarModel carModel){
+        this.carModel = carModel;
     }
 
-    public double getMilesPerGallon(){
-        return milesPerGallon;
+    public double getDistance(){
+        return distance;
     }
 
-    public void setMilesPerGallon(double milesPerGallon){
-        this.milesPerGallon = milesPerGallon;
+    public void setDistance(double distance){
+        this.distance = distance;
+    }
+
+    public String getDuration(){
+        return duration;
+    }
+
+    public void setDuration(String duration){
+        this.duration = duration;
     }
 }

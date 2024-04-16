@@ -14,15 +14,13 @@ public record GasTripModel(
 
         List<GasStationModel> gasStations,
 
-        String fuelType,
-
         double totalTripGasPrice,
 
         double travelersMeterCapacity,
 
-        double tankSizeInGallons,
-
-        double milesPerGallon
+        CarModel car,
+        double distance,
+        String duration
 
 
 ) {
@@ -32,11 +30,11 @@ public record GasTripModel(
                 gasTrip.getDestination(),
                 EncodedPolylineUtils.encodePolyline(gasTrip.getLineString().getCoordinateSequence()),
                 new ArrayList<>(gasTrip.getGasStations()),
-                gasTrip.getFuelType(),
                 gasTrip.getTotalTripGasPrice(),
                 gasTrip.getTravelersMeterCapacity(),
-                gasTrip.getTankSizeInGallons(),
-                gasTrip.getMilesPerGallon()
+                gasTrip.getCarModel(),
+                gasTrip.getDistance(),
+                gasTrip.getDuration()
         );
     }
 }
