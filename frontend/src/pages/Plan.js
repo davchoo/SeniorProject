@@ -6,6 +6,9 @@ import { checkIsLoggedIn } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
 import Weather from '../pages/Weather';
+import axios from 'axios';
+import { TripCard } from '../components/TripCard';
+import { TripPopup } from '../components/TripPopup';
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
@@ -15,6 +18,12 @@ function Plan() {
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
+  const [myTrips, setMyTrips] = useState([]);
+  const [openTrip, setOpenTrip] = useState(false);
+  const [clickedTrip, setClickedTrip] = useState({});
+  const [duration, setDuration] = useState();
+  const [distance, setDistance] = useState();
+  const [distanceBetweenStops, setDistanceBetweenStops] = useState([]);
   const navigate = useNavigate()
 
 
@@ -36,6 +45,17 @@ function Plan() {
     setIsSidebarOpen(false);
   };
 
+  const getSavedTrips = async () => {
+    axios.get('http://localhost:8080/api/trip/gas/myTrips', {withCredentials: true})
+        .then(response => {
+          console.log(response.data)
+          setMyTrips(response.data);
+        })
+        .catch(error => {
+          console.error("Error getting gas stations:", error);
+        });
+  }
+
   useEffect(() => {
     const fetchLoggedInStatus = async () => {
       try {
@@ -47,6 +67,7 @@ function Plan() {
       } 
     };
     fetchLoggedInStatus();
+    getSavedTrips();
   }, []);
 
   return (
@@ -55,11 +76,18 @@ function Plan() {
         <button onClick={toggleSidebar} className="absolute z-0 text-xl text-custom-black" style={{ marginLeft: '5px', marginTop: '20px' }}>
           <GiHamburgerMenu />
         </button>
+        <TripPopup isVisible={openTrip} trip={clickedTrip} setIsVisible={setOpenTrip}/>
         
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar}>
           {loggedIn ? 
-          <div style={{ padding: '20px', borderRight: '2px solid white' }}>
+          <div className='p-2'>
             <h2 className="font-notosansjp font-extrabold text-custom-black">Saved Trips</h2>
+            <div className='overflow-y-scroll max-h-[90vh]'>
+              {myTrips.map((trip) => (
+              <TripCard trip={trip} setOpen={setOpenTrip}  setTrip={setClickedTrip}/>
+            ))}
+
+            </div>
           </div>
           : 
           <div className="flex flex-col items-center pt-24">
@@ -80,7 +108,7 @@ function Plan() {
         </p>
 
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} setPlanDuration={setDuration} setPlanDistance={setDistance} setDistanceBetweenStops={setDistanceBetweenStops}/>
           <div className='flex flex-col'>
             <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}
@@ -101,8 +129,11 @@ function Plan() {
                 Weather
               </button>
             </div>
-            {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
+            <div className='p-4'>
+            {showGasInfo && <Gas  showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
             {showWeatherInfo && <Weather />}
+            </div>
+          
           </div>
           <div>
           </div>
