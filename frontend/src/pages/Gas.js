@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
-import gasStationsData from './gasStations.json';
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, useLoadScript, MarkerF } from '@react-google-maps/api';
 import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";
 
-const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination }) => {
-  const [selectedMake, setSelectedMake] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
+const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination, distance, duration, distanceBetweenStops }) => {
+  const [selectedMake, setSelectedMake] = useState();
+  const [selectedModel, setSelectedModel] = useState();
+  const [year, setYear] = useState();
   const [showGasStations, setShowGasStations] = useState(false);
   const [gasStations, setGasStations] = useState([]);
   const [price, setPrice] = useState();
   const [type, setType] = useState();
-  const[milesPerGallon, setMilesPerGallon] = useState();
+  const [milesPerGallon, setMilesPerGallon] = useState();
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
   const [clicked, setClicked] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+  const [calcOrigin, setCalcOrigin] = useState(null);
+  const [calcDestination, setCalcDestination] = useState(null);
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
   };
+
+  useEffect(() => {
+    if (calcOrigin != origin || calcDestination != destination) {
+      setCalcOrigin(origin);
+      setCalcDestination(destination);
+
+      setSelectedGasStations(null);
+    }
+  }, [origin, destination]);
 
 
   const getGasStations = async () => {
@@ -35,54 +45,78 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
         type: type,
         tankSizeInGallons: tankSizeInGallons,
         milesPerGallon: milesPerGallon,
-      })
+        make: selectedMake,
+        model: selectedModel,
+        year: year,
+        distance: parseFloat(distance),
+        duration: duration
+      }, { withCredentials: true })
         .then(response => {
           setGasStations(response.data.gasStations)
           setSelectedGasStations(response.data.gasStations)
-          setPrice((response.data.totalTripGasPrice * response.data.tankSizeInGallons).toFixed(2))
+          setPrice((response.data.totalTripGasPrice * response.data.car.tankSizeInGallons).toFixed(2))
           console.log(gasStations)
           console.log("Response from backend:", response.data);
-          setLoading(false)
+          setLoading(false) 
         })
         .catch(error => {
+          if(error.response.data.message.includes("not one of the values accepted for Enum class: [DIESEL, MIDGRADE, PREMIUM, REGULAR_UNLEADED]")){
+            window.alert("At this time, we cannot support your car's fuel type: " + type)
+          }
           console.error("Error getting gas stations:", error);
         });
     }
   };
 
-return (
+  return (
     <div>
       <div  >
         <p className="font-notosansjp text-custom-black text-sm">Enter Information About Your Vehicle:</p>
       </div>
       <div>
-        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType}/>
+        <Car setMilesPerGallon={setMilesPerGallon} setTankSizeInGallons={setTankSizeInGallons} setFuelType={setType} setSelectedMake={setSelectedMake} setSelectedModel={setSelectedModel} setSelectedYear={setYear} />
       </div>
       <div className='flex-col'>
         <p>Estimated Price: ${price}</p>
         <p>Total Stops: {gasStations.length}</p>
       </div>
+      {distanceBetweenStops.length > 0 && gasStations.length > 0 && !loading ?
+        <div>
+          Distances between each stop:
+          <ul>
+            {distanceBetweenStops.map((distance, index) => (
+              <li key={index}>
+                {distance}
+                {index === 0 && gasStations[0] ? ` From ${origin} to ${gasStations[0].name}: ${gasStations[0].formattedAddress}` : ''}
+                {index > 0 && index < gasStations.length ? ` From ${gasStations[index - 1].name} to ${gasStations[index].name}: ${gasStations[index].formattedAddress}` : ''}
+                {index === gasStations.length && gasStations[gasStations.length - 1] ? ` From ${gasStations[gasStations.length - 1].name} to ${destination}:` : ''}
+              </li>
+            ))}
+          </ul>
+        </div> : null}
 
       <div style={{ padding: '10px' }}>
-      <button
+        <button
           onClick={async () => {
-            setClicked(true)
+            setClicked(true);
             toggleGasStations();
             await getGasStations(); // Wait for getGasStations to finish
             //setSelectedGasStations(gasStations);
           }}
-          className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10  ${showGasStations ? 'bg-custom-green4' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 hover:bg-custom-green4`}
+
+          className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10 ${showGasStations ? 'bg-custom-green4 ' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 ${(!origin || !destination || !type || !selectedMake || !selectedModel) ? 'disabled bg-gray-400' : 'hover:bg-custom-green4'}`}
+          disabled={!origin || !destination || !type || !selectedMake || !selectedModel}
         >
           Show Gas Stations
         </button>
       </div>
-      {clicked ? 
+      {clicked ?
         <ClipLoader
-        loading={loading}
-        size={150}
-        aria-label="Loading Spinner"
-        data-testid="loader"
-      /> : null}
+          loading={loading}
+          size={150}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        /> : null}
     </div>
   );
 };
@@ -90,7 +124,7 @@ return (
 export const GasStationsMarkers = ({ gasStations, onClick }) => (
   <>
     {gasStations.map((station) => (
-      <Marker
+      <MarkerF
         key={station.name}
         position={{
           lat: station.location.lat,
@@ -101,7 +135,7 @@ export const GasStationsMarkers = ({ gasStations, onClick }) => (
           url: 'https://maps.gstatic.com/mapfiles/place_api/icons/gas_station-71.png',
           scaledSize: new window.google.maps.Size(25, 25),
         }}
-        onClick={() => onClick(station)} 
+        onClick={() => onClick(station)}
       />
     ))}
   </>
