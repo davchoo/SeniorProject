@@ -5,9 +5,9 @@ import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
 import ReactStars from "react-rating-stars-component";
 import polyLineData from "../pages/weather.json";
-import rasterdata from "../pages/raster_weather.json"
 import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
+import { haversineDistance } from '../utils/Distance';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -38,8 +38,11 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
-  const [points, setPoints] = useState([]);
+  const [segments, setSegments] = useState([]);
   const [weatherDisplay, setWeatherDisplay] = useState(true); 
+
+  const [durations, setDurations] = useState();
+  const [rasterResponse, setRasterResponse] = useState(null);
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -73,37 +76,21 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
         },
         (result, status) => {
           if (status === 'OK') {
-            // Use promise chaining to ensure sequential execution
-            Promise.resolve()
-              .then(() => {
-                setDirections(result);
-                console.log(result)
-              })
-              .then(() => {
-                setPath(getFullRoute(result.routes[0]));
-              })
-              .then(() => {
-                setPoints(getPolylinePoints(result.routes[0].overview_path))
-              })
-              .then(() => {
-                setDistance(result.routes[0].legs[0].distance.text);
-              })
-              .then(() => {
-                setDuration(result.routes[0].legs[0].duration.text);
-              })
-              .then(() => {
-                // Access the updated value of path after it's set
-                setPolyline(window.google.maps.geometry.encoding.encodePath(getFullRoute(result.routes[0])));
-              })
-              .then(() => {
-                setStartAddress(result.routes[0].legs[0].start_address);
-              })
-              .then(() => {
-                setEndAddress(result.routes[0].legs[0].end_address);
-              })
-              .catch((error) => {
-                console.error('Error setting state:', error);
-              });
+            setDirections(result);
+
+            let { coordinates, durations } = getFullRoute(result.routes[0])
+            setPath(coordinates);
+            setDurations(durations);
+            console.log(coordinates.length)
+
+            setPolyline(window.google.maps.geometry.encoding.encodePath(coordinates));
+            setSegments(getPolylineSegments(coordinates))
+
+            setDistance(result.routes[0].legs[0].distance.text);
+            setDuration(result.routes[0].legs[0].duration.text);
+
+            setStartAddress(result.routes[0].legs[0].start_address);
+            setEndAddress(result.routes[0].legs[0].end_address);
           } else {
             console.error('Failed to fetch directions. Status: ', status);
             setDirections(null);
@@ -113,6 +100,20 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
       );
     }
   }, [origin, destination]);
+
+  useEffect(() => {
+    if (!window.google || !path || !durations) {
+      return
+    }
+    let controller = new AbortController()
+    axios.post('http://localhost:8080/api/weather/raster/check_route',{
+      polyline: window.google.maps.geometry.encoding.encodePath(path), // TODO reuse from setPolyline?
+      durations,
+      startTime: new Date() // TODO route start time?
+    }, {signal: controller.signal})
+      .then(response => setRasterResponse(response.data), console.log)
+    return () => controller.abort()
+  }, [path, durations]);
 
   const handleMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
@@ -202,12 +203,12 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
 
         {path ? (
           weatherDisplay ? (
-            points && (points.map((point, index) => (
+            rasterResponse && segments && (segments.map((point, index) => (
               <PolylineF
                 key={index}
                 path={point}
                 options={{
-                  strokeColor: getColor(index),
+                  strokeColor: getColor(rasterResponse, index),
                   strokeOpacity: 1.0,
                   strokeWeight: 3
                 }} 
@@ -280,36 +281,49 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
   );
 };
 
-
-function decodePolyline(encoded) {
-  return window.google.maps.geometry.encoding.decodePath(encoded);
-}
-
-
+/**
+ * @param {google.maps.DirectionsRoute} route 
+ * @returns {coordinates: [LatLng, ...], durations: [ms between coordinate[i] and coordinate[i+1], ...]}
+ */
 function getFullRoute(route) {
   let coordinates = []
+  let durations = []
   for (let leg of route.legs) {
     for (let step of leg.steps) {
-      for (let coordinate of decodePolyline(step.polyline.points)) {
-        coordinates.push(coordinate)
+      let distances = []
+      let totalDistance = 0
+      for (let i = 0; i < step.path.length - 1; i++) {
+        let distance = haversineDistance(step.path[i], step.path[i + 1])
+        distances.push(distance)
+        totalDistance += distance
+      }
+
+      let totalDuration = 0 // Totally a sane default
+      if (step.duration) { // duration can be null...when would this happen?
+        totalDuration = step.duration.value * 1000 // seconds to milliseconds
+      }
+      for (let i = 0; i < step.path.length - 1; i++) {
+        let duration = totalDuration * distances[i] / totalDistance
+
+        coordinates.push(step.path[i])
+        durations.push(duration)
       }
     }
   }
-  return coordinates
+  return {coordinates, durations} // TODO too many coordinates and durations! Have to decimate?
 }
 
-const getPolylinePoints = (path) => {
-  const pointPath = [];
+const getPolylineSegments = (path) => {
+  const segments = [];
   for (let i = 0; i < path.length - 1; i++) {
-    const point = [path[i], path[i + 1]];
-    pointPath.push(point);
+    const segment = [path[i], path[i + 1]];
+    segments.push(segment);
   }
-  return pointPath;
+  return segments;
 };
 
-const getColor = (index) => {
-  const color = wxColorMap[rasterdata.labels[rasterdata.data[index]]]
-  console.log(color)
+const getColor = (rasterResponse, index) => {
+  const color = wxColorMap[rasterResponse.labels[rasterResponse.data[index]]] // TODO handle other datasets
   return color;
 }
 
