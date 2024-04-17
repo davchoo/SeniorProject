@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindow } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
 import ReactStars from "react-rating-stars-component";
-
+import polyLineData from "../pages/weather.json";
+import rasterdata from "../pages/raster_weather.json"
+import { mapQPFColor } from '../pages/qpfColorMap';
+import wxColorMap from "../pages/wxColorMap"
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -20,7 +23,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -35,6 +38,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
+  const [points, setPoints] = useState([]);
+  const [weatherDisplay, setWeatherDisplay] = useState(true); 
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -72,9 +77,13 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
             Promise.resolve()
               .then(() => {
                 setDirections(result);
+                console.log(result)
               })
               .then(() => {
                 setPath(getFullRoute(result.routes[0]));
+              })
+              .then(() => {
+                setPoints(getPolylinePoints(result.routes[0].overview_path))
               })
               .then(() => {
                 setDistance(result.routes[0].legs[0].distance.text);
@@ -122,8 +131,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
       <div>
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
         <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div style={{ marginTop: '15px', marginLeft: '10px'}}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
-        <div style={{ marginBottom: '20px', marginLeft: '10px'}}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+        <div style={{ marginTop: '15px', marginLeft: '10px' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
+        <div style={{ marginBottom: '20px', marginLeft: '10px' }}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
       </div>
 
       <GoogleMap
@@ -191,9 +200,20 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
           </InfoWindow>
         )}
 
-        {path && (
-          <>
-            <Polyline
+        {path ? (
+          weatherDisplay ? (
+            points && (points.map((point, index) => (
+              <PolylineF
+                key={index}
+                path={point}
+                options={{
+                  strokeColor: getColor(index),
+                  strokeOpacity: 1.0,
+                  strokeWeight: 3
+                }} 
+              />
+            )))) : 
+            <PolylineF
               path={path}
               options={{
                 strokeColor: '#FF0000',
@@ -201,9 +221,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
                 strokeWeight: 3
               }}
             />
-          </>
-        )}
-
+        ) : null}
         {data != null && (
           <GasStationsMarkers
             gasStations={data}
@@ -211,7 +229,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
           />
         )}
 
-{selectedGasMarker && (
+        {selectedGasMarker && (
           <InfoWindow
             position={{
               lat: selectedGasMarker.location.lat,
@@ -233,11 +251,11 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress }) => {
               <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
               <p><u>Hours:</u></p>
               <ul>
-               {selectedGasMarker.currentOpeningHours?.weekdayDescriptions?.map((description, index) => (
-                 <li key={index}>
-                  {description}
-                </li>
-                 ))}
+                {selectedGasMarker.currentOpeningHours?.weekdayDescriptions?.map((description, index) => (
+                  <li key={index}>
+                    {description}
+                  </li>
+                ))}
               </ul>
               <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
               <p><u>Reviews:</u></p>
@@ -278,6 +296,21 @@ function getFullRoute(route) {
     }
   }
   return coordinates
+}
+
+const getPolylinePoints = (path) => {
+  const pointPath = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const point = [path[i], path[i + 1]];
+    pointPath.push(point);
+  }
+  return pointPath;
+};
+
+const getColor = (index) => {
+  const color = wxColorMap[rasterdata.labels[rasterdata.data[index]]]
+  console.log(color)
+  return color;
 }
 
 
