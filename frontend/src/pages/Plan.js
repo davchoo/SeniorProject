@@ -15,6 +15,7 @@ function Plan() {
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   const navigate = useNavigate()
 
 
@@ -24,11 +25,13 @@ function Plan() {
 
   const toggleGasInfo = () => {
     setShowGasInfo(!showGasInfo);
+    setShowOverlay(false)
     setShowWeatherInfo(false);
   };
 
   const toggleWeatherInfo = () => {
     setShowWeatherInfo(!showWeatherInfo);
+    setShowOverlay(true)
     setShowGasInfo(false);
   };
 
@@ -80,7 +83,7 @@ function Plan() {
         </p>
 
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} showOverlay={showOverlay}/>
           <div className='flex flex-col'>
             <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}
@@ -102,7 +105,7 @@ function Plan() {
               </button>
             </div>
             {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
-            {showWeatherInfo && <Weather />}
+            {showWeatherInfo && <Weather/>}
           </div>
           <div>
           </div>
