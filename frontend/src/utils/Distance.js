@@ -1,9 +1,9 @@
 // Adapted from https://stackoverflow.com/a/21623206 to use Google LatLng
 export function haversineDistance(point1, point2) {
-  const lat1 = point1.lat;
-  const lon1 = point1.lng;
-  const lat2 = point2.lat; 
-  const lon2 = point2.lng; 
+  const lat1 = point1.lat();
+  const lon1 = point1.lng();
+  const lat2 = point2.lat(); 
+  const lon2 = point2.lng(); 
 
   const r = 6371; // km
   const p = Math.PI / 180;

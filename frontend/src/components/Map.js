@@ -78,7 +78,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
           if (status === 'OK') {
             setDirections(result);
 
-            let { coordinates, durations } = getFullRoute(result.routes[0])
+            let { coordinates, durations } = decimate(getFullRoute(result.routes[0]))
             setPath(coordinates);
             setDurations(durations);
             console.log(coordinates.length)
@@ -310,7 +310,31 @@ function getFullRoute(route) {
       }
     }
   }
-  return {coordinates, durations} // TODO too many coordinates and durations! Have to decimate?
+  return {coordinates, durations} // TODO too many coordinates and durations! Have to simplify?
+}
+
+function decimate({coordinates, durations}) {
+  const maxDistance = 2.5 // km
+  let newCoordinates = [coordinates[0]]
+  let newDurations = []
+  let currentDuration = durations[0]
+  let currentTotalDistance = 0
+
+  for (let i = 1; i < coordinates.length - 1; i++) {
+    let distance = haversineDistance(coordinates[i - 1], coordinates[i])
+    if (currentTotalDistance + distance >= maxDistance) {
+      newCoordinates.push(coordinates[i - 1])
+      newDurations.push(currentDuration)
+
+      currentDuration = 0
+      currentTotalDistance = 0
+    }
+    currentDuration += durations[i]
+    currentTotalDistance += distance
+  }
+  newCoordinates.push(coordinates[coordinates.length - 1])
+  newDurations.push(currentDuration)
+  return {coordinates: newCoordinates, durations: newDurations}
 }
 
 const getPolylineSegments = (path) => {
