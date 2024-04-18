@@ -42,12 +42,8 @@ dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
 
     val netcdfJavaVersion = "5.5.3"
-    // Reading GRIB2 files
-    inpath("edu.ucar:grib:${netcdfJavaVersion}") {
-        exclude("*") // Don't weave any of it's dependencies
-    }
-    implementation("edu.ucar:grib:${netcdfJavaVersion}") // Add transitive dependencies
-    implementation("edu.ucar:netcdf4:${netcdfJavaVersion}") // Add transitive dependencies
+    implementation("edu.ucar:grib:${netcdfJavaVersion}") // Reading GRIB2 files
+    implementation("edu.ucar:netcdf4:${netcdfJavaVersion}") // Reading NetCDF files
 
     runtimeOnly("org.postgresql:postgresql")
 
