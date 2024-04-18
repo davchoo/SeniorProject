@@ -23,7 +23,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, showOverlay }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -106,7 +106,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
       return
     }
     let controller = new AbortController()
-    axios.post('http://localhost:8080/api/weather/raster/check_route',{
+    axios.post('http://44.202.51.65/api/weather/raster/check_route',{
       polyline: window.google.maps.geometry.encoding.encodePath(path), // TODO reuse from setPolyline?
       durations,
       startTime: new Date() // TODO route start time?
@@ -202,7 +202,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather 
         )}
 
         {path ? (
-          weatherDisplay ? (
+          showOverlay ? (
             rasterResponse && segments && (segments.map((point, index) => (
               <PolylineF
                 key={index}
