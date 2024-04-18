@@ -2,7 +2,6 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
-    id("io.freefair.aspectj.post-compile-weaving") version "8.6"
 }
 
 group = "team.travel"
@@ -32,6 +31,9 @@ dependencies {
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.hibernate.orm:hibernate-spatial")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
+
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
 
     val geotoolsVersion = "31.0"
     implementation("org.geotools:gt-wms:${geotoolsVersion}")
@@ -44,6 +46,8 @@ dependencies {
     val netcdfJavaVersion = "5.5.3"
     implementation("edu.ucar:grib:${netcdfJavaVersion}") // Reading GRIB2 files
     implementation("edu.ucar:netcdf4:${netcdfJavaVersion}") // Reading NetCDF files
+
+    implementation("com.google.maps:google-maps-services:2.2.0")
 
     runtimeOnly("org.postgresql:postgresql")
 
