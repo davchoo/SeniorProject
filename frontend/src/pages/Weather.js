@@ -1,20 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import weatherAlerts from '../pages/weather_alert.json'; // Importing the JSON for testing  
+import React, { useState, useEffect } from 'react'; 
 import wxColorMap from './wxColorMap';
 import { qpfColorMap } from './qpfColorMap';
 import { tempColorMap } from './tempColorMap';
+import axios from "axios"
 
-const Weather = () => {
+const Weather = ({setForecastedRoute,weatherAlerts}) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showLegend, setShowLegend] = useState(false);
   const [selectedRadar, setSelectedRadar] = useState('');
   const [expandedAlert, setExpandedAlert] = useState(null);
+  const [sortedAlerts, setSortedAlerts] = useState([])
 
   useEffect(() => {
     setSelectedOption(null);
     setShowLegend(false);
     setSelectedRadar('');
   }, []);
+
+  useEffect(() => {
+    if(weatherAlerts && weatherAlerts.alerts) {
+      setSortedAlerts(Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent)))
+    }
+  }, [weatherAlerts])
+
 
   const handleOptionChange = (value) => {
     setSelectedOption(value);
@@ -25,7 +33,7 @@ const Weather = () => {
     setShowLegend(!showLegend);
   };
 
-  const sortedAlerts = Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent));
+  console.log(sortedAlerts)
 
   const toggleExpand = (alert) => {
     setExpandedAlert(expandedAlert === alert ? null : alert);
@@ -45,14 +53,17 @@ const Weather = () => {
           <div className="mr-4">
             <input
               type="radio"
-              id="overlay"
+              id="forecastedRoute"
               name="weatherOption"
-              value="overlay"
-              checked={selectedOption === 'overlay'}
-              onChange={() => handleOptionChange('overlay')}
+              value="forecastedRoute"
+              checked={selectedOption === 'forecastedRoute'}
+              onChange={() => {
+                handleOptionChange('forecastedRoute');
+                setForecastedRoute(true)
+              }}
               className="mr-1"
             />
-            <label>Weather Overlay</label>
+            <label>Forecasted Route</label>
           </div>
           <div>
             <input
@@ -61,7 +72,9 @@ const Weather = () => {
               name="weatherOption"
               value="radar"
               checked={selectedOption === 'radar'}
-              onChange={() => handleOptionChange('radar')}
+              onChange={() => {
+                handleOptionChange('radar')
+                setForecastedRoute(false)}}
               className="mr-1"
             />
             <label>Weather Radar</label>
@@ -94,9 +107,9 @@ const Weather = () => {
             {showLegend ? 'Hide' : 'Show'} Legend
           </button>
 
-          {showLegend && selectedOption === 'overlay' && (
+          {showLegend && selectedOption === 'forecastedRoute' && (
             <div className="mt-4" style={{ width: '300px' }}>
-              <p className="font-notosansjp text-custom-black">Weather Overlay Legend:</p>
+              <p className="font-notosansjp text-custom-black">Weather Forecast Legend:</p>
               <div className="mt-4 flex flex-wrap">
                 {Object.entries(wxColorMap).map(([key, color]) => (
                   <div key={key} className="flex items-center mr-2 mb-2" style={{ width: '80px' }}>
@@ -164,7 +177,7 @@ const Weather = () => {
       <div className="mt-20">
         <p className="font-notosansjp text-custom-black font-semibold">Alerts Along Your Route:</p>
         <div className="alert-container" style={{ maxHeight: '80vh', width: '300px', overflowY: 'auto' }}>
-          {sortedAlerts.map((alert, index) => (
+          {sortedAlerts?.map((alert, index) => (
             <div key={index}>
               <p className="font-notosansjp text-custom-black font-semibold underline">{alert.event}:</p>
               <ul className="list-disc pl-8">
@@ -197,6 +210,94 @@ const Weather = () => {
       </div>
     </div>
   );
+};
+
+// Define Axios methods
+export const weatherApi = {
+  checkRoute: async (polyline, durations, date) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/check_route`, {
+        polyline: polyline,
+        durations: durations,
+        startTime: date,
+
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error in checkRoute:', error);
+      throw error;
+    }
+  },
+
+  getFeatures: async (fileDate, day) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/features`, {
+        params: {
+          file_date: fileDate,
+          day: day
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error in getFeatures:', error);
+      throw error;
+    }
+  },
+
+  getAvailableFileDates: async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/features/file_dates`);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAvailableFileDates:', error);
+      throw error;
+    }
+  },
+
+  checkRouteAlerts: async (polyline, durations, date) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/alerts/check_route`, {
+        polyline: polyline,
+        durations: durations,
+        startTime: date
+      });
+      console.log(response.data)
+      return response.data;
+    } catch (error) {
+      console.error('Error in checkRouteAlerts:', error);
+      throw error;
+    }
+  },
+
+  getCounties: async (fipsCodes) => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/county`, {
+        params: {
+          fips_codes: fipsCodes
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error in getCounties:', error);
+      throw error;
+    }
+  },
+
+  checkRouteRaster: async (route, durations) => {
+    try {
+      console.log(durations)
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
+        polyline: route,
+        durations: durations,
+        startTime: new Date()
+      });
+      console.log(response)
+      return response.data; 
+    } catch (error) {
+      console.error('Error in checkRouteRaster:', error);
+      throw error;
+    }
+  }
 };
 
 export default Weather;
