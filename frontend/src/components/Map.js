@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
 import ReactStars from "react-rating-stars-component";
-import polyLineData from "../pages/weather.json";
 import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
@@ -39,11 +38,16 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
+  const [selectedWeatherMarker, setSelectedWeatherMarker] = useState([]);
   const [segments, setSegments] = useState([]);
-  const [weatherDisplay, setWeatherDisplay] = useState(true); 
+  const [weatherDisplay, setWeatherDisplay] = useState(true);
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
+  const [alerts, setAlerts] = useState([])
+  const [mapAlerts, setMapAlerts] = useState([])
+
+  console.log(mapAlerts)
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -92,6 +96,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
             setStartAddress(result.routes[0].legs[0].start_address);
             setEndAddress(result.routes[0].legs[0].end_address);
+            createMapAlerts(segments, mapAlerts)
           } else {
             console.error('Failed to fetch directions. Status: ', status);
             setDirections(null);
@@ -109,24 +114,32 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
     let controller = new AbortController()
     const date = new Date() // set this from emma/kat calendar
     const polyline = window.google.maps.geometry.encoding.encodePath(path)
-    axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`,{
+    axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
       polyline: polyline, // TODO reuse from setPolyline?
       durations,
       startTime: date // TODO route start time?
-    }, {signal: controller.signal})
+    }, { signal: controller.signal })
       .then(response => setRasterResponse(response.data), console.log)
-      const getAlerts = async () => {
-        const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
-        setWeatherAlerts(alerts)
+    const getAlerts = async () => {
+      const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
+      setAlerts(alerts.alerts)
+      console.log(alerts)
+      setWeatherAlerts(alerts)
+      setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts))
+      return alerts;
 
-      }
+    }
     getAlerts()
     return () => controller.abort()
   }, [path, durations]);
 
-  const handleMarkerClick = (gasStation) => {
+  const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
   };
+
+  const handleWeatherMarkerClick = (weatherAlert, index) => {
+    setSelectedWeatherMarker([weatherAlert, index]);
+  }
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -166,7 +179,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
           />
         )}
         {infoWindow && infoWindow.type === 'origin' && (
-          <InfoWindow
+          <InfoWindowF
             position={{
               lat: infoWindow.location.lat,
               lng: infoWindow.location.lng,
@@ -177,7 +190,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
               <p style={{ margin: '0' }}>Origin Location</p>
               <p style={{ margin: '0', fontSize: '12px' }}></p>
             </div>
-          </InfoWindow>
+          </InfoWindowF>
         )}
 
         {destination != null && (
@@ -196,7 +209,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
           />
         )}
         {infoWindow && infoWindow.type === 'destination' && (
-          <InfoWindow
+          <InfoWindowF
             position={{
               lat: infoWindow.location.lat,
               lng: infoWindow.location.lng,
@@ -207,12 +220,13 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
               <p style={{ margin: '0' }}>Destination Location</p>
               <p style={{ margin: '0', fontSize: '12px' }}></p>
             </div>
-          </InfoWindow>
+          </InfoWindowF>
         )}
 
         {path ? (
           forecastedRoute ? (
             rasterResponse && segments && (segments.map((point, index) => (
+
               <PolylineF
                 key={index}
                 path={point}
@@ -220,9 +234,9 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                   strokeColor: getColor(rasterResponse, index),
                   strokeOpacity: 1.0,
                   strokeWeight: 3
-                }} 
+                }}
               />
-            )))) : 
+            )))) :
             <PolylineF
               path={path}
               options={{
@@ -235,12 +249,46 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
         {data != null && (
           <GasStationsMarkers
             gasStations={data}
-            onClick={handleMarkerClick}
+            onClick={handleGasMarkerClick}
           />
         )}
 
+        {forecastedRoute && mapAlerts.length > 0 && mapAlerts?.map((alert, index) => (
+          <Marker
+            key={index}
+            position={{
+              lat: alert[0].lat(),
+              lng: alert[0].lng(),
+            }}
+
+            icon={{
+              url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
+              scaledSize: new window.google.maps.Size(20, 20),
+            }}
+            onClick={() => {
+              handleWeatherMarkerClick(alert, index)
+            }}
+          />
+        ))}
+
+        {selectedWeatherMarker.length > 0 && (
+          <InfoWindowF
+            position={{
+              lat: selectedWeatherMarker[0][0].lat(),
+              lng: selectedWeatherMarker[0][1].lng(),
+            }}
+            onCloseClick={() => setSelectedWeatherMarker([])}
+          >
+            <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
+              <h3 style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[1]].headline}</h3>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[1]].description}</p>
+              {console.log(alerts[selectedWeatherMarker[1]])}
+            </div>
+          </InfoWindowF>
+        )}
+
         {selectedGasMarker && (
-          <InfoWindow
+          <InfoWindowF
             position={{
               lat: selectedGasMarker.location.lat,
               lng: selectedGasMarker.location.lng,
@@ -283,7 +331,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                 )}
               </div>
             </div>
-          </InfoWindow>
+          </InfoWindowF>
         )}
       </GoogleMap>
     </div>
@@ -319,10 +367,10 @@ function getFullRoute(route) {
       }
     }
   }
-  return {coordinates, durations} // TODO too many coordinates and durations! Have to simplify?
+  return { coordinates, durations } // TODO too many coordinates and durations! Have to simplify?
 }
 
-function decimate({coordinates, durations}) {
+function decimate({ coordinates, durations }) {
   const maxDistance = 2.5 // km
   let newCoordinates = [coordinates[0]]
   let newDurations = []
@@ -343,7 +391,7 @@ function decimate({coordinates, durations}) {
   }
   newCoordinates.push(coordinates[coordinates.length - 1])
   newDurations.push(currentDuration)
-  return {coordinates: newCoordinates, durations: newDurations}
+  return { coordinates: newCoordinates, durations: newDurations }
 }
 
 const getPolylineSegments = (path) => {
@@ -352,12 +400,57 @@ const getPolylineSegments = (path) => {
     const segment = [path[i], path[i + 1]];
     segments.push(segment);
   }
+  console.log("segment length", segments.length)
   return segments;
 };
 
 const getColor = (rasterResponse, index) => {
   const color = wxColorMap[rasterResponse.labels[rasterResponse.data[index]]] // TODO handle other datasets
   return color;
+}
+
+const createMapAlerts = (segments, segmentAlerts) => {
+
+  if (segments.length > 0 && segmentAlerts.length > 0) {
+    const comparePairs = (a, b) => {
+      // Compare the second number of each pair
+      const secondNumberA = segmentAlerts[a * 2 + 1];
+      const secondNumberB = segmentAlerts[b * 2 + 1];
+      return secondNumberA - secondNumberB;
+    };
+
+    const indices = Array.from(Array(Math.floor(segmentAlerts.length / 2)).keys());
+    indices.sort(comparePairs);
+
+    const sortedPairs = [];
+    for (let i = 0; i < indices.length; i++) {
+      sortedPairs.push(segmentAlerts[indices[i] * 2], segmentAlerts[indices[i] * 2 + 1]);
+    }
+    let total = 0;
+    let count = 0;
+    let alertIndex = 0;
+    const segmentAlertLocations = []
+
+    for (let i = 0; i < sortedPairs.length - 1; i += 2) {
+      console.log(sortedPairs[i + 1])
+      if (sortedPairs[i + 1] === alertIndex) {
+        total += sortedPairs[i];
+        count++;
+      }
+      else {
+        let mean = Math.ceil(total / count);
+        segmentAlertLocations.push(segments[mean]);
+        count = total = 0;
+        alertIndex = sortedPairs[i + 1];
+      }
+    }
+    let mean = Math.ceil(total / count);
+    segmentAlertLocations.push(segments[mean]);
+
+    console.log(segmentAlertLocations)
+    return segmentAlertLocations;
+  }
+
 }
 
 

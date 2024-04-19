@@ -33,8 +33,6 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
     setShowLegend(!showLegend);
   };
 
-  console.log(sortedAlerts)
-
   const toggleExpand = (alert) => {
     setExpandedAlert(expandedAlert === alert ? null : alert);
   };
