@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(mvc.pattern("/api/auth/login")).permitAll()
                         .requestMatchers(mvc.pattern("/api/logout")).permitAll()
                         .requestMatchers(mvc.pattern("/api/trip/gas")).permitAll()
-                        .requestMatchers(mvc.pattern("/actuator/**")).permitAll() // Only accessible through the management port
+                        .requestMatchers(mvc.pattern("/api/weather/**")).permitAll()
                         .anyRequest().authenticated()
         );
         http.logout(logout -> logout

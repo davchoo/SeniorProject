@@ -33,20 +33,16 @@ public class GoogleMapsApiClientServiceImpl implements GoogleMapsApiFuelPriceSer
     }
 
     @Override
-    public PlacesSearchResponse findPlaces(LatLng location, String type, int radius) {
+    public PlacesSearchResponse findPlaces(LatLng location, String type) throws IOException {
         try {
-
             // Perform a nearby search for places of the specified type around the location
-            PlacesSearchResponse placesResponse = PlacesApi.nearbySearchQuery(context, location)
+            return PlacesApi.nearbySearchQuery(context, location)
                     .type(PlaceType.valueOf(type.toUpperCase()))
                     .rankby(RankBy.DISTANCE)
                     .await();
-            return placesResponse;
-        } catch (ApiException | InterruptedException | IOException e) {
-            e.printStackTrace();
-            // Handle exception
+        } catch (ApiException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**

@@ -16,9 +16,7 @@ import team.travel.travelplanner.repository.UserRepository;
 import team.travel.travelplanner.service.GasStationService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/trip")

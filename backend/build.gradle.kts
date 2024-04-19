@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.2.2"
+    id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.4"
 }
 
@@ -31,9 +31,9 @@ dependencies {
     implementation("org.springframework.session:spring-session-core")
     implementation("org.springframework.session:spring-session-jdbc")
     implementation("org.hibernate.orm:hibernate-spatial")
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.4")
 
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.70") // For Argon2
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1") // For Argon2
 
     val geotoolsVersion = "31.0"
     implementation("org.geotools:gt-wms:${geotoolsVersion}")
@@ -56,7 +56,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
 
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.5.0")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.5.1")
 
     implementation("org.aspectj:aspectjrt")
 

@@ -16,7 +16,7 @@ public class WeatherDataConfig {
 
     private Duration timeout = Duration.ofSeconds(30);
 
-    private boolean autoUpdate = true;
+    private boolean autoUpdate = false;
 
     public URL getNationalWeatherForecastWfcUrl() {
         return nationalWeatherForecastWfcUrl;

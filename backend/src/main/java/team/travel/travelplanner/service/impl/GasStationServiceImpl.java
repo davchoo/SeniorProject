@@ -47,7 +47,7 @@ public class GasStationServiceImpl implements GasStationService {
         for (Coordinate coordinate : stopsAlongRoute) {
             LatLng location = new LatLng(coordinate.getY(), coordinate.getX());
 
-            PlacesSearchResponse response = placesService.findPlaces(location, "gas_station", 50000);
+            PlacesSearchResponse response = placesService.findPlaces(location, "gas_station");
             List<GoogleGasStation> gasStations = findGasStationsWithTypeAndPrice(response, stringType);
 
             GasStationModel lowestPriceGasStation = GasStationModel.from(findLowestPriceGasStation(gasStations, stringType));

@@ -44,7 +44,7 @@ public class LoginController {
 
     @GetMapping("/check-login")
     public UserModel checkLogin(Authentication authentication) {
-           User user = userRepository.findByUsername(authentication.getName());
-           return new UserModel(user.getUsername(), user.getFirstName(), user.getLastName());
+        User user = userRepository.findByUsername(authentication.getName());
+        return new UserModel(user.getUsername(), user.getFirstName(), user.getLastName());
     }
 }

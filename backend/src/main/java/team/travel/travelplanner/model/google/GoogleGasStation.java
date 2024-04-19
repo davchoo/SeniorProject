@@ -125,7 +125,7 @@ public class GoogleGasStation {
                 description.append(s).append("\n");
             }
             return "CurrentOpeningHours{" +
-                    "weekdayDescriptions=" + description.toString() +
+                    "weekdayDescriptions=" + description +
                     '}';
         }
 

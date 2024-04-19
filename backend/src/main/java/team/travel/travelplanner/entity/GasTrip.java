@@ -3,7 +3,6 @@ package team.travel.travelplanner.entity;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import org.hibernate.annotations.Type;
 import org.locationtech.jts.geom.LineString;
 import team.travel.travelplanner.model.CarModel;
