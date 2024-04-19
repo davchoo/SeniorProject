@@ -3,3 +3,5 @@ docker/postgres
 docker/geoserver/additional_libs
 docker/geoserver/data
 docker/geoserver/ndfd-nc/**/
+docker/geoserver/netcdf_cache
+docker/nginx/frontend
