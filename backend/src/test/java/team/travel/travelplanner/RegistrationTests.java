@@ -1,5 +1,6 @@
 package team.travel.travelplanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,9 @@ import team.travel.travelplanner.entity.User;
 import team.travel.travelplanner.model.UserSignUpModel;
 import team.travel.travelplanner.repository.UserRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureEmbeddedDatabase
 public class RegistrationTests {
 
     @Autowired

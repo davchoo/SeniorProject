@@ -1,5 +1,6 @@
 package team.travel.travelplanner;
 
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -19,9 +20,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@AutoConfigureEmbeddedDatabase
 public class GasStationTest {
 
-   @Autowired
+    @Autowired
     private GasStationServiceImpl gasStationService;
 
     @Test
