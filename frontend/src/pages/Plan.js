@@ -19,8 +19,6 @@ function Plan() {
   const [weatherAlerts, setWeatherAlerts] = useState([])
   const navigate = useNavigate()
 
-  console.log(weatherAlerts)
-
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
