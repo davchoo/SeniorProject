@@ -6,6 +6,8 @@ import { checkIsLoggedIn } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
 import Weather from '../pages/Weather';
+import WeatherRadar from '../components/WeatherRadar';
+
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showGasInfo, setShowGasInfo] = useState(false);
@@ -18,6 +20,10 @@ function Plan() {
   const [showOverlay, setShowOverlay] = useState(false);
   const navigate = useNavigate()
 
+  const [availableLayers, setAvailableLayers] = useState()
+  const [selectedLayerName, setSelectedLayerName] = useState()
+  const [selectedLayerTime, setSelectedLayerTime] = useState()
+  const [showRadar, setShowRadar] = useState(true); // TODO move to Weather component?
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -52,6 +58,21 @@ function Plan() {
     fetchLoggedInStatus();
   }, []);
 
+  useEffect(() => {
+    if (!availableLayers) {
+      return
+    }
+    // TODO remove debug stuff
+    // Print available layers and times for each layer
+    for (let layerName of Object.keys(availableLayers)) {
+      console.log(layerName + ": " + availableLayers[layerName].dimensions.time.values)
+    }
+
+    const defaultLayer = "ndfd:conus.wx"
+    setSelectedLayerName(defaultLayer)
+    setSelectedLayerTime(availableLayers[defaultLayer].dimensions.time.values[0])
+  }, [JSON.stringify(availableLayers)])
+
   return (
     <div className='bg-custom-green'>
       <div>
@@ -83,7 +104,11 @@ function Plan() {
         </p>
 
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} showOverlay={showOverlay}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} showOverlay={showOverlay}>
+            {showWeatherInfo && showRadar && (
+              <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
+            )}
+          </Map>
           <div className='flex flex-col'>
             <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}

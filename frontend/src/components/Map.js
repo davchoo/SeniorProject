@@ -9,9 +9,6 @@ import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
 
-import { ImageMapType, OverlayMapTypes } from './ImageOverlay';
-
-
 const libraries = ['places'];
 const mapContainerStyle = {
   width: '65vw',
@@ -26,7 +23,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, showOverlay }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, showOverlay, children }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -46,6 +43,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
+
+  const [availableLayers, setAvailableLayers] = useState()
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -109,7 +108,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
       return
     }
     let controller = new AbortController()
-    axios.post('http://44.202.51.65/api/weather/raster/check_route',{
+    axios.post('/api/weather/raster/check_route',{
       polyline: window.google.maps.geometry.encoding.encodePath(path), // TODO reuse from setPolyline?
       durations,
       startTime: new Date() // TODO route start time?
@@ -120,17 +119,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   const handleMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
-  };
-  
-  let [times, setTimes] = useState({"ndfd:conus.wx": "2024-04-11T03:00:00.000Z"});
-  let [layerOrder, setLayerOrder] = useState(["ndfd:conus.wx"]);
-
-  let createOverlayOptions = (layerName, time) => {
-    return {
-      getTileUrl: (coord, zoom) => `http://localhost:8085/geoserver/gwc/service/gmaps?layers=${layerName}&zoom=${zoom}&x=${coord.x}&y=${coord.y}&format=image/png&time=${time}`,
-      name: layerName + " " + time,
-      time
-    }
   };
 
   if (loadError) {
@@ -243,13 +231,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             onClick={handleMarkerClick}
           />
         )}
-
-        <OverlayMapTypes>
-          {layerOrder.map(layerName => (
-            <ImageMapType key={layerName} id={layerName} options={createOverlayOptions(layerName, times[layerName])} opacity={0.5}></ImageMapType>
-          ))}
-        </OverlayMapTypes>
-
         {selectedGasMarker && (
           <InfoWindow
             position={{
@@ -296,6 +277,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             </div>
           </InfoWindow>
         )}
+
+        {children}
       </GoogleMap>
     </div>
   );
