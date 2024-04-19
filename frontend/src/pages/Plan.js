@@ -15,9 +15,11 @@ function Plan() {
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [forecastedRoute, setForecastedRoute] = useState(false);
+  const [weatherAlerts, setWeatherAlerts] = useState([])
   const navigate = useNavigate()
 
+  console.log(weatherAlerts)
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -25,13 +27,12 @@ function Plan() {
 
   const toggleGasInfo = () => {
     setShowGasInfo(!showGasInfo);
-    setShowOverlay(false)
+    setForecastedRoute(false)
     setShowWeatherInfo(false);
   };
 
   const toggleWeatherInfo = () => {
     setShowWeatherInfo(!showWeatherInfo);
-    setShowOverlay(true)
     setShowGasInfo(false);
   };
 
@@ -83,7 +84,7 @@ function Plan() {
         </p>
 
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} showOverlay={showOverlay}/>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} forecastedRoute={forecastedRoute} setWeatherAlerts={setWeatherAlerts}/>
           <div className='flex flex-col'>
             <p className="font-notosansjp text-custom-black font-semibold text-sm ">
               {showGasInfo && <div className='text-center'>Viewing Gas.</div>}
@@ -105,7 +106,7 @@ function Plan() {
               </button>
             </div>
             {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
-            {showWeatherInfo && <Weather/>}
+            {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts}/>}
           </div>
           <div>
           </div>

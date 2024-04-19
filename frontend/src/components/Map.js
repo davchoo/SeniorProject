@@ -8,6 +8,7 @@ import polyLineData from "../pages/weather.json";
 import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
+import { weatherApi } from '../pages/Weather';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -23,7 +24,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, showOverlay }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, forecastedRoute, setWeatherAlerts }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -106,12 +107,20 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
       return
     }
     let controller = new AbortController()
-    axios.post('http://44.202.51.65/api/weather/raster/check_route',{
-      polyline: window.google.maps.geometry.encoding.encodePath(path), // TODO reuse from setPolyline?
+    const date = new Date() // set this from emma/kat calendar
+    const polyline = window.google.maps.geometry.encoding.encodePath(path)
+    axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`,{
+      polyline: polyline, // TODO reuse from setPolyline?
       durations,
-      startTime: new Date() // TODO route start time?
+      startTime: date // TODO route start time?
     }, {signal: controller.signal})
       .then(response => setRasterResponse(response.data), console.log)
+      const getAlerts = async () => {
+        const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
+        setWeatherAlerts(alerts)
+
+      }
+    getAlerts()
     return () => controller.abort()
   }, [path, durations]);
 
@@ -202,7 +211,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
         )}
 
         {path ? (
-          showOverlay ? (
+          forecastedRoute ? (
             rasterResponse && segments && (segments.map((point, index) => (
               <PolylineF
                 key={index}
