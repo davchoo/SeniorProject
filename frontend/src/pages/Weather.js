@@ -281,11 +281,11 @@ export const weatherApi = {
     }
   },
 
-  checkRouteRaster: async (route, durations) => {
+  checkRouteRaster: async (polyline, durations, date) => {
     try {
       console.log(durations)
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
-        polyline: route,
+        polyline: polyline,
         durations: durations,
         startTime: new Date()
       });

@@ -8,6 +8,7 @@ import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
 import { weatherApi } from '../pages/Weather';
+import { debounce } from 'lodash';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -46,8 +47,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
   const [rasterResponse, setRasterResponse] = useState(null);
   const [alerts, setAlerts] = useState([])
   const [mapAlerts, setMapAlerts] = useState([])
-
-  console.log(mapAlerts)
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -140,6 +139,11 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
   const handleWeatherMarkerClick = (weatherAlert, index) => {
     setSelectedWeatherMarker([weatherAlert, index]);
   }
+
+  const debouncedHandleWeatherMarkerHover = debounce((alert, index) => {
+    handleWeatherMarkerClick(alert, index);
+  }, 2000); // Adjust the delay (in milliseconds) as needed
+
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -253,36 +257,42 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
           />
         )}
 
-        {forecastedRoute && mapAlerts.length > 0 && mapAlerts?.map((alert, index) => (
+        {forecastedRoute && mapAlerts && mapAlerts?.map((alert, index) => (
           <Marker
             key={index}
             position={{
-              lat: alert[0].lat(),
-              lng: alert[0].lng(),
+              lat: alert[0][0].lat(),
+              lng: alert[0][1].lng(),
             }}
 
             icon={{
               url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
-              scaledSize: new window.google.maps.Size(20, 20),
+              scaledSize: new window.google.maps.Size(30, 30),
             }}
             onClick={() => {
               handleWeatherMarkerClick(alert, index)
             }}
+            onMouseOver={() => {
+              handleWeatherMarkerClick(alert, index); // Use the debounced handler
+            }}
+            onMouseOut={() => {
+              debouncedHandleWeatherMarkerHover(null, null)
+            }}
+            opacity={0.0}
           />
         ))}
 
-        {selectedWeatherMarker.length > 0 && (
+        {selectedWeatherMarker[0] && selectedWeatherMarker[1] && (
           <InfoWindowF
             position={{
-              lat: selectedWeatherMarker[0][0].lat(),
-              lng: selectedWeatherMarker[0][1].lng(),
+              lat: selectedWeatherMarker[0][0][0].lat(),
+              lng: selectedWeatherMarker[0][0][1].lng(),
             }}
             onCloseClick={() => setSelectedWeatherMarker([])}
           >
             <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
-              <h3 style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[1]].headline}</h3>
-              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[1]].description}</p>
-              {console.log(alerts[selectedWeatherMarker[1]])}
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].headline}</p>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].description}</p>
             </div>
           </InfoWindowF>
         )}
@@ -410,8 +420,10 @@ const getColor = (rasterResponse, index) => {
 }
 
 const createMapAlerts = (segments, segmentAlerts) => {
+  console.log("segments", segments)
+  console.log(segmentAlerts)
 
-  if (segments.length > 0 && segmentAlerts.length > 0) {
+  if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
     const comparePairs = (a, b) => {
       // Compare the second number of each pair
       const secondNumberA = segmentAlerts[a * 2 + 1];
@@ -432,22 +444,26 @@ const createMapAlerts = (segments, segmentAlerts) => {
     const segmentAlertLocations = []
 
     for (let i = 0; i < sortedPairs.length - 1; i += 2) {
-      console.log(sortedPairs[i + 1])
-      if (sortedPairs[i + 1] === alertIndex) {
-        total += sortedPairs[i];
-        count++;
-      }
-      else {
-        let mean = Math.ceil(total / count);
-        segmentAlertLocations.push(segments[mean]);
-        count = total = 0;
-        alertIndex = sortedPairs[i + 1];
-      }
-    }
-    let mean = Math.ceil(total / count);
-    segmentAlertLocations.push(segments[mean]);
+      const segmentIndex = sortedPairs[i];
+      const alertIndex = sortedPairs[i + 1];
+      const segment = segments[segmentIndex];
+      segmentAlertLocations.push([segment, alertIndex]);
 
-    console.log(segmentAlertLocations)
+
+      // console.log(sortedPairs[i + 1])
+      // if (sortedPairs[i + 1] === alertIndex) {
+      //   total += sortedPairs[i];
+      //   count++;
+      // }
+      // else {
+      //   let mean = Math.ceil(total / count);
+      //   segmentAlertLocations.push(segments[mean]);
+      //   count = total = 0;
+      //   alertIndex = sortedPairs[i + 1];
+      // }
+    }
+    // let mean = Math.ceil(total / count); //
+    // segmentAlertLocations.push(segments[mean]);
     return segmentAlertLocations;
   }
 
