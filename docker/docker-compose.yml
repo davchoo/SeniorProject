@@ -9,6 +9,12 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=ThisPasswordIsOnlyUsedForDev
       - POSTGRES_DB=travel-planner-local
+  nginx:
+    image: nginx:1.25.4-alpine
+    volumes:
+      - "./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro"
+      - "./nginx/frontend:/usr/share/nginx/html:ro"
+    network_mode: host
   geoserver:
     image: docker.osgeo.org/geoserver:2.25.0
     ports:
@@ -17,7 +23,7 @@ services:
       - SKIP_DEMO_DATA=true
       - INSTALL_EXTENSIONS=true
       - STABLE_EXTENSIONS=netcdf
-      - EXTRA_JAVA_OPTS=-DNETCDF_DATA_DIR=/opt/netcdf_cache
+      - EXTRA_JAVA_OPTS=-Xmx2g -DNETCDF_DATA_DIR=/opt/netcdf_cache
     volumes:
       - ./geoserver/additional_libs:/opt/additional_libs
       - ./geoserver/data:/opt/geoserver_data

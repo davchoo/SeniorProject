@@ -9,6 +9,14 @@
 ### postgres
 A container running Postgres with the PostGIS extension installed. All data is stored in the `postgres` folder.
 
+### nginx
+A container running NGINX. It is accessible at `http://localhost:9000` and will serve any files in the `nginx/frontend`
+folder. \
+It is configured to override `Access-Control-Allow-Origin` and `Access-Control-Allow-Methods` headers from proxied servers. \
+Requests to `http://localhost:9000/api/**` will be proxied to the backend at `http://localhost:8080`. \
+Requests to `http://localhost:9000/geoserver/gmaps` will be proxied to `http://localhost:8085/geoserver/gwc/service/gmaps`. \
+Requests to `http://localhost:9000/geoserver/capabilities` will be proxied to `http://localhost:8085/geoserver/ows?service=WMS&version=1.3.0&request=GetCapabilities`.
+
 ### geoserver
 A container running GeoServer. The web panel is accessible at `http://localhost:8085/geoserver`. This container is
 configured to show the qpf, temp, and wx datasets for CONUS.
