@@ -9,7 +9,7 @@ function parseCapabilities(documentString) {
   for (let layerElm of doc.querySelectorAll("Capability > Layer > Layer")) {
     let name = layerElm.querySelector("Name").textContent
     let dimensions = {}
-    for (let dimensionElm of doc.querySelectorAll("Dimension")) {
+    for (let dimensionElm of layerElm.querySelectorAll("Dimension")) {
       let dimensionName = dimensionElm.getAttribute("name")
       dimensions[dimensionName] = {
         name: dimensionName,
@@ -26,7 +26,14 @@ export default function WeatherRadar({setAvailableLayers, layerName, time, opaci
   useEffect(() => {
     let controller = new AbortController()
     axios.get("/geoserver/capabilities", {withCredentials: false, responseEncoding: "text", signal: controller.signal})
-      .then(response => parseCapabilities(response.data), console.log)
+      .then(
+        response => parseCapabilities(response.data),
+        error => {
+          if (!axios.isCancel(error)) {
+            console.error(error)
+          }
+        }
+      )
       .then(setAvailableLayers)
     return () => controller.abort()
   }, []) // TODO need periodic updates?
