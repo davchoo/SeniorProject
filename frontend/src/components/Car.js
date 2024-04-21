@@ -1,92 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import Papa from 'papaparse'; // Import PapaParse library for parsing CSV
+import React, { useState, useEffect, useMemo } from 'react';
 
 const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelectedMake, setSelectedModel, setSelectedYear }) => {
+  const [vehicleData, setVehicleData] = useState({}) 
+
+  const [year, setYear] = useState('');
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
+
   const [vehicleInfo, setVehicleInfo] = useState(null);
-  const [error, setError] = useState('');
-  const [makes, setMakes] = useState([]);
-  const [models, setModels] = useState({});
-  const [filteredModels, setFilteredModels] = useState([]);
-  const [filteredMakes, setFilteredMakes] = useState([])
-  const [year, setYear] = useState();
-  const [yearOptions, setYearOptions] = useState([])
 
   useEffect(() => {
-    const fetchMakesAndModels = async () => {
-      try {
-        const response = await fetch("/vehicles_mpg.json");
-        console.log(response)
-        const data = await response.json();
+    fetch("/vehicles_mpg.json")
+      .then(async response => setVehicleData(await response.json()))
+  }, [])
 
-        const selectedYearData = data[year];
-        if (selectedYearData) {
-          const makes = Object.keys(selectedYearData);
-          setMakes(makes);
+  const years = useMemo(() => Object.keys(vehicleData).sort((a, b) => b - a), [vehicleData])
 
-          const models = {};
-          makes.forEach(make => {
-            models[make] = Object.keys(selectedYearData[make]);
-          });
-          setModels(models);
-        } else {
-          console.error('Data for selected year not found.');
-          setMakes([]);
-          setModels({});
-        }
-      } catch (error) {
-        console.error('Error fetching makes and models:', error);
-      }
-    };
-
-    fetchMakesAndModels();
-  }, [year]);
-
-  useEffect(() => {
-    const fetchYears = async () => {
-      try {
-        const response = await fetch("/vehicles_mpg.json");
-        console.log(response)
-        const data = await response.json();
-
-        const years = Object.keys(data);
-        setYearOptions(years);
-      } catch (error) {
-        console.error('Error fetching makes and models:', error);
-      }
-    };
-
-    fetchYears();
-  }, []);
-
-  const fetchVehicleInfo = async () => {
-    try {
-      console.log();
-      const response = await fetch('/vehicles_mpg.json'); // Fetch CSV file
-      const data = await response.json();
-      const car = data[year][make][model];
-      console.log(car)
-      setSelectedYear(year)
-      setSelectedMake(make)
-      setSelectedModel(model)
-      setMilesPerGallon(car[0])
-      const tankSize = getTankSizeEstimation(car[1])
-      setTankSizeInGallons(tankSize)
-      const fuelType = transformFuelType(car[2])
-      setFuelType(fuelType)
-      setVehicleInfo({
-        mpg: car[0],
-        tankSize: tankSize,
-        fuelType: fuelType
-      });
-
-      console.log(car);
-    } catch (error) {
-      console.error('Error getting the vehicles information:', error);
-      setError('Failed to get vehicle information. Please try again later with valid information.');
+  const makes = useMemo(() => {
+    if (!year) {
+      return []
     }
-  };
+    return Object.keys(vehicleData[year])
+  }, [vehicleData, year])
+
+  const models = useMemo(() => {
+    if (!year || !make) {
+      return []
+    }
+    return Object.keys(vehicleData[year][make])
+  }, [vehicleData, year, make])
+
+  useEffect(() => {
+    if (!vehicleData || !year || !make || !model) {
+      setSelectedYear(null)
+      setSelectedMake(null)
+      setSelectedModel(null)
+      setMilesPerGallon(null)
+      setTankSizeInGallons(null)
+      setFuelType(null)
+      setVehicleInfo(null)
+      return
+    }
+    const car = vehicleData[year][make][model];
+    setSelectedYear(year)
+    setSelectedMake(make)
+    setSelectedModel(model)
+    setMilesPerGallon(car[0])
+    const tankSize = getTankSizeEstimation(car[1])
+    setTankSizeInGallons(tankSize)
+    const fuelType = transformFuelType(car[2])
+    setFuelType(fuelType)
+    setVehicleInfo({
+      mpg: car[0],
+      tankSize: tankSize,
+      fuelType: fuelType
+    })
+  }, [vehicleData, year, make, model])
 
   const transformFuelType = (fuelType) => {
     switch (fuelType) {
@@ -173,73 +142,41 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
     }
   };
 
+  const handleYearChange = (event) => {
+    setYear(event.target.value);
+    setMake('')
+    setModel('')
+  };
+
   const handleMakeChange = (event) => {
-    const selectedMake = event.target.value;
-    setMake(selectedMake);
+    setMake(event.target.value);
     setModel('');
-    // Filter models based on the selected make
-    const filteredModels = models[selectedMake] || [];
-    setFilteredModels(filteredModels);
   };
 
   const handleModelChange = (event) => {
     setModel(event.target.value);
   };
 
-  const handleYearChange = (event) => {
-    const selectedYear = event.target.value;
-    setYear(selectedYear);
-    const filteredMakes = makes[selectedYear] || [];
-    setFilteredMakes(filteredMakes);
-  };
-
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    fetchVehicleInfo();
-  };
+  const Selection = ({ label, values, currentValue, onChange }) => (
+    <div className="mb-4 flex flex-row items-center">
+      <label className="font-bold">{label}:</label>
+      <select value={currentValue} onChange={onChange} className="p-2 mt-1 border border-gray-300 rounded-md flex-grow">
+        <option value="">--Select {label}--</option>
+        {values.map(value => (
+          <option key={value} value={value}>{value}</option>
+        ))}
+      </select>
+    </div>
+  )
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
       <h4 className="text-center text-custom-black text-md font-semibold mb-3 mt-1">Vehicle Information</h4>
-      <form onSubmit={handleSubmit} className="flex flex-col">
-        <div className="mb-4">
-          <label className="font-bold">Year:</label>
-          <select value={year} onChange={handleYearChange} className="p-2 mt-1 border border-gray-300 rounded-md">
-            <option value="">--Select Year--</option>
-            {yearOptions.slice().reverse().map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="font-bold">Make:</label>
-          <select value={make} onChange={handleMakeChange} className="p-2 mt-1 border border-gray-300 rounded-md">
-            <option value="">--Select Make--</option>
-            {makes.map(make => (
-              <option key={make} value={make}>{make}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label className="font-bold">Model:</label>
-          <select value={model} onChange={handleModelChange} className="p-2 mt-1 border border-gray-300 rounded-md">
-            <option value="">--Select Model--</option>
-            {filteredModels.map(model => (
-              <option key={model} value={model}>{model}</option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="submit"
-          disabled={!make || !model}
-          className={`bg-custom-green${(!make || !model) ? '3' : '4'} font-notosansjp text-custom-black font-semibold px-4 py-2 rounded-md cursor-pointer transition duration-300 hover:bg-custom-green4`}
-
-        >
-          Get Vehicle Details
-        </button></form>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+      <form className="flex flex-col">
+        <Selection label="Year" values={years} currentValue={year} onChange={handleYearChange} />
+        <Selection label="Make" values={makes} currentValue={make} onChange={handleMakeChange} />
+        <Selection label="Model" values={models} currentValue={model} onChange={handleModelChange} />
+      </form>
       {vehicleInfo && (
         <div className="mt-8 border light-gray p-4 rounded-md bg-white shadow-md">
           <h2 className="text-custom-black text-lg font-semibold mb-2 text-center">Vehicle Details</h2>
@@ -247,8 +184,8 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
           <p>
             <strong>{year} {make} {model} Information:</strong>
             <ul>
-              <li>Miles Per Gallon(MPG): {vehicleInfo.mpg}</li>
-              <li>Estimated Tank Size In Gallons: {vehicleInfo.tankSize}</li>
+              <li>Miles Per Gallon (MPG): {vehicleInfo.mpg}</li>
+              <li>Estimated Tank Size: {vehicleInfo.tankSize} gallons</li>
               <li>Fuel Type: {vehicleInfo.fuelType}</li>
             </ul>
           </p>
