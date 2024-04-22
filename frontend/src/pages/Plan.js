@@ -116,7 +116,7 @@ function Plan() {
               <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
             )}
           </Map>
-          <div className='flex flex-col w-1/5 pl-2'>
+          <div className='flex flex-col w-1/5 ml-2 p-4 bg-white rounded-[8px]'>
             <div className='flex flex-row place-content-around mb-2'>
               <button
                 onClick={toggleGasInfo}
@@ -135,8 +135,6 @@ function Plan() {
               {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
               {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setChosenTime={setChosenTime}/>}
             </div>
-          </div>
-          <div>
           </div>
         </div>
       </div>
