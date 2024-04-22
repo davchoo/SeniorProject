@@ -12,6 +12,7 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
   const [showLegendButton, setShowLegendButton] = useState(false);
   const [sortedAlerts, setSortedAlerts] = useState([])
   const [selectedDateTime, setSelectedDateTime] = useState(0);
+  const [confirmButtonColor, setConfirmButtonColor] = useState('bg-custom-green3');
 
   console.log(weatherAlerts)
 
@@ -65,6 +66,15 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
     return `${min}in - ${max}in`;
   };
 
+  const handleConfirmDateClick = () => {
+    setChosenTime(new Date(dateTimes[selectedDateTime]));
+    setConfirmButtonColor('bg-custom-green4');
+    // Reset the button color after 1 second (we can adjust after tesing this with the backend)
+    setTimeout(() => {
+      setConfirmButtonColor('bg-custom-green3');
+    }, 1000);
+  };
+
   return (
     <div>
       <div>
@@ -114,9 +124,13 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
               value={selectedDateTime}
               onChange={(e) => handleDateTimeChange(parseInt(e.target.value))}
             />
-            <button onClick={() => setChosenTime(new Date(dateTimes[selectedDateTime]))}>Confirm Date</button>
+            <button
+              onClick={handleConfirmDateClick}
+              className={`py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold ${confirmButtonColor} hover:bg-custom-green4`}
+            >
+              Confirm Date
+            </button>
           </div>
-
           <p>{dateTimes[selectedDateTime]}</p>
         </div>
       )}
