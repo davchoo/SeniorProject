@@ -108,28 +108,55 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   useEffect(() => {
     if (!window.google || !path || !durations) {
-      return
+      return;
     }
-    let controller = new AbortController()
-    const date = chosenTime ? chosenTime : new Date() // set this from emma/kat calendar
-    const polyline = window.google.maps.geometry.encoding.encodePath(path)
-    axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
-      polyline: polyline, // TODO reuse from setPolyline?
-      durations,
-      startTime: date // TODO route start time?
-    }, { signal: controller.signal })
-      .then(response => setRasterResponse(response.data), console.log())
-    const getAlerts = async () => {
-      const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
-      setAlerts(alerts.alerts)
-      setWeatherAlerts(alerts)
-      setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts))
-      return alerts;
-
-    }
-    getAlerts()
-    return () => controller.abort()
+  
+    let controller = new AbortController();
+  
+    const fetchData = () => {
+      const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
+      const polyline = window.google.maps.geometry.encoding.encodePath(path);
+  
+      axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
+        polyline: polyline,
+        durations,
+        startTime: date
+      }, { signal: controller.signal })
+        .then(response => setRasterResponse(response.data))
+        .catch(error => {
+          // Handle error
+          console.error('Error fetching data:', error);
+        });
+  
+      const getAlerts = async () => {
+        try {
+          const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
+          setAlerts(alerts.alerts);
+          setWeatherAlerts(alerts);
+          setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts));
+          return alerts;
+        } catch (error) {
+          // Handle error
+          console.error('Error fetching alerts:', error);
+        }
+      };
+  
+      getAlerts();
+    };
+  
+    // Initial fetch
+    fetchData();
+  
+    // Fetch data every 5 minutes
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+  
+    // Cleanup function
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
   }, [path, durations, chosenTime]);
+  
 
   const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
@@ -294,8 +321,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
               <h3 style={{ textAlign: 'center' }}> 🚨Weather Alert🚨</h3>
               <p style={{ textAlign: 'center' }}>ETA: {calculateDurationUpToPoint(durations, selectedWeatherMarker[0][2], chosenTime)}</p>
               <p style={{ textAlign: 'center' }}>Weather at ETA: {rasterResponse.labels[rasterResponse.data[selectedWeatherMarker[0][2]]]}</p>
-              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].headline}</p>
-              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].description}</p>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.headline}</p>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.description}</p>
             </div>
 
           </InfoWindowF>
