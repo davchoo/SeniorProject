@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
 import ReactStars from "react-rating-stars-component";
-import polyLineData from "../pages/weather.json";
 import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
+import { weatherApi } from '../pages/Weather';
+import { debounce } from 'lodash';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -25,7 +26,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, showOverlay, children }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, forecastedRoute, setWeatherAlerts, chosenTime, children }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -40,13 +41,17 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
+  const [selectedWeatherMarker, setSelectedWeatherMarker] = useState([]);
   const [segments, setSegments] = useState([]);
-  const [weatherDisplay, setWeatherDisplay] = useState(true); 
+  const [weatherDisplay, setWeatherDisplay] = useState(true);
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
 
   const [availableLayers, setAvailableLayers] = useState()
+
+  const [alerts, setAlerts] = useState([])
+  const [mapAlerts, setMapAlerts] = useState([])
 
   const handlePlaceSelect = (selectedPlace, isOrigin) => {
     if (selectedPlace && selectedPlace.geometry && selectedPlace.geometry.location) {
@@ -95,6 +100,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
             setStartAddress(result.routes[0].legs[0].start_address);
             setEndAddress(result.routes[0].legs[0].end_address);
+            createMapAlerts(segments, mapAlerts)
           } else {
             console.error('Failed to fetch directions. Status: ', status);
             setDirections(null);
@@ -107,21 +113,68 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   useEffect(() => {
     if (!window.google || !path || !durations) {
-      return
+      return;
     }
-    let controller = new AbortController()
-    axios.post('/api/weather/raster/check_route',{
-      polyline: window.google.maps.geometry.encoding.encodePath(path), // TODO reuse from setPolyline?
-      durations,
-      startTime: new Date() // TODO route start time?
-    }, {signal: controller.signal})
-      .then(response => setRasterResponse(response.data), console.log)
-    return () => controller.abort()
-  }, [path, durations]);
+  
+    let controller = new AbortController();
+  
+    const fetchData = () => {
+      const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
+      const polyline = window.google.maps.geometry.encoding.encodePath(path);
+  
+      axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
+        polyline: polyline,
+        durations,
+        startTime: date
+      }, { signal: controller.signal })
+        .then(response => setRasterResponse(response.data))
+        .catch(error => {
+          // Handle error
+          console.error('Error fetching data:', error);
+        });
+  
+      const getAlerts = async () => {
+        try {
+          const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
+          setAlerts(alerts.alerts);
+          setWeatherAlerts(alerts);
+          setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts));
+          return alerts;
+        } catch (error) {
+          // Handle error
+          console.error('Error fetching alerts:', error);
+        }
+      };
+  
+      getAlerts();
+    };
+  
+    // Initial fetch
+    fetchData();
+  
+    // Fetch data every 5 minutes
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
+  
+    // Cleanup function
+    return () => {
+      clearInterval(interval);
+      controller.abort();
+    };
+  }, [path, durations, chosenTime]);
+  
 
-  const handleMarkerClick = (gasStation) => {
+  const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
   };
+
+  const handleWeatherMarkerClick = (weatherAlert, index) => {
+    setSelectedWeatherMarker([weatherAlert, index]);
+  }
+
+  const debouncedHandleWeatherMarkerHover = debounce((alert, index) => {
+    handleWeatherMarkerClick(alert, index);
+  }, 15000); // Adjust the delay (in milliseconds) as needed
+
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -166,7 +219,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             />
           )}
           {infoWindow && infoWindow.type === 'origin' && (
-            <InfoWindow
+            <InfoWindowF
               position={{
                 lat: infoWindow.location.lat,
                 lng: infoWindow.location.lng,
@@ -177,7 +230,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                 <p style={{ margin: '0' }}>Origin Location</p>
                 <p style={{ margin: '0', fontSize: '12px' }}></p>
               </div>
-            </InfoWindow>
+            </InfoWindowF>
           )}
 
           {destination != null && (
@@ -196,7 +249,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             />
           )}
           {infoWindow && infoWindow.type === 'destination' && (
-            <InfoWindow
+            <InfoWindowF
               position={{
                 lat: infoWindow.location.lat,
                 lng: infoWindow.location.lng,
@@ -207,12 +260,13 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                 <p style={{ margin: '0' }}>Destination Location</p>
                 <p style={{ margin: '0', fontSize: '12px' }}></p>
               </div>
-            </InfoWindow>
+            </InfoWindowF>
           )}
 
           {path ? (
-            showOverlay ? (
+            forecastedRoute ? (
               rasterResponse && segments && (segments.map((point, index) => (
+
                 <PolylineF
                   key={index}
                   path={point}
@@ -220,9 +274,9 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                     strokeColor: getColor(rasterResponse, index),
                     strokeOpacity: 1.0,
                     strokeWeight: 3
-                  }} 
+                  }}
                 />
-              )))) : 
+              )))) :
               <PolylineF
                 path={path}
                 options={{
@@ -235,11 +289,56 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
           {data != null && (
             <GasStationsMarkers
               gasStations={data}
-              onClick={handleMarkerClick}
+              onClick={handleGasMarkerClick}
             />
+        )}
+
+        {forecastedRoute && mapAlerts && mapAlerts?.map((alert, index) => (
+          <Marker
+            key={index}
+            position={{
+              lat: alert[0][0].lat(),
+              lng: alert[0][1].lng(),
+            }}
+
+            icon={{
+              url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
+              scaledSize: new window.google.maps.Size(50, 50),
+            }}
+            onClick={() => {
+              handleWeatherMarkerClick(alert, index)
+            }}
+            onMouseOver={() => {
+              handleWeatherMarkerClick(alert, index); // Use the debounced handler
+            }}
+            onMouseOut={() => {
+              debouncedHandleWeatherMarkerHover(null, null)
+            }}
+            opacity={0.0}
+          />
+        ))}
+
+        {selectedWeatherMarker[0] && selectedWeatherMarker[1] && (
+          <InfoWindowF
+            position={{
+              lat: selectedWeatherMarker[0][0][0].lat(),
+              lng: selectedWeatherMarker[0][0][1].lng(),
+            }}
+            onCloseClick={() => setSelectedWeatherMarker([])}
+          >
+
+            <div style={{ maxHeight: '250px', overflowY: 'auto', maxWidth: '250px' }}>
+              <h3 style={{ textAlign: 'center' }}> 🚨Weather Alert🚨</h3>
+              <p style={{ textAlign: 'center' }}>ETA: {calculateDurationUpToPoint(durations, selectedWeatherMarker[0][2], chosenTime)}</p>
+              <p style={{ textAlign: 'center' }}>Weather at ETA: {rasterResponse.labels[rasterResponse.data[selectedWeatherMarker[0][2]]]}</p>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.headline}</p>
+              <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.description}</p>
+            </div>
+
+          </InfoWindowF>
           )}
           {selectedGasMarker && (
-            <InfoWindow
+            <InfoWindowF
               position={{
                 lat: selectedGasMarker.location.lat,
                 lng: selectedGasMarker.location.lng,
@@ -282,7 +381,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
                   )}
                 </div>
               </div>
-            </InfoWindow>
+            </InfoWindowF>
           )}
   
           {children}
@@ -321,10 +420,10 @@ function getFullRoute(route) {
       }
     }
   }
-  return {coordinates, durations} // TODO too many coordinates and durations! Have to simplify?
+  return { coordinates, durations } // TODO too many coordinates and durations! Have to simplify?
 }
 
-function decimate({coordinates, durations}) {
+function decimate({ coordinates, durations }) {
   const maxDistance = 2.5 // km
   let newCoordinates = [coordinates[0]]
   let newDurations = []
@@ -345,7 +444,7 @@ function decimate({coordinates, durations}) {
   }
   newCoordinates.push(coordinates[coordinates.length - 1])
   newDurations.push(currentDuration)
-  return {coordinates: newCoordinates, durations: newDurations}
+  return { coordinates: newCoordinates, durations: newDurations }
 }
 
 const getPolylineSegments = (path) => {
@@ -360,6 +459,67 @@ const getPolylineSegments = (path) => {
 const getColor = (rasterResponse, index) => {
   const color = wxColorMap[rasterResponse.labels[rasterResponse.data[index]]] // TODO handle other datasets
   return color;
+}
+
+const createMapAlerts = (segments, segmentAlerts) => {
+
+  if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
+    const comparePairs = (a, b) => {
+      // Compare the second number of each pair
+      const secondNumberA = segmentAlerts[a * 2 + 1];
+      const secondNumberB = segmentAlerts[b * 2 + 1];
+      return secondNumberA - secondNumberB;
+    };
+
+    const indices = Array.from(Array(Math.floor(segmentAlerts.length / 2)).keys());
+    indices.sort(comparePairs);
+
+    const sortedPairs = [];
+    for (let i = 0; i < indices.length; i++) {
+      sortedPairs.push(segmentAlerts[indices[i] * 2], segmentAlerts[indices[i] * 2 + 1]);
+    }
+    let total = 0;
+    let count = 0;
+    let alertIndex = 0;
+    const segmentAlertLocations = []
+
+    for (let i = 0; i < sortedPairs.length - 1; i += 2) {
+      const segmentIndex = sortedPairs[i];
+      const alertIndex = sortedPairs[i + 1];
+      const segment = segments[segmentIndex];
+      segmentAlertLocations.push([segment, alertIndex, segmentIndex]);
+
+
+      // Leaving this code in case we want to have an alert at the 'mean' location
+      // console.log(sortedPairs[i + 1])
+      // if (sortedPairs[i + 1] === alertIndex) {
+      //   total += sortedPairs[i];
+      //   count++;
+      // }
+      // else {
+      //   let mean = Math.ceil(total / count);
+      //   segmentAlertLocations.push(segments[mean]);
+      //   count = total = 0;
+      //   alertIndex = sortedPairs[i + 1];
+      // }
+    }
+    // let mean = Math.ceil(total / count); //
+    // segmentAlertLocations.push(segments[mean]);
+    return segmentAlertLocations;
+  }
+
+}
+
+const calculateDurationUpToPoint = (durations, index, chosenTime) => {
+  let totalTime = 0;
+  for (let i = 0; i < index; i++) {
+    totalTime += durations[i];
+  }
+
+  const date = new Date()
+
+  return chosenTime ? new Date(chosenTime.getTime() + totalTime).toLocaleString() : new Date(date.getTime() + totalTime).toLocaleString();
+
 }
 
 
