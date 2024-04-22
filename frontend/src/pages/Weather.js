@@ -1,32 +1,38 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import wxColorMap from './wxColorMap';
 import { qpfColorMap } from './qpfColorMap';
 import { tempColorMap } from './tempColorMap';
 import axios from "axios"
 
-const Weather = ({setForecastedRoute,weatherAlerts}) => {
+const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showLegend, setShowLegend] = useState(false);
   const [selectedRadar, setSelectedRadar] = useState('');
   const [expandedAlert, setExpandedAlert] = useState(null);
+  const [showLegendButton, setShowLegendButton] = useState(false);
   const [sortedAlerts, setSortedAlerts] = useState([])
+  const [selectedDateTime, setSelectedDateTime] = useState(0);
 
   useEffect(() => {
     setSelectedOption(null);
     setShowLegend(false);
     setSelectedRadar('');
+    setShowLegendButton(false);
   }, []);
 
   useEffect(() => {
-    if(weatherAlerts && weatherAlerts.alerts) {
+    if (weatherAlerts && weatherAlerts.alerts) {
       setSortedAlerts(Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent)))
     }
   }, [weatherAlerts])
 
-
   const handleOptionChange = (value) => {
     setSelectedOption(value);
     setShowLegend(false);
+    setShowLegendButton(value === 'forecasted-route' || (value === 'radar' && selectedRadar !== ''));
+    if (value === 'forecasted-route') {
+      setShowLegend(true);
+    }
   };
 
   const toggleLegend = () => {
@@ -35,6 +41,19 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
 
   const toggleExpand = (alert) => {
     setExpandedAlert(expandedAlert === alert ? null : alert);
+  };
+
+  const today = new Date();
+
+  const dateTimes = Array.from({ length: 24 * 7 }, (_, i) => {
+    const dateTime = new Date(today);
+    dateTime.setHours(today.getHours() + i);
+    return dateTime.toLocaleString();
+  });
+
+  const handleDateTimeChange = (index) => {
+    console.log(index)
+    setSelectedDateTime(index);
   };
 
   const qpfRange = (index) => {
@@ -51,12 +70,12 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
           <div className="mr-4">
             <input
               type="radio"
-              id="forecastedRoute"
+              id="forecasted-route"
               name="weatherOption"
-              value="forecastedRoute"
-              checked={selectedOption === 'forecastedRoute'}
+              value="forecasted-route"
+              checked={selectedOption === 'forecasted-route'}
               onChange={() => {
-                handleOptionChange('forecastedRoute');
+                handleOptionChange('forecasted-route');
                 setForecastedRoute(true)
               }}
               className="mr-1"
@@ -72,7 +91,8 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
               checked={selectedOption === 'radar'}
               onChange={() => {
                 handleOptionChange('radar')
-                setForecastedRoute(false)}}
+                setForecastedRoute(false)
+              }}
               className="mr-1"
             />
             <label>Weather Radar</label>
@@ -80,32 +100,64 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
         </div>
       </div>
 
-      {selectedOption === 'radar' && (
+      {selectedOption && (
         <div className="mt-4">
-          <label htmlFor="radarSelect" className="font-notosansjp text-custom-black font-semibold">Select Radar:</label>
-          <select
-            id="radarSelect"
-            className="ml-2"
-            value={selectedRadar}
-            onChange={(e) => setSelectedRadar(e.target.value)}
-          >
-            <option value="">Choose A Radar</option>
-          </select>
+          <p className="font-notosansjp text-custom-black font-semibold">Date and Time Slider:</p>
+          <div className='flex flex-row'>
+            <input
+              type="range"
+              min={0}
+              max={dateTimes.length - 1}
+              value={selectedDateTime}
+              onChange={(e) => handleDateTimeChange(parseInt(e.target.value))}
+            />
+            <button onClick={()=>setChosenTime(new Date(dateTimes[selectedDateTime]))}>Confirm Date</button>
+          </div>
+
+          <p>{dateTimes[selectedDateTime]}</p>
         </div>
       )}
+
+      {selectedOption === 'radar' && (
+        <div className="mt-8">
+          <p className="font-notosansjp text-custom-black font-semibold">Select Radar:</p>
+          <div className="flex">
+            <button
+              className={`mr-2 py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold ${selectedRadar === 'temperature' ? 'bg-custom-green4' : 'bg-custom-green3'} hover:bg-custom-green4`}
+              onClick={() => {
+                setSelectedRadar('temperature');
+                setShowLegend(true);
+                setShowLegendButton(true);
+              }}
+            >
+              Temperature
+            </button>
+            <button
+              className={`py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold ${selectedRadar === 'precipitation' ? 'bg-custom-green4' : 'bg-custom-green3'} hover:bg-custom-green4`}
+              onClick={() => {
+                setSelectedRadar('precipitation');
+                setShowLegend(true);
+                setShowLegendButton(true);
+              }}
+            >
+              Precipitation
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {selectedOption && (
         <div>
           <button
-            className={`font-notosansjp text-custom-black font-semibold py-1 px-2 rounded-md mb-2 mt-20 ${
-              showLegend ? 'bg-custom-green4' : 'bg-custom-green3'
-            } hover:bg-custom-green4`}
+            className={`font-notosansjp text-custom-black font-semibold py-1 px-2 rounded-md mb-2 mt-20 ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'
+              } hover:bg-custom-green4`}
             onClick={toggleLegend}
           >
             {showLegend ? 'Hide' : 'Show'} Legend
           </button>
 
-          {showLegend && selectedOption === 'forecastedRoute' && (
+          {showLegend && selectedOption === 'forecasted-route' && (
             <div className="mt-4" style={{ width: '300px' }}>
               <p className="font-notosansjp text-custom-black">Weather Forecast Legend:</p>
               <div className="mt-4 flex flex-wrap">
@@ -119,52 +171,52 @@ const Weather = ({setForecastedRoute,weatherAlerts}) => {
             </div>
           )}
 
-          {showLegend && selectedOption === 'radar' && (
-            <div>
-              <div className="mt-4" style={{ width: '300px' }}>
-                <p className="font-notosansjp text-custom-black">Quantitative Precipitation Forecast (QPF) Legend (inches):</p>
-                <div className="mt-4 flex items-center">
-                  <div className="w-full flex justify-between">
-                    <div className="w-1/6 font-notosansjp text-custom-black">0.00</div>
-                    <div className="w-4/6 h-6 flex justify-between">
-                      {qpfColorMap.slice(1, -1).map((color, index) => (
-                        <div key={index} className="w-1/6 h-full" style={{ backgroundColor: color }}></div>
-                      ))}
-                    </div>
-                    <div className="w-1/12 font-notosansjp text-custom-black text-right">10.00</div>
+          {showLegend && selectedRadar === 'precipitation' && selectedOption === 'radar' && (
+            <div className="mt-4" style={{ width: '300px' }}>
+              <p className="font-notosansjp text-custom-black">Quantitative Precipitation Forecast (QPF) Legend (inches):</p>
+              <div className="mt-4 flex items-center">
+                <div className="w-full flex justify-between">
+                  <div className="w-1/6 font-notosansjp text-custom-black">0.00</div>
+                  <div className="w-4/6 h-6 flex justify-between">
+                    {qpfColorMap.slice(1, -1).map((color, index) => (
+                      <div key={index} className="w-1/6 h-full" style={{ backgroundColor: color }}></div>
+                    ))}
                   </div>
-                </div>
-                <div className="mt-2 flex justify-between">
-                  <div className="w-1/6"></div>
-                  <p className="font-notosansjp text-custom-black">0.25</p>
-                  <p className="font-notosansjp text-custom-black">2.50</p>
-                  <p className="font-notosansjp text-custom-black">5.00</p>
-                  <p className="font-notosansjp text-custom-black">7.50</p>
-                  <div className="w-1/6"></div>
+                  <div className="w-1/12 font-notosansjp text-custom-black text-right">10.00</div>
                 </div>
               </div>
+              <div className="mt-2 flex justify-between">
+                <div className="w-1/6"></div>
+                <p className="font-notosansjp text-custom-black">0.25</p>
+                <p className="font-notosansjp text-custom-black">2.50</p>
+                <p className="font-notosansjp text-custom-black">5.00</p>
+                <p className="font-notosansjp text-custom-black">7.50</p>
+                <div className="w-1/6"></div>
+              </div>
+            </div>
+          )}
 
-              <div className="mt-4" style={{ width: '300px' }}>
-                <p className="font-notosansjp text-custom-black">Temperature Legend (°F):</p>
-                <div className="mt-4 flex items-center">
-                  <div className="w-full flex justify-between">
-                    <div className="w-1/6 font-notosansjp text-custom-black">-10.0</div>
-                    <div className="w-4/6 h-6 flex justify-between">
-                      {tempColorMap.map((color, index) => (
-                        <div key={index} className="w-1/6 h-full" style={{ backgroundColor: color }}></div>
-                      ))}
-                    </div>
-                    <div className="w-1/12 font-notosansjp text-custom-black text-right">110.0</div>
+          {showLegend && selectedRadar === 'temperature' && selectedOption === 'radar' && (
+            <div className="mt-4" style={{ width: '300px' }}>
+              <p className="font-notosansjp text-custom-black">Temperature Legend (°F):</p>
+              <div className="mt-4 flex items-center">
+                <div className="w-full flex justify-between">
+                  <div className="w-1/6 font-notosansjp text-custom-black">-10.0</div>
+                  <div className="w-4/6 h-6 flex justify-between">
+                    {tempColorMap.map((color, index) => (
+                      <div key={index} className="w-1/6 h-full" style={{ backgroundColor: color }}></div>
+                    ))}
                   </div>
+                  <div className="w-1/12 font-notosansjp text-custom-black text-right">110.0</div>
                 </div>
-                <div className="mt-2 flex justify-between">
-                  <div className="w-1/6"></div>
-                  <p className="font-notosansjp text-custom-black">-5.0</p>
-                  <p className="font-notosansjp text-custom-black">0.0</p>
-                  <p className="font-notosansjp text-custom-black">50.0</p>
-                  <p className="font-notosansjp text-custom-black">100.0</p>
-                  <div className="w-1/6"></div>
-                </div>
+              </div>
+              <div className="mt-2 flex justify-between">
+                <div className="w-1/6"></div>
+                <p className="font-notosansjp text-custom-black">-5.0</p>
+                <p className="font-notosansjp text-custom-black">0.0</p>
+                <p className="font-notosansjp text-custom-black">50.0</p>
+                <p className="font-notosansjp text-custom-black">100.0</p>
+                <div className="w-1/6"></div>
               </div>
             </div>
           )}
@@ -290,7 +342,7 @@ export const weatherApi = {
         startTime: new Date()
       });
       console.log(response)
-      return response.data; 
+      return response.data;
     } catch (error) {
       console.error('Error in checkRouteRaster:', error);
       throw error;
