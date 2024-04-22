@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Papa from 'papaparse'; // Import PapaParse library for parsing CSV
 
 const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon }) => {
   const [make, setMake] = useState('');

@@ -11,12 +11,14 @@ import { haversineDistance } from '../utils/Distance';
 
 const libraries = ['places'];
 const mapContainerStyle = {
-  width: '65vw',
-  height: '80vh',
+  width: 'calc(100% - 8px)',
+  height: 'calc(100% - 8px)',
   border: '4px solid white',
   borderRadius: '8px',
-  marginLeft: 'auto',
 };
+const mapOptions = {
+  gestureHandling: "greedy"
+}
 
 const center = {
   lat: 39.8283, // Latitude of the center of the USA
@@ -130,156 +132,162 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
   }
 
   return (
-    <div className='flex-col'>
-      <div>
-        <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
-        <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
-        <div style={{ marginTop: '15px', marginLeft: '10px' }}>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
-        <div style={{ marginBottom: '20px', marginLeft: '10px' }}>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+    <div className='flex flex-col flex-grow'>
+      <div className='flex flex-row mb-4'>
+        <div>
+          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
+          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
+        </div>
+        <div className='ml-4'>
+          <div>Distance: {distance ? distance.replace('mi', 'miles') : ''}</div>
+          <div>Duration: {duration ? duration.replace(/\bmin(s?)\b/, 'minute$1').replace(/\bhour(s?)\b/, 'hour$1') : ''}</div>
+        </div>
       </div>
+      <div className='grow'>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={4.6}
+          center={center}
+          options={mapOptions}
+        >
+          {origin != null && (
+            <Marker
+              position={{
+                lat: origin.lat,
+                lng: origin.lng,
+              }}
+              label={{
+                text: 'A',
+                color: 'black',
+                fontSize: '17px',
+                fontWeight: 'bold',
+              }}
+              onClick={() => setInfoWindow({ type: 'origin', location: origin })}
+            />
+          )}
+          {infoWindow && infoWindow.type === 'origin' && (
+            <InfoWindow
+              position={{
+                lat: infoWindow.location.lat,
+                lng: infoWindow.location.lng,
+              }}
+              onCloseClick={() => setInfoWindow(null)}
+            >
+              <div style={{ padding: '5px', maxWidth: '150px' }}>
+                <p style={{ margin: '0' }}>Origin Location</p>
+                <p style={{ margin: '0', fontSize: '12px' }}></p>
+              </div>
+            </InfoWindow>
+          )}
 
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        zoom={4.6}
-        center={center}
-      >
-        {origin != null && (
-          <Marker
-            position={{
-              lat: origin.lat,
-              lng: origin.lng,
-            }}
-            label={{
-              text: 'A',
-              color: 'black',
-              fontSize: '17px',
-              fontWeight: 'bold',
-            }}
-            onClick={() => setInfoWindow({ type: 'origin', location: origin })}
-          />
-        )}
-        {infoWindow && infoWindow.type === 'origin' && (
-          <InfoWindow
-            position={{
-              lat: infoWindow.location.lat,
-              lng: infoWindow.location.lng,
-            }}
-            onCloseClick={() => setInfoWindow(null)}
-          >
-            <div style={{ padding: '5px', maxWidth: '150px' }}>
-              <p style={{ margin: '0' }}>Origin Location</p>
-              <p style={{ margin: '0', fontSize: '12px' }}></p>
-            </div>
-          </InfoWindow>
-        )}
+          {destination != null && (
+            <Marker
+              position={{
+                lat: destination.lat,
+                lng: destination.lng,
+              }}
+              label={{
+                text: 'B',
+                color: 'black',
+                fontSize: '17px',
+                fontWeight: 'bold',
+              }}
+              onClick={() => setInfoWindow({ type: 'destination', location: destination })}
+            />
+          )}
+          {infoWindow && infoWindow.type === 'destination' && (
+            <InfoWindow
+              position={{
+                lat: infoWindow.location.lat,
+                lng: infoWindow.location.lng,
+              }}
+              onCloseClick={() => setInfoWindow(null)}
+            >
+              <div style={{ padding: '5px', maxWidth: '150px' }}>
+                <p style={{ margin: '0' }}>Destination Location</p>
+                <p style={{ margin: '0', fontSize: '12px' }}></p>
+              </div>
+            </InfoWindow>
+          )}
 
-        {destination != null && (
-          <Marker
-            position={{
-              lat: destination.lat,
-              lng: destination.lng,
-            }}
-            label={{
-              text: 'B',
-              color: 'black',
-              fontSize: '17px',
-              fontWeight: 'bold',
-            }}
-            onClick={() => setInfoWindow({ type: 'destination', location: destination })}
-          />
-        )}
-        {infoWindow && infoWindow.type === 'destination' && (
-          <InfoWindow
-            position={{
-              lat: infoWindow.location.lat,
-              lng: infoWindow.location.lng,
-            }}
-            onCloseClick={() => setInfoWindow(null)}
-          >
-            <div style={{ padding: '5px', maxWidth: '150px' }}>
-              <p style={{ margin: '0' }}>Destination Location</p>
-              <p style={{ margin: '0', fontSize: '12px' }}></p>
-            </div>
-          </InfoWindow>
-        )}
-
-        {path ? (
-          showOverlay ? (
-            rasterResponse && segments && (segments.map((point, index) => (
+          {path ? (
+            showOverlay ? (
+              rasterResponse && segments && (segments.map((point, index) => (
+                <PolylineF
+                  key={index}
+                  path={point}
+                  options={{
+                    strokeColor: getColor(rasterResponse, index),
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3
+                  }} 
+                />
+              )))) : 
               <PolylineF
-                key={index}
-                path={point}
+                path={path}
                 options={{
-                  strokeColor: getColor(rasterResponse, index),
+                  strokeColor: '#FF0000',
                   strokeOpacity: 1.0,
                   strokeWeight: 3
-                }} 
+                }}
               />
-            )))) : 
-            <PolylineF
-              path={path}
-              options={{
-                strokeColor: '#FF0000',
-                strokeOpacity: 1.0,
-                strokeWeight: 3
-              }}
+          ) : null}
+          {data != null && (
+            <GasStationsMarkers
+              gasStations={data}
+              onClick={handleMarkerClick}
             />
-        ) : null}
-        {data != null && (
-          <GasStationsMarkers
-            gasStations={data}
-            onClick={handleMarkerClick}
-          />
-        )}
-        {selectedGasMarker && (
-          <InfoWindow
-            position={{
-              lat: selectedGasMarker.location.lat,
-              lng: selectedGasMarker.location.lng,
-            }}
-            onCloseClick={() => setSelectedGasMarker(null)}
-          >
-            <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
-              <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.name}</h3>
-              <hr />
-              <p><u>Fuel Price:</u></p>
-              <ul>
-                {Object.entries(selectedGasMarker.prices).map(([type, price]) => (
-                  <li key={type}>
-                    {type}: ${price.toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-              <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
-              <p><u>Hours:</u></p>
-              <ul>
-                {selectedGasMarker.currentOpeningHours?.weekdayDescriptions?.map((description, index) => (
-                  <li key={index}>
-                    {description}
-                  </li>
-                ))}
-              </ul>
-              <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
-              <p><u>Reviews:</u></p>
-              <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
-                {selectedGasMarker.reviews && (
-                  <ul>
-                    {selectedGasMarker.reviews.map((review, index) => (
+          )}
+          {selectedGasMarker && (
+            <InfoWindow
+              position={{
+                lat: selectedGasMarker.location.lat,
+                lng: selectedGasMarker.location.lng,
+              }}
+              onCloseClick={() => setSelectedGasMarker(null)}
+            >
+              <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
+                <h3 style={{ textAlign: 'center' }}>{selectedGasMarker.name}</h3>
+                <hr />
+                <p><u>Fuel Price:</u></p>
+                <ul>
+                  {Object.entries(selectedGasMarker.prices).map(([type, price]) => (
+                    <li key={type}>
+                      {type}: ${price.toFixed(2)}
+                    </li>
+                  ))}
+                </ul>
+                <p><u>Address:</u> {selectedGasMarker.formattedAddress}</p>
+                <p><u>Hours:</u></p>
+                <ul>
+                  {selectedGasMarker.currentOpeningHours?.weekdayDescriptions?.map((description, index) => (
+                    <li key={index}>
+                      {description}
+                    </li>
+                  ))}
+                </ul>
+                <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
+                <p><u>Reviews:</u></p>
+                <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
+                  {selectedGasMarker.reviews && (
+                    <ul>
+                      {selectedGasMarker.reviews.map((review, index) => (
 
-                      <li key={index}>
-                        <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false} /></p>
-                        <p>{review.text.text}</p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                        <li key={index}>
+                          <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false} /></p>
+                          <p>{review.text.text}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-            </div>
-          </InfoWindow>
-        )}
-
-        {children}
-      </GoogleMap>
+            </InfoWindow>
+          )}
+  
+          {children}
+        </GoogleMap>
+      </div>
     </div>
   );
 };
