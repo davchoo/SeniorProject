@@ -238,7 +238,7 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
             // Calculate the difference in milliseconds between the current time and the sent time
             const timeDifference = currentTimestamp - sentTimestamp;
             // Convert milliseconds to minutes
-            const timeDifferenceInMinutes = timeDifference / (1000  * 60* 60);
+            const timeDifferenceInMinutes = timeDifference / (1000 * 60);
             // Check if the difference is less than 10 minutes
             const isNewAlert = timeDifferenceInMinutes < 10;
 
