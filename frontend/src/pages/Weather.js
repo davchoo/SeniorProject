@@ -229,49 +229,47 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
 
       <div className="mt-20">
         <p className="font-notosansjp text-custom-black font-semibold">Alerts Along Your Route:</p>
-        <div className="alert-container" style={{ maxHeight: '80vh', width: '300px', overflowY: 'auto' }}>
-          {sortedAlerts?.map((alert, index) => {
-            // Convert the sent timestamp to a Date object
-            const sentTimestamp = new Date(alert.sent);
-            // Get the current timestamp
-            const currentTimestamp = new Date();
-            // Calculate the difference in milliseconds between the current time and the sent time
-            const timeDifference = currentTimestamp - sentTimestamp;
-            // Convert milliseconds to minutes
-            const timeDifferenceInMinutes = timeDifference / (1000 * 60);
-            // Check if the difference is less than 10 minutes
-            const isNewAlert = timeDifferenceInMinutes < 10;
+        {sortedAlerts?.map((alert, index) => {
+          // Convert the sent timestamp to a Date object
+          const sentTimestamp = new Date(alert.sent);
+          // Get the current timestamp
+          const currentTimestamp = new Date();
+          // Calculate the difference in milliseconds between the current time and the sent time
+          const timeDifference = currentTimestamp - sentTimestamp;
+          // Convert milliseconds to minutes
+          const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+          // Check if the difference is less than 10 minutes
+          const isNewAlert = timeDifferenceInMinutes < 10;
 
-            return (
-              <div key={index} className={isNewAlert ? "bg-red-200" : ""}>
-                <p className="font-notosansjp text-custom-black font-semibold underline">{alert.event}:</p>
-                <ul className="list-disc pl-8">
-                  <li key={index} className="mt-2">
-                    <p className="font-notosansjp text-custom-black font-semibold">
-                      Sent: {new Date(alert.sent).toLocaleString()}
-                    </p>
-                    <p className="font-notosansjp text-custom-black font-semibold">
-                      Expires: {new Date(alert.expires).toLocaleString()}
-                    </p>
-                    <p className="font-notosansjp text-custom-black font-semibold">Status: {alert.status}</p>
-                    <p className="font-notosansjp text-custom-black">Area Description: {alert.areaDescription}</p>
-                    <p className="font-notosansjp text-custom-black">Severity: {alert.severity}</p>
-                    <p className="font-notosansjp text-custom-black">Headline: {alert.headline}</p>
-                    {expandedAlert === alert && (
-                      <div>
-                        <p className="font-notosansjp text-custom-black">Description: {alert.description}</p>
-                        <p className="font-notosansjp text-custom-black">Instruction: {alert.instruction}</p>
-                      </div>
-                    )}
-                    <button onClick={() => toggleExpand(alert)}>
-                      {expandedAlert === alert ? 'Collapse Description and Instructions' : 'Expand Description and Instructions'}
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            );
-          })}
-        </div>
+          return (
+            <div key={index} className={isNewAlert ? "bg-red-200" : ""}>
+              <p className="font-notosansjp text-custom-black font-semibold underline">{alert.event}:</p>
+              <ul className="list-disc pl-8">
+                <li key={index} className="mt-2">
+                  <p className="font-notosansjp text-custom-black font-semibold">
+                    Sent: {new Date(alert.sent).toLocaleString()}
+                  </p>
+                  <p className="font-notosansjp text-custom-black font-semibold">
+                    Expires: {new Date(alert.expires).toLocaleString()}
+                  </p>
+                  <p className="font-notosansjp text-custom-black font-semibold">Status: {alert.status}</p>
+                  <p className="font-notosansjp text-custom-black">Area Description: {alert.areaDescription}</p>
+                  <p className="font-notosansjp text-custom-black">Severity: {alert.severity}</p>
+                  <p className="font-notosansjp text-custom-black">Headline: {alert.headline}</p>
+                  {expandedAlert === alert && (
+                    <div>
+                      <p className="font-notosansjp text-custom-black">Description: {alert.description}</p>
+                      <p className="font-notosansjp text-custom-black">Instruction: {alert.instruction}</p>
+                    </div>
+                  )}
+                  <button onClick={() => toggleExpand(alert)}>
+                    {expandedAlert === alert ? 'Collapse Description and Instructions' : 'Expand Description and Instructions'}
+                  </button>
+                </li>
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

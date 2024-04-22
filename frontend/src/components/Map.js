@@ -26,7 +26,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, forecastedRoute, setWeatherAlerts, chosenTime, children }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, forecastedRoute, setWeatherAlerts, chosenTime, children }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -47,8 +47,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
-
-  const [availableLayers, setAvailableLayers] = useState()
 
   const [alerts, setAlerts] = useState([])
   const [mapAlerts, setMapAlerts] = useState([])
