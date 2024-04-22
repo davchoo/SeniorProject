@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Map from '../components/Map';
 import Sidebar from '../components/SaveSidebar';
-import { GiHamburgerMenu } from 'react-icons/gi';
+import { GiHamburgerMenu, GiNautilusShell } from 'react-icons/gi';
 import { checkIsLoggedIn } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
@@ -17,8 +17,10 @@ function Plan() {
   const [startAddress, setStartAddress] = useState("")
   const [endAddress, setEndAddress] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [forecastedRoute, setForecastedRoute] = useState(false);
+  const [weatherAlerts, setWeatherAlerts] = useState([])
   const navigate = useNavigate()
+  const [chosenTime, setChosenTime] = useState(null)
 
   const [availableLayers, setAvailableLayers] = useState()
   const [selectedLayerName, setSelectedLayerName] = useState()
@@ -33,13 +35,12 @@ function Plan() {
 
   const toggleGasInfo = () => {
     setShowGasInfo(!showGasInfo);
-    setShowOverlay(false)
+    setForecastedRoute(false)
     setShowWeatherInfo(false);
   };
 
   const toggleWeatherInfo = () => {
     setShowWeatherInfo(!showWeatherInfo);
-    setShowOverlay(true)
     setShowGasInfo(false);
   };
 
@@ -110,7 +111,7 @@ function Plan() {
           Let's Start Planning Your Trip!
         </p>
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between h-full">
-          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} showOverlay={showOverlay}>
+          <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} forecastedRoute={forecastedRoute} setWeatherAlerts={setWeatherAlerts} chosenTime={chosenTime}>
             {showWeatherInfo && showRadar && (
               <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
             )}
@@ -132,7 +133,7 @@ function Plan() {
             </div>
             <div className='h-[1px] grow overflow-y-auto overscroll-contain'>
               {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
-              {showWeatherInfo && <Weather/>}
+              {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setChosenTime={setChosenTime}/>}
             </div>
           </div>
           <div>
