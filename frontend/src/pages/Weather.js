@@ -25,6 +25,7 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
   useEffect(() => {
     if (weatherAlerts && weatherAlerts.alerts) {
       setSortedAlerts(Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent)))
+      // TODO could check new alerts by ids?
     }
   }, [weatherAlerts])
 
@@ -237,12 +238,12 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
             // Calculate the difference in milliseconds between the current time and the sent time
             const timeDifference = currentTimestamp - sentTimestamp;
             // Convert milliseconds to minutes
-            const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+            const timeDifferenceInMinutes = timeDifference / (1000  * 60* 60);
             // Check if the difference is less than 10 minutes
             const isNewAlert = timeDifferenceInMinutes < 10;
 
             return (
-              <div key={index} className={isNewAlert ? "bg-[#ffe4b5]" : ""}>
+              <div key={index} className={isNewAlert ? "bg-red-200" : ""}>
                 <p className="font-notosansjp text-custom-black font-semibold underline">{alert.event}:</p>
                 <ul className="list-disc pl-8">
                   <li key={index} className="mt-2">
