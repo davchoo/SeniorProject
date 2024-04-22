@@ -24,7 +24,7 @@ const center = {
   lng: -98.5795, // Longitude of the center of the USA
 };
 
-const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, forecastedRoute, setWeatherAlerts }) => {
+const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather, forecastedRoute, setWeatherAlerts, chosenTime }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -111,18 +111,17 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
       return
     }
     let controller = new AbortController()
-    const date = new Date() // set this from emma/kat calendar
+    const date = chosenTime ? chosenTime : new Date() // set this from emma/kat calendar
     const polyline = window.google.maps.geometry.encoding.encodePath(path)
     axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
       polyline: polyline, // TODO reuse from setPolyline?
       durations,
       startTime: date // TODO route start time?
     }, { signal: controller.signal })
-      .then(response => setRasterResponse(response.data), console.log)
+      .then(response => setRasterResponse(response.data), console.log())
     const getAlerts = async () => {
       const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
       setAlerts(alerts.alerts)
-      console.log(alerts)
       setWeatherAlerts(alerts)
       setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts))
       return alerts;
@@ -130,7 +129,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
     }
     getAlerts()
     return () => controller.abort()
-  }, [path, durations]);
+  }, [path, durations, chosenTime]);
 
   const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
@@ -142,7 +141,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
   const debouncedHandleWeatherMarkerHover = debounce((alert, index) => {
     handleWeatherMarkerClick(alert, index);
-  }, 2000); // Adjust the delay (in milliseconds) as needed
+  }, 15000); // Adjust the delay (in milliseconds) as needed
 
 
   if (loadError) {
@@ -267,7 +266,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
 
             icon={{
               url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
-              scaledSize: new window.google.maps.Size(30, 30),
+              scaledSize: new window.google.maps.Size(50, 50),
             }}
             onClick={() => {
               handleWeatherMarkerClick(alert, index)
@@ -290,10 +289,15 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, toggleWeather,
             }}
             onCloseClick={() => setSelectedWeatherMarker([])}
           >
-            <div style={{ maxHeight: '150px', overflowY: 'auto', maxWidth: '200px' }}>
+
+            <div style={{ maxHeight: '250px', overflowY: 'auto', maxWidth: '250px' }}>
+              <h3 style={{ textAlign: 'center' }}> 🚨Weather Alert🚨</h3>
+              <p style={{ textAlign: 'center' }}>ETA: {calculateDurationUpToPoint(durations, selectedWeatherMarker[0][2], chosenTime)}</p>
+              <p style={{ textAlign: 'center' }}>Weather at ETA: {rasterResponse.labels[rasterResponse.data[selectedWeatherMarker[0][2]]]}</p>
               <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].headline}</p>
               <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]].description}</p>
             </div>
+
           </InfoWindowF>
         )}
 
@@ -410,7 +414,6 @@ const getPolylineSegments = (path) => {
     const segment = [path[i], path[i + 1]];
     segments.push(segment);
   }
-  console.log("segment length", segments.length)
   return segments;
 };
 
@@ -420,8 +423,6 @@ const getColor = (rasterResponse, index) => {
 }
 
 const createMapAlerts = (segments, segmentAlerts) => {
-  console.log("segments", segments)
-  console.log(segmentAlerts)
 
   if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
     const comparePairs = (a, b) => {
@@ -447,9 +448,10 @@ const createMapAlerts = (segments, segmentAlerts) => {
       const segmentIndex = sortedPairs[i];
       const alertIndex = sortedPairs[i + 1];
       const segment = segments[segmentIndex];
-      segmentAlertLocations.push([segment, alertIndex]);
+      segmentAlertLocations.push([segment, alertIndex, segmentIndex]);
 
 
+      // Leaving this code in case we want to have an alert at the 'mean' location
       // console.log(sortedPairs[i + 1])
       // if (sortedPairs[i + 1] === alertIndex) {
       //   total += sortedPairs[i];
@@ -466,6 +468,18 @@ const createMapAlerts = (segments, segmentAlerts) => {
     // segmentAlertLocations.push(segments[mean]);
     return segmentAlertLocations;
   }
+
+}
+
+const calculateDurationUpToPoint = (durations, index, chosenTime) => {
+  let totalTime = 0;
+  for (let i = 0; i < index; i++) {
+    totalTime += durations[i];
+  }
+
+  const date = new Date()
+
+  return chosenTime ? new Date(chosenTime.getTime() + totalTime).toLocaleString() : new Date(date.getTime() + totalTime).toLocaleString();
 
 }
 
