@@ -25,7 +25,6 @@ function Plan() {
   const [availableLayers, setAvailableLayers] = useState()
   const [selectedLayerName, setSelectedLayerName] = useState()
   const [selectedLayerTime, setSelectedLayerTime] = useState()
-  const [showRadar, setShowRadar] = useState(true); // TODO move to Weather component?
 
   const bodyRef = useRef(null);
 
@@ -76,11 +75,6 @@ function Plan() {
     if (!availableLayers) {
       return
     }
-    // TODO remove debug stuff
-    // Print available layers and times for each layer
-    for (let layerName of Object.keys(availableLayers)) {
-      console.log(layerName + ": " + availableLayers[layerName].dimensions.time.values)
-    }
 
     const defaultLayer = "ndfd:conus.wx"
     setSelectedLayerName(defaultLayer)
@@ -112,7 +106,7 @@ function Plan() {
         </p>
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between h-full">
           <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} forecastedRoute={forecastedRoute} setWeatherAlerts={setWeatherAlerts} chosenTime={chosenTime}>
-            {showWeatherInfo && showRadar && (
+            {showWeatherInfo && !forecastedRoute && (
               <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
             )}
           </Map>
@@ -133,7 +127,8 @@ function Plan() {
             </div>
             <div className='h-[1px] grow overflow-y-auto overscroll-contain'>
               {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress}/>}
-              {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setChosenTime={setChosenTime}/>}
+              {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setRouteStartTime={setChosenTime}
+                availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}/>}
             </div>
           </div>
         </div>

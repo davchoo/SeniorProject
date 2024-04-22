@@ -1,27 +1,106 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import wxColorMap from './wxColorMap';
 import { qpfColorMap } from './qpfColorMap';
 import { tempColorMap } from './tempColorMap';
 import axios from "axios"
 
-const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
+const RouteStartSlider = ({ setRouteStartTime }) => {
+  const [selectedDateTime, setSelectedDateTime] = useState(0);
+  const [confirmButtonColor, setConfirmButtonColor] = useState('bg-custom-green3');
+  const today = new Date();
+
+  const dateTimes = Array.from({ length: 24 * 7 }, (_, i) => {
+    const dateTime = new Date(today);
+    dateTime.setHours(today.getHours() + i);
+    return dateTime.toLocaleString();
+  });
+
+  const handleDateTimeChange = (index) => {
+    console.log(index)
+    setSelectedDateTime(index);
+  };
+
+  const handleConfirmDateClick = () => {
+    setRouteStartTime(new Date(dateTimes[selectedDateTime]));
+    setConfirmButtonColor('bg-custom-green4');
+    // Reset the button color after 1 second (we can adjust after tesing this with the backend)
+    setTimeout(() => {
+      setConfirmButtonColor('bg-custom-green3');
+    }, 1000);
+  };
+
+  return (
+    <div className="mt-4">
+      <p className="font-notosansjp text-custom-black font-semibold">Route Start:</p>
+      <div className='flex flex-row'>
+        <input
+          type="range"
+          min={0}
+          max={dateTimes.length - 1}
+          value={selectedDateTime}
+          onChange={(e) => handleDateTimeChange(parseInt(e.target.value))}
+        />
+        <button
+          onClick={handleConfirmDateClick}
+          className={`py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold ${confirmButtonColor} hover:bg-custom-green4`}
+        >
+          Confirm Date
+        </button>
+      </div>
+      <p>{dateTimes[selectedDateTime]}</p>
+    </div>
+  )
+}
+
+const RadarTimeSlider = ({ availableTimes, setSelectedTime }) => {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    setSelectedTime(availableTimes[index])
+  }, [index])
+
+  useEffect(() => {
+    setIndex(0)
+  }, [availableTimes])
+
+  return (
+    <div className="mt-4">
+      <p className="font-notosansjp text-custom-black font-semibold">Radar time:</p>
+      <div className='flex flex-row'>
+        <input
+          type="range"
+          min={0}
+          max={availableTimes.length - 1}
+          value={index}
+          onChange={(e) => setIndex(parseInt(e.target.value))}
+          list='radar-times'
+          className='w-full'
+        />
+        <datalist id='radar-times'>
+          {availableTimes.map((value, index) => (
+            <option key={index} value={index}></option>
+          ))}
+        </datalist>
+      </div>
+      <p>{new Date(availableTimes[index]).toLocaleString()}</p>
+    </div>
+  )
+}
+
+const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availableLayers, selectedLayerName, setSelectedLayerName, setSelectedLayerTime, setShowRadar }) => {
+  const [selectedOption, setSelectedOption] = useState('radar');
   const [showLegend, setShowLegend] = useState(false);
   const [selectedRadar, setSelectedRadar] = useState('');
   const [expandedAlert, setExpandedAlert] = useState(null);
   const [showLegendButton, setShowLegendButton] = useState(false);
   const [sortedAlerts, setSortedAlerts] = useState([])
-  const [selectedDateTime, setSelectedDateTime] = useState(0);
-  const [confirmButtonColor, setConfirmButtonColor] = useState('bg-custom-green3');
 
-  console.log(weatherAlerts)
-
-  useEffect(() => {
-    setSelectedOption(null);
-    setShowLegend(false);
-    setSelectedRadar('');
-    setShowLegendButton(false);
-  }, []);
+  const availableTimes = useMemo(() => {
+    if (!availableLayers || !availableLayers[selectedLayerName]) {
+      return []
+    }
+    return availableLayers[selectedLayerName].dimensions.time.values
+  }, [availableLayers, selectedLayerName])
 
   useEffect(() => {
     if (weatherAlerts && weatherAlerts.alerts) {
@@ -29,6 +108,18 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
       // TODO could check new alerts by ids?
     }
   }, [weatherAlerts])
+
+  useEffect(() => {
+    let layerName = {
+      temperature: 'ndfd:conus.temp',
+      precipitation: 'ndfd:conus.qpf',
+      weather: 'ndfd:conus.wx',
+    }[selectedRadar] // TODO This really should be hardcoded but :shrug:
+    if (!layerName) {
+      return
+    }
+    setSelectedLayerName(layerName)
+  }, [selectedRadar])
 
   const handleOptionChange = (value) => {
     setSelectedOption(value);
@@ -47,32 +138,10 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
     setExpandedAlert(expandedAlert === alert ? null : alert);
   };
 
-  const today = new Date();
-
-  const dateTimes = Array.from({ length: 24 * 7 }, (_, i) => {
-    const dateTime = new Date(today);
-    dateTime.setHours(today.getHours() + i);
-    return dateTime.toLocaleString();
-  });
-
-  const handleDateTimeChange = (index) => {
-    console.log(index)
-    setSelectedDateTime(index);
-  };
-
   const qpfRange = (index) => {
     const min = index * 0.05;
     const max = (index + 1) * 0.05;
     return `${min}in - ${max}in`;
-  };
-
-  const handleConfirmDateClick = () => {
-    setChosenTime(new Date(dateTimes[selectedDateTime]));
-    setConfirmButtonColor('bg-custom-green4');
-    // Reset the button color after 1 second (we can adjust after tesing this with the backend)
-    setTimeout(() => {
-      setConfirmButtonColor('bg-custom-green3');
-    }, 1000);
   };
 
   return (
@@ -113,27 +182,8 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
         </div>
       </div>
 
-      {selectedOption && (
-        <div className="mt-4">
-          <p className="font-notosansjp text-custom-black font-semibold">Date and Time Slider:</p>
-          <div className='flex flex-row'>
-            <input
-              type="range"
-              min={0}
-              max={dateTimes.length - 1}
-              value={selectedDateTime}
-              onChange={(e) => handleDateTimeChange(parseInt(e.target.value))}
-            />
-            <button
-              onClick={handleConfirmDateClick}
-              className={`py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold ${confirmButtonColor} hover:bg-custom-green4`}
-            >
-              Confirm Date
-            </button>
-          </div>
-          <p>{dateTimes[selectedDateTime]}</p>
-        </div>
-      )}
+      {selectedOption === 'forecasted-route' && <RouteStartSlider setRouteStartTime={setRouteStartTime} />}
+      {selectedOption === 'radar' && <RadarTimeSlider availableTimes={availableTimes} setSelectedTime={setSelectedLayerTime} />}
 
       {selectedOption === 'radar' && (
         <div className="mt-8">

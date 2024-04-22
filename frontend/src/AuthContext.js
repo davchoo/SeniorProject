@@ -82,7 +82,6 @@ export async function login(username, password, navigate) {
       console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(error);
       return false;
     }
   }
