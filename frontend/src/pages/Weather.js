@@ -114,7 +114,10 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setChosenTime }) => {
               value={selectedDateTime}
               onChange={(e) => handleDateTimeChange(parseInt(e.target.value))}
             />
-            <button onClick={() => setChosenTime(new Date(dateTimes[selectedDateTime]))}>Confirm Date</button>
+            <button onClick={() => setChosenTime(new Date(dateTimes[selectedDateTime]))}
+            className={`py-1 px-2 rounded-md font-notosansjp text-custom-black font-semibold bg-custom-green3 hover:bg-custom-green4`}
+             >
+              Confirm Date</button>
           </div>
 
           <p>{dateTimes[selectedDateTime]}</p>
