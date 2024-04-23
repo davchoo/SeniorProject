@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -108,6 +109,12 @@ public class RasterWeatherDataConfig {
     public static class GeoServerConfig {
         private URI resetEndpoint;
 
+        private URI capabilitiesEndpoint;
+
+        private URI massTruncateEndpoint;
+
+        private List<String> truncatedLayers = List.of();
+
         private String username;
 
         private String password;
@@ -118,6 +125,30 @@ public class RasterWeatherDataConfig {
 
         public void setResetEndpoint(URI resetEndpoint) {
             this.resetEndpoint = resetEndpoint;
+        }
+
+        public URI getCapabilitiesEndpoint() {
+            return capabilitiesEndpoint;
+        }
+
+        public void setCapabilitiesEndpoint(URI capabilitiesEndpoint) {
+            this.capabilitiesEndpoint = capabilitiesEndpoint;
+        }
+
+        public URI getMassTruncateEndpoint() {
+            return massTruncateEndpoint;
+        }
+
+        public void setMassTruncateEndpoint(URI massTruncateEndpoint) {
+            this.massTruncateEndpoint = massTruncateEndpoint;
+        }
+
+        public List<String> getTruncatedLayers() {
+            return truncatedLayers;
+        }
+
+        public void setTruncatedLayers(List<String> truncatedLayers) {
+            this.truncatedLayers = truncatedLayers;
         }
 
         public String getUsername() {

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -201,7 +202,10 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
                     .get();
             lastUpdate = Instant.now();
             LOGGER.info("Finished checking S3 Bucket. Downloaded {} files", fileCount);
-            updateGrids();
+            boolean hasUpdatedGrids = updateGrids();
+            if (hasUpdatedGrids) {
+                notifyGeoserver();
+            }
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error("Failed to check NDFD S3 bucket", e);
         }
@@ -304,14 +308,14 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
         return object.lastModified().isAfter(lastUpdate);
     }
 
-    private void updateGrids() {
+    private boolean updateGrids() {
         LOGGER.info("Updating grids");
         Path tmpDir;
         try {
             tmpDir = Files.createTempDirectory(config.getTemporaryStoragePath(), "tmp-grid");
         } catch (IOException e) {
             LOGGER.error("Unable to create temporary directory", e);
-            return;
+            return false;
         }
 
         boolean updatedGrid = false;
@@ -366,9 +370,7 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             LOGGER.warn("Failed to delete temp directory", e);
         }
         LOGGER.info("Finished updating grids");
-        if (updatedGrid) {
-            notifyGeoserver();
-        }
+        return updatedGrid;
     }
 
     private void notifyGeoserver() {
@@ -379,14 +381,53 @@ public class RasterWeatherDataServiceImpl implements RasterWeatherDataService {
             String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
             ResponseEntity<Void> response = restClient.post()
-                    .uri(config.getGeoServer().getResetEndpoint())
+                    .uri(gsConfig.getResetEndpoint())
                     .header(HttpHeaders.AUTHORIZATION, authorization)
                     .retrieve()
                     .toBodilessEntity();
-            if (response.getStatusCode().is2xxSuccessful()) {
-                LOGGER.info("Successfully notified GeoServer");
-            } else {
+            if (!response.getStatusCode().is2xxSuccessful()) {
                 LOGGER.error("Failed to notify GeoServer. Status Code: {}", response.getStatusCode());
+                return;
+            }
+            LOGGER.info("Successfully notified GeoServer");
+
+            preloadGeoServerCapabilities();
+            truncateGeoServerLayers(authorization);
+        }
+    }
+
+    private void preloadGeoServerCapabilities() {
+        RasterWeatherDataConfig.GeoServerConfig gsConfig = config.getGeoServer();
+        if (gsConfig.getCapabilitiesEndpoint() == null) {
+            return;
+        }
+        LOGGER.info("Preloading capabilities XML from GeoServer");
+        ResponseEntity<Void> response = restClient.get()
+                .uri(gsConfig.getCapabilitiesEndpoint())
+                .retrieve()
+                .toBodilessEntity();
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            LOGGER.error("Failed to preload capabilities XML from GeoServer. Status Code: {}", response.getStatusCode());
+        }
+    }
+
+    private void truncateGeoServerLayers(String authorization) {
+        RasterWeatherDataConfig.GeoServerConfig gsConfig = config.getGeoServer();
+        if (gsConfig.getMassTruncateEndpoint() == null) {
+            return;
+        }
+        for (String layer : gsConfig.getTruncatedLayers()) {
+            LOGGER.info("Truncating layer: {} in GeoServer", layer);
+            String body = String.format("<truncateLayer><layerName>%s</layerName></truncateLayer>", layer);
+            ResponseEntity<Void> response = restClient.post()
+                    .uri(gsConfig.getMassTruncateEndpoint())
+                    .header(HttpHeaders.AUTHORIZATION, authorization)
+                    .contentType(MediaType.TEXT_XML)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                LOGGER.error("Failed to mass truncate layer: {} in GeoServer. Status Code: {}", layer, response.getStatusCode());
             }
         }
     }
