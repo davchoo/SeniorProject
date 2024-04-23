@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PiUserRectangleDuotone } from "react-icons/pi";
-import { FaEye, FaEyeSlash, } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { ImCross, ImCheckmark } from 'react-icons/im';
 import { signup } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,13 +11,42 @@ const SignUp = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const navigate = useNavigate()
+  const [passwordStrength, setPasswordStrength] = useState({ isValid: null, message: '' });
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(prevVisible => !prevVisible);
   };
 
   const inputType = passwordVisible ? 'text' : 'password';
+
+  const checkPasswordStrength = (password) => {
+    const passwordPattern = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/;
+    
+    console.log('Password pattern:', passwordPattern); 
+  
+    const isValid = passwordPattern.test(password);
+    console.log('Password is valid:', isValid); 
+    
+    setPasswordStrength({
+      isValid: isValid,
+      message: isValid ? '' : 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.'
+    });
+  };
+  
+  const handlePasswordChange = (e) => {
+    console.log('Password changed:', e.target.value);
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    checkPasswordStrength(newPassword);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (passwordStrength.isValid) {
+      signup(firstName, lastName, username, password, navigate);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-custom-green justify-center items-center m-10 relative">
@@ -26,80 +56,33 @@ const SignUp = () => {
           <PiUserRectangleDuotone size={80} color="black" />
         </div>
         <h2 className="text-3xl font-notosansjp font-extrabold text-center mt-0 mb-10 text-custom-black">Thank You for Choosing TripEase!</h2>
-        <p className="font-notosansjp text-custom-black mb-5">
-          Create An Account
-        </p>
-        <form className="space-y-4" onSubmit={(e) => {
-          e.preventDefault(); // Prevent default form submission
-          signup(firstName, lastName, username, password, navigate);
-          
-        }}>
-          <div className="grid grid-cols-2 mr-24">
-            <div>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                placeholder="First Name"
-                required
-              />
-            </div>
-            <div className="md:ml-2"> {/* Adjusted margin */}
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-                placeholder="Last Name"
-                className="input-field"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="relative">
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              placeholder="Username"
-              className="input-field"
-              required
-            />
-          </div>
-
+        <p className="font-notosansjp text-custom-black mb-5">Create An Account</p>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <input type="text" id="firstName" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First Name" required />
+          <input type="text" id="lastName" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" className="input-field" required />
+          <input type="text" id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="input-field" required />
           <div className="relative flex items-center">
-            <input
-              type={inputType}
-              id="password"
-              name="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-            />
-            <button
-              type="button"
-              onClick={togglePasswordVisibility}
-              className="absolute inset-y ml-44 flex px-3 text-grey"
-            >
+            <input type={inputType} id="password" name="password" value={password} onChange={handlePasswordChange} placeholder="Password" required />
+            {passwordStrength.isValid !== null && (
+              <div className="absolute inset-y right-0 flex items-center pr-3">
+                {passwordStrength.isValid ? (
+                  <ImCheckmark className="text-green-500" />
+                ) : (
+                  <ImCross className="text-red-500" />
+                )}
+              </div>
+            )}
+            <button type="button" onClick={togglePasswordVisibility} className="absolute inset-y ml-44 flex px-3 text-grey">
               {passwordVisible ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
             </button>
           </div>
-
-          <button
-            className="w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-bold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white"
-            type='submit'
-          >
+          {passwordStrength.message && (
+            <div className="text-xs text-red-500 mt-1">{passwordStrength.message}</div>
+          )}
+          <button className={`w-full py-2 px-4 bg-custom-green3 text-custom-black font-notosansjp font-bold rounded-lg shadow-md hover:bg-custom-green hover:text-white focus:outline-none focus:bg-custom-green focus:text-white ${passwordStrength.isValid === false ? 'opacity-50 cursor-not-allowed' : ''}`} type="submit" disabled={passwordStrength.isValid === false}>
             Register
           </button>
         </form>
-
       </div>
     </div>
   );
