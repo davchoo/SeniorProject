@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, MarkerF } from '@react-google-maps/api';
+import { MarkerF } from '@react-google-maps/api';
 import axios from 'axios';
 import Car from '../components/Car';
 import ClipLoader from "react-spinners/ClipLoader";
 
-const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destination, distance, duration, distanceBetweenStops }) => {
+const Gas = ({ setSelectedGasStations, getPolyline, origin, destination, distance, duration, distanceBetweenStops }) => {
   const [selectedMake, setSelectedMake] = useState();
   const [selectedModel, setSelectedModel] = useState();
   const [year, setYear] = useState();
@@ -14,17 +14,24 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
   const [type, setType] = useState();
   const [milesPerGallon, setMilesPerGallon] = useState();
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
-  const [clicked, setClicked] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
   };
 
+  const reset = () => {
+    setGasStations([])
+    setSelectedGasStations([])
+    setPrice(null)
+    setLoading(false) 
+    return reset;
+  };
+  useEffect(reset, [origin, destination])
+
   const getGasStations = async () => {
-    console.log(getPolyline)
     const polyline = getPolyline; // Call the function to retrieve the polyline
-    console.log(origin)
+    setLoading(true);
     if (polyline) {
       axios.post('/api/trip/gas', {
         polyline: polyline, // Use the obtained polyline
@@ -43,8 +50,6 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
           setGasStations(response.data.gasStations)
           setSelectedGasStations(response.data.gasStations)
           setPrice((response.data.totalTripGasPrice * response.data.car.tankSizeInGallons).toFixed(2))
-          console.log(gasStations)
-          console.log("Response from backend:", response.data);
           setLoading(false) 
         })
         .catch(error => {
@@ -56,6 +61,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
             }
           }
           console.error("Error getting gas stations:", error);
+          setLoading(false) 
         });
     }
   };
@@ -89,11 +95,9 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
 
       <div style={{ padding: '10px' }}>
         <button
-          onClick={async () => {
-            setClicked(true);
+          onClick={() => {
             toggleGasStations();
-            await getGasStations(); // Wait for getGasStations to finish
-            //setSelectedGasStations(gasStations);
+            getGasStations();
           }}
 
           className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10 ${showGasStations ? 'bg-custom-green4 ' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 ${(!origin || !destination || !type || !selectedMake || !selectedModel) ? 'disabled bg-gray-400' : 'hover:bg-custom-green4'}`}
@@ -102,7 +106,7 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
          Show Gas Stations
         </button>
       </div>
-      {clicked ? 
+      {loading ? 
         <div className="flex justify-center items-center mt-4">
           <ClipLoader
             loading={loading}
