@@ -48,8 +48,12 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
           setLoading(false) 
         })
         .catch(error => {
-          if(error.response.data.message.includes("not one of the values accepted for Enum class: [DIESEL, MIDGRADE, PREMIUM, REGULAR_UNLEADED]")){
-            window.alert("At this time, we cannot support your car's fuel type: " + type)
+          if (error.response?.data && error.response.data.type === 'validation_error') {
+            for (let valueError of error.response.data.valueErrors) {
+              if (valueError.path.endsWith('GasRequestModel["type"]')) {
+                window.alert("At this time, we cannot support your car's fuel type: " + type)
+              }
+            }
           }
           console.error("Error getting gas stations:", error);
         });
