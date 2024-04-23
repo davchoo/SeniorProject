@@ -13,7 +13,7 @@ export function useAuth() {
 export async function signup(firstName, lastName, username, password, navigate){
     try {
         await axios
-          .post(`${process.env.REACT_APP_API_URL}/api/auth/signup`, {
+          .post('/api/auth/signup', {
             firstName: firstName,
             lastName: lastName,
             username: username,
@@ -50,12 +50,11 @@ export async function login(username, password, navigate) {
     try {
       await axios
         .post(
-            `${process.env.REACT_APP_API_URL}/api/auth/login`,
+            '/api/auth/login',
           {
             username: username,
             password: password,
           },
-          { withCredentials: true },
         )
         .then((result) => {
           if (result) {
@@ -78,22 +77,18 @@ export async function login(username, password, navigate) {
   export async function checkIsLoggedIn() {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/auth/check-login`,
-        { withCredentials: true }
+        '/api/auth/check-login',
       );
       console.log(response.data);
       return response.data;
     } catch (error) {
-      console.error(error);
       return false;
     }
   }
   
 
 export function logout() {
-  axios.get(`${process.env.REACT_APP_API_URL}/api/logout`, {
-    withCredentials: true,
-  })
+  axios.get('/api/logout')
   alert('You have now been Logged Out. ')
   // Clear any other user-related data as well
 }
