@@ -16,29 +16,17 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
   const [tankSizeInGallons, setTankSizeInGallons] = useState();
   const [clicked, setClicked] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [calcOrigin, setCalcOrigin] = useState(null);
-  const [calcDestination, setCalcDestination] = useState(null);
 
   const toggleGasStations = () => {
     setShowGasStations(!showGasStations);
   };
-
-  useEffect(() => {
-    if (calcOrigin != origin || calcDestination != destination) {
-      setCalcOrigin(origin);
-      setCalcDestination(destination);
-
-      setSelectedGasStations(null);
-    }
-  }, [origin, destination]);
-
 
   const getGasStations = async () => {
     console.log(getPolyline)
     const polyline = getPolyline; // Call the function to retrieve the polyline
     console.log(origin)
     if (polyline) {
-      axios.post('http://localhost:8080/api/trip/gas', {
+      axios.post('/api/trip/gas', {
         polyline: polyline, // Use the obtained polyline
         startAddress: origin,
         endAddress: destination,
@@ -107,16 +95,19 @@ const Gas = ({ showGasInfo, setSelectedGasStations, getPolyline, origin, destina
           className={`font-notosansjp text-custom-black font-semibold mr-10 mt-10 ${showGasStations ? 'bg-custom-green4 ' : 'bg-custom-green3'} py-1 px-2 rounded-md mb-2 ${(!origin || !destination || !type || !selectedMake || !selectedModel) ? 'disabled bg-gray-400' : 'hover:bg-custom-green4'}`}
           disabled={!origin || !destination || !type || !selectedMake || !selectedModel}
         >
-          Show Gas Stations
+         Show Gas Stations
         </button>
       </div>
-      {clicked ?
-        <ClipLoader
-          loading={loading}
-          size={150}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        /> : null}
+      {clicked ? 
+        <div className="flex justify-center items-center mt-4">
+          <ClipLoader
+            loading={loading}
+            size={50} 
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </div>
+      : null}
     </div>
   );
 };
