@@ -160,7 +160,7 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
   const Selection = ({ label, values, currentValue, onChange }) => (
     <div className="mb-4 flex flex-row items-center">
       <label className="font-bold">{label}:</label>
-      <select value={currentValue} onChange={onChange} className="p-2 mt-1 border border-gray-300 rounded-md flex-grow">
+      <select value={currentValue} onChange={onChange} className="ml-2 p-2 mt-1 border border-gray-300 rounded-md flex-grow">
         <option value="">--Select {label}--</option>
         {values.map(value => (
           <option key={value} value={value}>{value}</option>
@@ -171,21 +171,25 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
-      <h4 className="text-center text-custom-black text-md font-semibold mb-3 mt-1">Vehicle Information</h4>
+      <h4 className="text-center text-custom-black text-md font-semibold mb-3 mt-1">Vehicle Selection</h4>
       <form className="flex flex-col">
         <Selection label="Year" values={years} currentValue={year} onChange={handleYearChange} />
         <Selection label="Make" values={makes} currentValue={make} onChange={handleMakeChange} />
         <Selection label="Model" values={models} currentValue={model} onChange={handleModelChange} />
       </form>
       {vehicleInfo && (
-        <div className="mt-8 border light-gray p-4 rounded-md bg-white shadow-md">
+        <div className="mt-4 border light-gray p-4 rounded-md bg-white shadow-md">
           <h2 className="text-custom-black text-lg font-semibold mb-2 text-center">Vehicle Details</h2>
           <hr />
           <p>
             <strong>{year} {make} {model} Information:</strong>
             <ul>
-              <li>Miles Per Gallon (MPG): {vehicleInfo.mpg}</li>
-              <li>Estimated Tank Size: {vehicleInfo.tankSize} gallons</li>
+              {vehicleInfo.fuelType !== 'Electricity' && (
+                <>
+                  <li>Miles Per Gallon (MPG): {vehicleInfo.mpg}</li>
+                  <li>Estimated Tank Size: {vehicleInfo.tankSize} gallons</li>
+                </>
+              )}
               <li>Fuel Type: {vehicleInfo.fuelType}</li>
             </ul>
           </p>

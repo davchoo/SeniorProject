@@ -156,7 +156,7 @@ function Plan() {
               </button>
             </div>
             <div className='h-[1px] grow overflow-y-auto overscroll-contain'>
-              {showGasInfo && <Gas  showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
+              {showGasInfo && <Gas setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
               {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setRouteStartTime={setChosenTime}
                 availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}/>}
             </div>
