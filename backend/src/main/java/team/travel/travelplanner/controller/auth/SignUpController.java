@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team.travel.travelplanner.entity.User;
 import team.travel.travelplanner.model.UserSignUpModel;
 import team.travel.travelplanner.repository.UserRepository;
+import team.travel.travelplanner.util.PasswordValidator;
 
 @RestController
 @RequestMapping("api/auth")
@@ -29,6 +30,11 @@ public class SignUpController {
     public ResponseEntity<String> signUp(@RequestBody @Valid UserSignUpModel userSignUpModel){
         if(userRepository.existsByUsername(userSignUpModel.username())){
             return new ResponseEntity<>("Username, " + userSignUpModel.username() + ", already exists",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if (!PasswordValidator.validate(userSignUpModel.password())) {
+            return new ResponseEntity<>("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character",
                     HttpStatus.BAD_REQUEST);
         }
 

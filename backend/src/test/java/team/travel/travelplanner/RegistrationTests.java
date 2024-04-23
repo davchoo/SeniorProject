@@ -28,7 +28,7 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpSuccess() throws Exception {
-        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "#MagicPancakes123$%");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
@@ -43,7 +43,7 @@ public class RegistrationTests {
 
     @Test
     public void testSignUpUsernameExists() throws Exception {
-        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("John", "Doe", "johndoe", "#MagicPancakes123$%");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(true);
 
@@ -56,7 +56,19 @@ public class RegistrationTests {
 
     @Test
     public void testMissingFields() throws Exception {
-        UserSignUpModel userSignUpModel = new UserSignUpModel("", "User", "user1", "password123");
+        UserSignUpModel userSignUpModel = new UserSignUpModel("", "User", "user1", "#MagicPancakes123$%");
+
+        Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userSignUpModel)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testInvalidPasswordFormat() throws Exception {
+        UserSignUpModel userSignUpModel = new UserSignUpModel("Jane", "Doe", "janedoe", "abc123");
 
         Mockito.when(userRepository.existsByUsername(Mockito.anyString())).thenReturn(false);
 
