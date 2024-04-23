@@ -73,6 +73,10 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   };
 
   useEffect(() => {
+    setDirections(null);
+    setHQPath(null);
+    setPath(null);
+    setDurations(null);
     if (origin && destination) {
       const directionsService = new window.google.maps.DirectionsService();
       directionsService.route(
@@ -101,10 +105,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
             setDurations(durations);
           } else {
             console.error('Failed to fetch directions. Status: ', status);
-            setDirections(null);
-            setHQPath(null);
-            setPath(null);
-            setDurations(null);
           }
         }
       );
@@ -232,15 +232,17 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
 
   return (
     <div className='flex flex-col flex-grow'>
-      <div className='flex flex-row mb-4'>
-        <div>
+      <div className='flex flex-row mb-2 p-4 bg-white rounded-[8px]'>
+        <div className='w-1/3'>
           <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
           <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
         </div>
-        <div className='ml-4'>
-          <div>Distance: {distance ? `${Math.round(distance)} miles` : ''}</div>
-          <div>Duration: {duration ? `${Math.floor(duration)} hours and ${Math.round((duration - Math.floor(duration)) * 60)} minutes` : ''}</div>
-        </div>
+        {distance && duration ? (
+          <div className='ml-4'>
+            <div>Distance: {`${Math.round(distance)} miles` }</div>
+            <div>Duration: {`${Math.floor(duration)} hours and ${Math.round((duration - Math.floor(duration)) * 60)} minutes`}</div>
+          </div>
+        ) : null}
       </div>
       <div className='grow'>
         <GoogleMap
