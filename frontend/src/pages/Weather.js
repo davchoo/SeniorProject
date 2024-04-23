@@ -16,7 +16,6 @@ const RouteStartSlider = ({ setRouteStartTime }) => {
   });
 
   const handleDateTimeChange = (index) => {
-    console.log(index)
     setSelectedDateTime(index);
   };
 
@@ -103,8 +102,8 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
   }, [availableLayers, selectedLayerName])
 
   useEffect(() => {
-    if (weatherAlerts && weatherAlerts.alerts) {
-      setSortedAlerts(Object.values(weatherAlerts.alerts).sort((a, b) => new Date(b.sent) - new Date(a.sent)))
+    if (weatherAlerts) {
+      setSortedAlerts(Object.values(weatherAlerts).sort((a, b) => new Date(b.sent) - new Date(a.sent)))
       // TODO could check new alerts by ids?
     }
   }, [weatherAlerts])

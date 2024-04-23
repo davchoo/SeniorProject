@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
 import ReactStars from "react-rating-stars-component";
-import { mapQPFColor } from '../pages/qpfColorMap';
 import wxColorMap from "../pages/wxColorMap"
 import { haversineDistance } from '../utils/Distance';
 import { weatherApi } from '../pages/Weather';
-import { debounce } from 'lodash';
 
 const libraries = ['places'];
 const mapContainerStyle = {
@@ -42,7 +40,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   const [duration, setDuration] = useState(null);
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
 
-  const [selectedWeatherMarker, setSelectedWeatherMarker] = useState([]);
+  const [selectedWeatherMarker, setSelectedWeatherMarker] = useState();
   const [segments, setSegments] = useState([]);
 
   const [durations, setDurations] = useState();
@@ -117,10 +115,12 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
     if (!path) {
       setPolyline(null)
       setSegments([])
+      setMapAlerts([])
       return;
     }
     setPolyline(window.google.maps.geometry.encoding.encodePath(path))
     setSegments(getPolylineSegments(path))
+    setMapAlerts([])
   }, [path])
 
   useEffect(() => {
@@ -157,69 +157,70 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       return
     }
   
-    const fetchData = (controller) => {
-      const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
-      const polyline = window.google.maps.geometry.encoding.encodePath(path);
-  
-      axios.post('/api/weather/raster/check_route', {
-        polyline: polyline,
-        durations,
-        startTime: date
-      }, { signal: controller?.signal })
-        .then(response => setRasterResponse(response.data))
-        .catch(error => {
-          // Handle error
-          if (!axios.isCancel(error)) {
-            console.error('Error fetching data:', error);
-          }
-        });
-  
-      const getAlerts = async () => {
-        try {
-          const alerts = await weatherApi.checkRouteAlerts(polyline, durations, date);
-          setAlerts(alerts.alerts);
-          setWeatherAlerts(alerts);
-          setMapAlerts(createMapAlerts(segments, alerts.segmentAlerts));
-          return alerts;
-        } catch (error) {
-          // Handle error
-          console.error('Error fetching alerts:', error);
+    const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
+    const polyline = window.google.maps.geometry.encoding.encodePath(path);
+
+    let controller = new AbortController()
+    axios.post('/api/weather/raster/check_route', {
+      polyline: polyline,
+      durations,
+      startTime: date
+    }, { signal: controller?.signal })
+      .then(response => setRasterResponse(response.data))
+      .catch(error => {
+        // Handle error
+        if (!axios.isCancel(error)) {
+          console.error('Error fetching data:', error);
         }
-      };
+      });
+    return () => controller.abort()
+  }, [path, durations, chosenTime]);
   
-      getAlerts();
+  useEffect(() => {
+    if (!window.google || !path || !durations) {
+      return
+    }
+    const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
+    const polyline = window.google.maps.geometry.encoding.encodePath(path);
+    const getAlerts = async () => {
+      try {
+        const result = await weatherApi.checkRouteAlerts(polyline, durations, date);
+        setAlerts(result.alerts);
+        setWeatherAlerts(result.alerts);
+        setMapAlerts(createMapAlerts(segments, result.segmentAlerts));
+        return result;
+      } catch (error) {
+        // Handle error
+        console.error('Error fetching alerts:', error);
+      }
     };
-  
-    let controller = new AbortController();
+
     // Initial fetch
-    fetchData(controller);
+    getAlerts();
   
     // Fetch data every 5 minutes
     const interval = setInterval(() => {
-      controller = new AbortController()
-      fetchData(controller)
+      getAlerts()
     }, 5 * 60 * 1000);
   
     // Cleanup function
-    return () => {
-      clearInterval(interval);
-      controller.abort();
-    };
-  }, [path, durations, chosenTime]);
+    return () => clearInterval(interval);
+  }, [path, durations, segments, chosenTime]);
   
 
   const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
   };
 
-  const handleWeatherMarkerClick = (weatherAlert, index) => {
-    setSelectedWeatherMarker([weatherAlert, index]);
+  const handleWeatherMarkerHover = (alert) => {
+    setSelectedWeatherMarker(alert);
   }
-
-  const debouncedHandleWeatherMarkerHover = debounce((alert, index) => {
-    handleWeatherMarkerClick(alert, index);
-  }, 15000); // Adjust the delay (in milliseconds) as needed
-
+  
+  const handleWeatherMarkerHoverOut = (alert) => {
+    if (selectedWeatherMarker && selectedWeatherMarker.segmentIndex == alert.segmentIndex) {
+      setSelectedWeatherMarker(null);
+    }
+  }
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -337,46 +338,20 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
             />
           )}
 
-          {forecastedRoute && mapAlerts && mapAlerts?.map((alert, index) => (
-            <MarkerF
-              key={index}
-              position={{
-                lat: alert[0][0].lat(),
-                lng: alert[0][1].lng(),
-              }}
+          {forecastedRoute && mapAlerts && <AlertMarkers mapAlerts={mapAlerts} onHover={handleWeatherMarkerHover} onHoverOut={handleWeatherMarkerHoverOut} />}
 
-              icon={{
-                url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
-                scaledSize: new window.google.maps.Size(50, 50),
-              }}
-              onClick={() => {
-                handleWeatherMarkerClick(alert, index)
-              }}
-              onMouseOver={() => {
-                handleWeatherMarkerClick(alert, index); // Use the debounced handler
-              }}
-              onMouseOut={() => {
-                debouncedHandleWeatherMarkerHover(null, null)
-              }}
-              opacity={0.0}
-            />
-          ))}
-
-          {rasterResponse && selectedWeatherMarker[0] && selectedWeatherMarker[1] && (
+          {rasterResponse && selectedWeatherMarker && (
             <InfoWindowF
-              position={{
-                lat: selectedWeatherMarker[0][0][0].lat(),
-                lng: selectedWeatherMarker[0][0][1].lng(),
-              }}
-              onCloseClick={() => setSelectedWeatherMarker([])}
+              position={selectedWeatherMarker.segment[0]}
+              onCloseClick={() => setSelectedWeatherMarker()}
             >
 
               <div style={{ maxHeight: '250px', overflowY: 'auto', maxWidth: '250px' }}>
                 <h3 style={{ textAlign: 'center' }}> 🚨Weather Alert🚨</h3>
-                <p style={{ textAlign: 'center' }}>ETA: {calculateDurationUpToPoint(durations, selectedWeatherMarker[0][2], chosenTime)}</p>
-                <p style={{ textAlign: 'center' }}>Weather: {rasterResponse.labels[rasterResponse.data[selectedWeatherMarker[0][2]]]}</p>
-                <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.headline}</p>
-                <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker[0][1]]?.description}</p>
+                <p style={{ textAlign: 'center' }}>ETA: {calculateDurationUpToPoint(durations, selectedWeatherMarker.segmentIndex, chosenTime)}</p>
+                <p style={{ textAlign: 'center' }}>Weather: {rasterResponse.labels[rasterResponse.data[selectedWeatherMarker.segmentIndex]]}</p>
+                <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker.alertIndex]?.headline}</p>
+                <p style={{ textAlign: 'center' }}>{alerts[selectedWeatherMarker.alertIndex]?.description}</p>
               </div>
 
             </InfoWindowF>
@@ -505,6 +480,25 @@ const getColor = (rasterResponse, index) => {
   return color;
 }
 
+const AlertMarkers = ({ mapAlerts, onHover, onHoverOut }) => {
+  return mapAlerts.map((alert, index) => (
+    <Marker
+      key={index}
+      position={alert.segment[0]}
+
+      icon={{
+        url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
+        scaledSize: new window.google.maps.Size(50, 50),
+        anchor: new window.google.maps.Point(25, 25)
+      }}
+      onClick={() => onHover(alert)}
+      onMouseOver={() => onHover(alert)}
+      onMouseOut={() => onHoverOut(alert)}
+      opacity={0}
+    />
+  ))
+}
+
 const createMapAlerts = (segments, segmentAlerts) => {
 
   if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
@@ -515,24 +509,12 @@ const createMapAlerts = (segments, segmentAlerts) => {
       return secondNumberA - secondNumberB;
     };
 
-    const indices = Array.from(Array(Math.floor(segmentAlerts.length / 2)).keys());
-    indices.sort(comparePairs);
-
-    const sortedPairs = [];
-    for (let i = 0; i < indices.length; i++) {
-      sortedPairs.push(segmentAlerts[indices[i] * 2], segmentAlerts[indices[i] * 2 + 1]);
-    }
-    let total = 0;
-    let count = 0;
-    let alertIndex = 0;
     const segmentAlertLocations = []
-
-    for (let i = 0; i < sortedPairs.length - 1; i += 2) {
-      const segmentIndex = sortedPairs[i];
-      const alertIndex = sortedPairs[i + 1];
+    for (let i = 0; i < segmentAlerts.length; i += 2) {
+      const segmentIndex = segmentAlerts[i];
+      const alertIndex = segmentAlerts[i + 1];
       const segment = segments[segmentIndex];
-      segmentAlertLocations.push([segment, alertIndex, segmentIndex]);
-
+      segmentAlertLocations.push({segment, alertIndex, segmentIndex});
 
       // Leaving this code in case we want to have an alert at the 'mean' location
       // console.log(sortedPairs[i + 1])
