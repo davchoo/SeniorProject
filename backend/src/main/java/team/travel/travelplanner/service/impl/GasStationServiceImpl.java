@@ -7,6 +7,7 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
+import team.travel.travelplanner.exception.ApiException;
 import team.travel.travelplanner.model.GasStationModel;
 import team.travel.travelplanner.model.google.GoogleGasStation;
 import team.travel.travelplanner.model.type.FuelType;
@@ -42,7 +43,9 @@ public class GasStationServiceImpl implements GasStationService {
         String stringType = type.toString();
         List<GasStationModel> stops = new ArrayList<>();
         List<Coordinate> stopsAlongRoute = findNeededStops(route, rangeMeters);
-
+        if (stopsAlongRoute.size() > 25) {
+            throw new ApiException("too_many_stops", "Trip needs way too many gas station stops. Reduce the trip length or increase the range.");
+        }
 
         for (Coordinate coordinate : stopsAlongRoute) {
             LatLng location = new LatLng(coordinate.getY(), coordinate.getX());

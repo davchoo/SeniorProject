@@ -1,12 +1,15 @@
 package team.travel.travelplanner.controller;
 
+import jakarta.validation.Valid;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.entity.GasTrip;
 import team.travel.travelplanner.entity.User;
+import team.travel.travelplanner.exception.ApiException;
 import team.travel.travelplanner.model.CarModel;
 import team.travel.travelplanner.model.GasRequestModel;
 import team.travel.travelplanner.model.GasStationModel;
@@ -37,11 +40,15 @@ public class GasTripController {
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
         this.userRepository = userRepository;
     }
+
     @PostMapping("/gas")
-    public GasTripModel getGasTrip(@RequestBody GasRequestModel gasRequestModel, Authentication authentication) throws IOException {
-        boolean save = authentication!=null;
+    public GasTripModel getGasTrip(@RequestBody @Valid GasRequestModel gasRequestModel, @AuthenticationPrincipal Authentication authentication) throws IOException {
+        boolean save = authentication != null;
         LineString lineString = gasRequestModel.geometry(geometryFactory);
         double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
+        if (travelersMeterCapacity < 1609.34) {
+            throw new ApiException("range_too_small", "Tank size and/or miles per gallon is too small. Expected at least 1 mile of range.");
+        }
 
         List<GasStationModel> gasStationList = gasStationService.getGasStationsAlongRoute(lineString, travelersMeterCapacity,
                 gasRequestModel.type());
@@ -51,14 +58,14 @@ public class GasTripController {
         User user = save ? userRepository.findByUsername(authentication.getName()) : null;
         CarModel carModel = new CarModel(gasRequestModel.year(), gasRequestModel.make(), gasRequestModel.model(), gasRequestModel.type(), gasRequestModel.milesPerGallon(), gasRequestModel.tankSizeInGallons());
         GasTrip gasTrip = new GasTrip(origin, destination, lineString, gasStationList, travelersMeterCapacity, user, carModel, gasRequestModel.distance(), gasRequestModel.duration());
-        if(save) {
+        if (save) {
             gasTrip = gasTripRepository.save(gasTrip);
         }
         return GasTripModel.fromEntity(gasTrip);
     }
 
     @GetMapping("/gas/myTrips")
-    public List<GasTripModel> getSavedGasTrips(Authentication authentication){
+    public List<GasTripModel> getSavedGasTrips(@AuthenticationPrincipal Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName());
         List<GasTrip> gasTrips = gasTripRepository.findAllByUser(user);
         return gasTrips.stream()
@@ -66,8 +73,8 @@ public class GasTripController {
                 .toList();
     }
 
-    private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon){
-        return tankSizeInGallons*milesPerGallon*1000;
+    private double calculateMetersFromGallons(double tankSizeInGallons, double milesPerGallon) {
+        return tankSizeInGallons * milesPerGallon * 1000;
     }
 
 }

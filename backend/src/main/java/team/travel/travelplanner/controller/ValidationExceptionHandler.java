@@ -1,11 +1,13 @@
 package team.travel.travelplanner.controller;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -64,6 +66,20 @@ public class ValidationExceptionHandler  extends ResponseEntityExceptionHandler 
         }
         return ResponseEntity.badRequest()
                 .body(new ValidationErrorModel(List.of(), valueErrors));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (ex.getCause() instanceof InvalidFormatException invalidFormatException) {
+            List<ValueErrorModel> valueErrors = List.of(new ValueErrorModel(
+                    invalidFormatException.getPathReference(),
+                    convertValue(invalidFormatException.getValue()),
+                    invalidFormatException.getMessage()
+            ));
+            return ResponseEntity.badRequest()
+                    .body(new ValidationErrorModel(List.of(), valueErrors));
+        }
+        return super.handleHttpMessageNotReadable(ex, headers, status, request);
     }
 
     private String convertValue(Object value) {
