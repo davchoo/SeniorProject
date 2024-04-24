@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { GoogleMap, useLoadScript, Marker, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
+import React, { useCallback, useState, useEffect, memo } from 'react';
+import { GoogleMap, useLoadScript, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
 import { GasStationsMarkers } from '../pages/Gas';
@@ -83,7 +83,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       let closestDistance = 1e6;
       for (let alert of mapAlerts) {
         // TODO handle wraparound for longitude
-        let distance = Math.pow(latLng.lat() - alert.segment[0].lat(), 2) + Math.pow(latLng.lng() - alert.segment[0].lng(), 2)
+        let distance = Math.pow(latLng.lat() - alert.position.lat(), 2) + Math.pow(latLng.lng() - alert.position.lng(), 2)
         if (distance < closestDistance) {
           closestAlert = alert
           closestDistance = distance
@@ -91,7 +91,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       }
 
       if (closestAlert) {
-        let alertPoint = map.getProjection().fromLatLngToPoint(closestAlert.segment[0])
+        let alertPoint = map.getProjection().fromLatLngToPoint(closestAlert.position)
         let mousePoint = map.getProjection().fromLatLngToPoint(latLng)
         let distance = Math.pow(alertPoint.x - mousePoint.x, 2) + Math.pow(alertPoint.y - mousePoint.y, 2)
         let scale = 1 << map.getZoom()
@@ -147,12 +147,10 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
     if (!path) {
       setPolyline(null)
       setSegments([])
-      setMapAlerts([])
       return;
     }
     setPolyline(window.google.maps.geometry.encoding.encodePath(path))
     setSegments(getPolylineSegments(path))
-    setMapAlerts([])
   }, [path])
 
   useEffect(() => {
@@ -219,7 +217,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
         const result = await weatherApi.checkRouteAlerts(polyline, durations, date);
         setAlerts(result.alerts);
         setWeatherAlerts(result.alerts);
-        setMapAlerts(createMapAlerts(segments, result.segmentAlerts));
+        setMapAlerts(createMapAlerts(path, result.segmentAlerts));
         setSelectedWeatherMarker()
         return result;
       } catch (error) {
@@ -229,6 +227,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
     };
 
     // Initial fetch
+    setMapAlerts([])
     getAlerts();
   
     // Fetch data every 5 minutes
@@ -238,7 +237,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   
     // Cleanup function
     return () => clearInterval(interval);
-  }, [path, durations, segments, chosenTime]);
+  }, [path, durations, chosenTime]);
   
 
   const handleGasMarkerClick = (gasStation) => {
@@ -336,17 +335,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
             </InfoWindowF>
           )}
 
-          {forecastedRoute && rasterResponse && segments && (segments.map((point, index) => (
-            <PolylineF
-              key={index}
-              path={point}
-              options={{
-                strokeColor: getColor(rasterResponse, index),
-                strokeOpacity: 1.0,
-                strokeWeight: 3
-              }}
-            />
-          )))}
+          {forecastedRoute && rasterResponse && path && <ForecastRoute path={path} rasterResponse={rasterResponse} />}
           {hqPath && !forecastedRoute && (
             <PolylineF
               path={hqPath}
@@ -366,7 +355,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
 
           {rasterResponse && selectedWeatherMarker && (
             <InfoWindowF
-              position={selectedWeatherMarker.segment[0]}
+              position={selectedWeatherMarker.position}
               onCloseClick={() => setSelectedWeatherMarker()}
             >
 
@@ -467,7 +456,7 @@ function getFullRoute(route) {
 }
 
 function decimate({ coordinates, durations }) {
-  const maxDistance = 2.5 // km
+  const maxDistance = 0.15 // km
   let newCoordinates = [coordinates[0]]
   let newDurations = []
   let currentDuration = durations[0]
@@ -499,46 +488,21 @@ const getPolylineSegments = (path) => {
   return segments;
 };
 
-const getColor = (rasterResponse, index) => {
-  const color = wxColorMap[rasterResponse.labels[rasterResponse.data[index]]] // TODO handle other datasets
+const getColor = (rasterResponse, value) => {
+  const color = wxColorMap[rasterResponse.labels[value]] // TODO handle other datasets
   return color;
 }
 
-const createMapAlerts = (segments, segmentAlerts) => {
-
-  if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
-    const comparePairs = (a, b) => {
-      // Compare the second number of each pair
-      const secondNumberA = segmentAlerts[a * 2 + 1];
-      const secondNumberB = segmentAlerts[b * 2 + 1];
-      return secondNumberA - secondNumberB;
-    };
-
+const createMapAlerts = (path, segmentAlerts) => {
+  if (path && path.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
     const segmentAlertLocations = []
     for (let i = 0; i < segmentAlerts.length; i += 2) {
       const segmentIndex = segmentAlerts[i];
       const alertIndex = segmentAlerts[i + 1];
-      const segment = segments[segmentIndex];
-      segmentAlertLocations.push({segment, alertIndex, segmentIndex});
-
-      // Leaving this code in case we want to have an alert at the 'mean' location
-      // console.log(sortedPairs[i + 1])
-      // if (sortedPairs[i + 1] === alertIndex) {
-      //   total += sortedPairs[i];
-      //   count++;
-      // }
-      // else {
-      //   let mean = Math.ceil(total / count);
-      //   segmentAlertLocations.push(segments[mean]);
-      //   count = total = 0;
-      //   alertIndex = sortedPairs[i + 1];
-      // }
+      segmentAlertLocations.push({position: path[segmentIndex], alertIndex, segmentIndex});
     }
-    // let mean = Math.ceil(total / count); //
-    // segmentAlertLocations.push(segments[mean]);
     return segmentAlertLocations;
   }
-
 }
 
 const calculateDurationUpToPoint = (durations, index, chosenTime) => {
@@ -556,5 +520,34 @@ const calculateDurationUpToPoint = (durations, index, chosenTime) => {
 
 }
 
+const ForecastRoute = memo(({ path, rasterResponse }) => {
+  let paths = []
+  let coordinates = [path[0]]
+  let lastValue = rasterResponse.data[0]
+  let startI = 0
+  for (let i = 1; i < rasterResponse.data.length; i++) {
+    if (lastValue != rasterResponse.data[i]) {
+      coordinates.push(path[i])
+      paths.push({coordinates, value: lastValue, startI})
+      coordinates = []
+      lastValue = rasterResponse.data[i]
+      startI = i
+    }
+    coordinates.push(path[i])
+  }
+  paths.push({coordinates, value: lastValue, startI})
+
+  return paths.map((path, index) => 
+    <PolylineF
+      key={index}
+      path={path.coordinates}
+      options={{
+        strokeColor: getColor(rasterResponse, path.value),
+        strokeOpacity: 1.0,
+        strokeWeight: 3
+      }}
+    />
+  )
+})
 
 export default Map;
