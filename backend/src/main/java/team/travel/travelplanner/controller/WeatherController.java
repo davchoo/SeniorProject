@@ -1,5 +1,6 @@
 package team.travel.travelplanner.controller;
 
+import com.google.common.collect.ListMultimap;
 import org.hibernate.validator.constraints.Length;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.validation.annotation.Validated;
@@ -19,7 +20,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -62,7 +62,7 @@ public class WeatherController {
     }
 
     @GetMapping("/county")
-    public Map<String, CountyModel> getCounties(@RequestParam("fips_codes") List<@Length(min = 6, max = 6) String> fipsCodes) {
+    public ListMultimap<String, CountyModel> getCounties(@RequestParam("fips_codes") List<@Length(min = 6, max = 6) String> fipsCodes) {
         return countyService.getCounties(fipsCodes);
     }
 

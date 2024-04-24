@@ -1,5 +1,6 @@
 package team.travel.travelplanner;
 
+import com.google.common.collect.ListMultimap;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -13,7 +14,6 @@ import team.travel.travelplanner.repository.CountyRepository;
 import team.travel.travelplanner.service.CountyService;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static team.travel.travelplanner.util.SRIDConstants.WGS84;
@@ -23,6 +23,7 @@ import static team.travel.travelplanner.util.SRIDConstants.WGS84;
 public class CountyTest {
     private static final String GLOUCESTER_COUNTY_NJ = "034015";
     private static final String CUMBERLAND_COUNTY_NJ = "034011";
+    private static final String HARFORD_COUNTY_NJ = "024025";
     private static final String UNKNOWN_COUNTY = "999999";
 
     @Autowired
@@ -38,11 +39,13 @@ public class CountyTest {
 
     @Test
     void getSingleCounty() {
-        Map<String, CountyModel> models = countyService.getCounties(List.of(GLOUCESTER_COUNTY_NJ));
+        ListMultimap<String, CountyModel> models = countyService.getCounties(List.of(GLOUCESTER_COUNTY_NJ));
         assertEquals(1, models.size());
         assertTrue(models.containsKey(GLOUCESTER_COUNTY_NJ));
 
-        CountyModel gloucesterCounty = models.get(GLOUCESTER_COUNTY_NJ);
+        // Only one feature for Gloucester county
+        assertEquals(1, models.get(GLOUCESTER_COUNTY_NJ).size());
+        CountyModel gloucesterCounty = models.get(GLOUCESTER_COUNTY_NJ).getFirst();
         assertNotNull(gloucesterCounty);
         assertEquals(GLOUCESTER_COUNTY_NJ, gloucesterCounty.fips());
         assertEquals("Gloucester", gloucesterCounty.countyName());
@@ -64,34 +67,65 @@ public class CountyTest {
     @Test
     void getUnknownCounty() {
         // No errors or counties are returned for an unknown FIPS code
-        Map<String, CountyModel> models = countyService.getCounties(List.of(UNKNOWN_COUNTY));
-        assertEquals(0, models.size());
+        ListMultimap<String, CountyModel> models = countyService.getCounties(List.of(UNKNOWN_COUNTY));
+        assertTrue(models.isEmpty());
     }
 
     @Test
     void getNoCounty() {
         // No errors or counties are returned for an empty list of FIPS codes
-        Map<String, CountyModel> models = countyService.getCounties(List.of());
-        assertEquals(0, models.size());
+        ListMultimap<String, CountyModel> models = countyService.getCounties(List.of());
+        assertTrue(models.isEmpty());
     }
 
     @Test
     void getMultipleCounties() {
-        Map<String, CountyModel> models = countyService.getCounties(List.of(CUMBERLAND_COUNTY_NJ, GLOUCESTER_COUNTY_NJ));
+        ListMultimap<String, CountyModel> models = countyService.getCounties(List.of(CUMBERLAND_COUNTY_NJ, GLOUCESTER_COUNTY_NJ));
         assertEquals(2, models.size());
         assertTrue(models.containsKey(CUMBERLAND_COUNTY_NJ));
         assertTrue(models.containsKey(GLOUCESTER_COUNTY_NJ));
 
-        CountyModel cumberlandCounty = models.get(CUMBERLAND_COUNTY_NJ);
+        // Only one feature for Cumberland county
+        assertEquals(1, models.get(CUMBERLAND_COUNTY_NJ).size());
+        CountyModel cumberlandCounty = models.get(CUMBERLAND_COUNTY_NJ).getFirst();
         assertNotNull(cumberlandCounty);
         assertEquals(CUMBERLAND_COUNTY_NJ, cumberlandCounty.fips());
         assertEquals("Cumberland", cumberlandCounty.countyName());
         assertEquals("NJ", cumberlandCounty.stateAbbrev());
 
-        CountyModel gloucesterCounty = models.get(GLOUCESTER_COUNTY_NJ);
+        // Only one feature for Gloucester county
+        assertEquals(1, models.get(GLOUCESTER_COUNTY_NJ).size());
+        CountyModel gloucesterCounty = models.get(GLOUCESTER_COUNTY_NJ).getFirst();
         assertNotNull(gloucesterCounty);
         assertEquals(GLOUCESTER_COUNTY_NJ, gloucesterCounty.fips());
         assertEquals("Gloucester", gloucesterCounty.countyName());
         assertEquals("NJ", gloucesterCounty.stateAbbrev());
+    }
+
+    @Test
+    void getCountyWithMultipleFeatures() {
+        // Some counties can have multiple features
+        ListMultimap<String, CountyModel> models = countyService.getCounties(List.of(HARFORD_COUNTY_NJ));
+        assertEquals(1, models.keySet().size());
+        assertTrue(models.containsKey(HARFORD_COUNTY_NJ));
+
+        // Two features
+        List<CountyModel> features = models.get(HARFORD_COUNTY_NJ);
+        assertEquals(2, features.size());
+        for (CountyModel harfordCounty : features) {
+            assertNotNull(harfordCounty);
+            assertEquals(HARFORD_COUNTY_NJ, harfordCounty.fips());
+            assertEquals("Harford", harfordCounty.countyName());
+            assertEquals("MD", harfordCounty.stateAbbrev());
+
+            assertNotNull(harfordCounty.geometry());
+            assertInstanceOf(MultiPolygon.class, harfordCounty.geometry());
+            assertEquals(WGS84, harfordCounty.geometry().getSRID());
+
+            Geometry envelop = harfordCounty.geometry().getEnvelope();
+            assertInstanceOf(Polygon.class, envelop);
+        }
+        // Geometries differ
+        assertNotEquals(features.getFirst().geometry(), features.get(1).geometry());
     }
 }

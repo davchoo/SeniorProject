@@ -42,6 +42,7 @@ dependencies {
     implementation("org.geotools:gt-epsg-wkt:${geotoolsVersion}")
     // Use a newer version of Guava, so IntelliJ doesn't complain about the CVEs from the old Guava version used by GeoTools
     implementation("com.google.guava:guava:33.0.0-jre")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-guava")
 
     val netcdfJavaVersion = "5.5.3"
     implementation("edu.ucar:grib:${netcdfJavaVersion}") // Reading GRIB2 files
