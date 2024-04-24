@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { GoogleMap, useLoadScript, Marker, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
@@ -71,6 +71,38 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
       }
     }
   };
+
+  const handleMapMouseMove = useCallback(({ latLng }) => {
+    if (!forecastedRoute) {
+      setSelectedWeatherMarker()
+      return
+    }
+    if (mapAlerts) {
+      // Find the closest point with an exhaustive search
+      let closestAlert;
+      let closestDistance = 1e6;
+      for (let alert of mapAlerts) {
+        // TODO handle wraparound for longitude
+        let distance = Math.pow(latLng.lat() - alert.segment[0].lat(), 2) + Math.pow(latLng.lng() - alert.segment[0].lng(), 2)
+        if (distance < closestDistance) {
+          closestAlert = alert
+          closestDistance = distance
+        }
+      }
+
+      if (closestAlert) {
+        let alertPoint = map.getProjection().fromLatLngToPoint(closestAlert.segment[0])
+        let mousePoint = map.getProjection().fromLatLngToPoint(latLng)
+        let distance = Math.pow(alertPoint.x - mousePoint.x, 2) + Math.pow(alertPoint.y - mousePoint.y, 2)
+        let scale = 1 << map.getZoom()
+        let scaledDistance = distance * scale
+        if (scaledDistance > 1.5) {
+          closestAlert = null
+        }
+      }
+      setSelectedWeatherMarker(closestAlert)
+    }
+  }, [map, mapAlerts, forecastedRoute])
 
   useEffect(() => {
     setDirections(null);
@@ -188,6 +220,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
         setAlerts(result.alerts);
         setWeatherAlerts(result.alerts);
         setMapAlerts(createMapAlerts(segments, result.segmentAlerts));
+        setSelectedWeatherMarker()
         return result;
       } catch (error) {
         // Handle error
@@ -211,16 +244,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   const handleGasMarkerClick = (gasStation) => {
     setSelectedGasMarker(gasStation);
   };
-
-  const handleWeatherMarkerHover = (alert) => {
-    setSelectedWeatherMarker(alert);
-  }
-  
-  const handleWeatherMarkerHoverOut = (alert) => {
-    if (selectedWeatherMarker && selectedWeatherMarker.segmentIndex == alert.segmentIndex) {
-      setSelectedWeatherMarker(null);
-    }
-  }
 
   if (loadError) {
     return <div>Error Loading Maps</div>;
@@ -251,6 +274,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
           center={center}
           options={mapOptions}
           onLoad={setMap}
+          onMouseMove={handleMapMouseMove}
         >
           {origin != null && (
             <MarkerF
@@ -339,8 +363,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
               onClick={handleGasMarkerClick}
             />
           )}
-
-          {forecastedRoute && mapAlerts && <AlertMarkers mapAlerts={mapAlerts} onHover={handleWeatherMarkerHover} onHoverOut={handleWeatherMarkerHoverOut} />}
 
           {rasterResponse && selectedWeatherMarker && (
             <InfoWindowF
@@ -482,25 +504,6 @@ const getColor = (rasterResponse, index) => {
   return color;
 }
 
-const AlertMarkers = ({ mapAlerts, onHover, onHoverOut }) => {
-  return mapAlerts.map((alert, index) => (
-    <Marker
-      key={index}
-      position={alert.segment[0]}
-
-      icon={{
-        url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE17jCcDCNog5hjgh55oizlTk4peWlLg6P8w&s',
-        scaledSize: new window.google.maps.Size(50, 50),
-        anchor: new window.google.maps.Point(25, 25)
-      }}
-      onClick={() => onHover(alert)}
-      onMouseOver={() => onHover(alert)}
-      onMouseOut={() => onHoverOut(alert)}
-      opacity={0}
-    />
-  ))
-}
-
 const createMapAlerts = (segments, segmentAlerts) => {
 
   if (segments && segments.length > 0 && segmentAlerts && segmentAlerts.length > 0) {
@@ -539,6 +542,9 @@ const createMapAlerts = (segments, segmentAlerts) => {
 }
 
 const calculateDurationUpToPoint = (durations, index, chosenTime) => {
+  if (!durations || durations.length <= index) {
+    return null;
+  }
   let totalTime = 0;
   for (let i = 0; i < index; i++) {
     totalTime += durations[i];
