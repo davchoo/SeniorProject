@@ -13,7 +13,7 @@ public class ObjectMapperConfig {
     public Jackson2ObjectMapperBuilderCustomizer objectMapperCustomizer() {
         return m -> {
             m.mixIn(LatLng.class, LatLngMixin.class);
-            m.modules(new GuavaModule());
+            m.modulesToInstall(new GuavaModule());
         };
     }
 }
