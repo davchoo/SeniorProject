@@ -68,7 +68,8 @@ export const TripPopup = ({ isVisible, trip, setIsVisible }) => {
                 <p className="font-bold text-lg">⛽️{station.name}⛽️</p>
                 <ReactStars value={station.rating} count={5} activeColor="#ffd700" size={16} edit={false} />
                 <p>{station.formattedAddress}</p>
-                {expandedReviews[station.id] ? (
+                {station.reviews && station.reviews.length > 0 ? (
+                expandedReviews[station.id] ? (
                   <>
                     {station.reviews.map((review, reviewIndex) => (
                       <div key={reviewIndex} className="mb-2">
@@ -80,7 +81,7 @@ export const TripPopup = ({ isVisible, trip, setIsVisible }) => {
                   </>
                 ) : (
                   <button className="text-blue-500" onClick={() => toggleReviews(station.id)}>Show Reviews</button>
-                )}
+                )) : <p><strong>There are no reviews for this gas station yet.</strong></p>}
               </div>
             ))}
           </div>
