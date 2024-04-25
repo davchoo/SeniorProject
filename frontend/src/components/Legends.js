@@ -37,18 +37,18 @@ function ColorRampLegend({ colorMap, min, max, title }) {
         <div className="w-full flex justify-between">
           <div className="w-1/12 font-notosansjp text-custom-black">{min}</div>
           <div className="w-10/12 h-6 flex justify-between">
-            {qpfColorMap.slice(1, -1).map((color, index) => (
+            {colorMap.slice(1, -1).map((color, index) => (
               <div key={index} className="w-1/6 h-full" style={{ backgroundColor: color }}></div>
             ))}
           </div>
           <div className="w-1/12 font-notosansjp text-custom-black text-right">{max}</div>
         </div>
       </div>
-      <div className="mt-2 flex justify-between">
+      <div className="flex justify-between">
         <div className="w-1/12"></div>
         <div className='w-10/12 flex justify-around'>
           {divisions.map((value, index) => (
-            <div key={index} className="font-notosansjp text-custom-black w-0 flex justify-center">{value}</div>
+            <div key={index} className="font-notosansjp text-custom-black w-[1px] border-t-black border-t-[.5em] border flex justify-center" style={{ borderTopStyle: 'solid' }}>{value}</div>
           ))}
         </div>
         <div className="w-1/12"></div>
