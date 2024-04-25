@@ -22,3 +22,12 @@ TripEase's integration with various APIs guarantees a seamless flow of current i
 
 ## Technical Architecture
 ![image](https://github.com/davchoo/SeniorProject/assets/99043729/d1e60b06-44e9-4606-9637-345be5cd87e4)
+
+## Assumptions and Limitations
+**Required System Specifications** <br>
+TripEase is required to work on the Google Chrome and Firefox browsers. Additionally, the application must be deployable to an Amazon Web Services EC2 instance.
+
+**Design Exclusions** <br>
+TripEase is not designed to work on Edge, Internet Explorer, or other browsers except those specified above.
+TripEase is not designed to be a native mobile application. 
+
