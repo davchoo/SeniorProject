@@ -22,8 +22,8 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
 
   const validatePlace = (place) => {
     if (!place || !place.formatted_address) {
-      console.error('Invalid location entered.');
-      setError('Invalid location entered.');
+      console.error('Invalid location');
+      setError('Invalid location');
       setValidInput(false);
       if (previousPlace) {
         handlePlaceSelect(null); 
@@ -52,7 +52,7 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
 
   const handleInputBlur = () => {
     if (inputValue.trim() !== '' && !validInput) {
-      setError('Invalid location entered.');
+      setError('Invalid location');
       handlePlaceSelect(null); 
       setPreviousPlace(null);
     }
@@ -61,7 +61,7 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       if (inputValue.trim() === '') {
-        setError('Invalid location entered.');
+        setError('Invalid location');
       } else {
         const place = autoCompleteRef.current.getPlace();
         validatePlace(place);
@@ -71,18 +71,21 @@ export const AutoComplete = ({ handlePlaceSelect, label }) => {
 
   return (
     <div className='flex flex-column'>
-      <label>{label}</label>
-      <Autocomplete onLoad={onLoad} onPlaceChanged={handlePlaceChanged}>
+      <label className='w-1/5'>{label}</label>
+      <Autocomplete onLoad={onLoad} onPlaceChanged={handlePlaceChanged} className='flex flex-grow'>
         <input
           value={inputValue}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
           onKeyPress={handleKeyPress}
+          className='flex-grow'
         />
       </Autocomplete>
-      {!validInput && error && (
-        <p style={{ color: 'red', fontSize: '12px', margin: '0', marginLeft: '5px' }}>{error}</p>
-      )}
+      <div className='w-1/5 ml-2'>
+        {!validInput && error && (
+          <p className='p-0 my-auto' style={{ color: 'red', fontSize: '12px'}}>{error}</p>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Map from '../components/Map';
 import Sidebar from '../components/SaveSidebar';
-import { GiHamburgerMenu, GiNautilusShell } from 'react-icons/gi';
+import { GiHamburgerMenu } from 'react-icons/gi';
 import { checkIsLoggedIn } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Gas from '../pages/Gas';
@@ -78,7 +78,7 @@ function Plan() {
         inline: "start",
         behavior: "smooth"
       })
-    }, 100)
+    }, 1000)
     return () => clearTimeout(id)
   }, [])
 

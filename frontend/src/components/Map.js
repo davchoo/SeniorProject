@@ -253,8 +253,8 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
     <div className='flex flex-col flex-grow'>
       <div className='flex flex-row mb-2 p-4 bg-white rounded-[8px]'>
         <div className='w-1/3'>
-          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Enter Origin:" />
-          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Enter Destination:" />
+          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, true)} label="Origin:" />
+          <AutoComplete handlePlaceSelect={(place) => handlePlaceSelect(place, false)} label="Destination:" />
         </div>
         {distance && duration ? (
           <div className='ml-4'>
