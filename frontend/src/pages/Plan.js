@@ -66,7 +66,7 @@ function Plan() {
           setMyTrips(response.data);
         })
         .catch(error => {
-          console.error("Error getting gas stations:", error);
+          console.error("Error getting my trips:", error);
         });
   }
 
@@ -87,12 +87,17 @@ function Plan() {
         const isLoggedIn = await checkIsLoggedIn();
         console.log("isLoggedIn:", isLoggedIn);
         setLoggedIn(isLoggedIn);
+        return isLoggedIn
       } catch (error) {
         console.error('Error checking login status:', error);
       } 
     };
-    fetchLoggedInStatus();
-    getSavedTrips();
+    fetchLoggedInStatus()
+      .then(isLoggedIn => {
+        if (isLoggedIn) {
+          getSavedTrips();
+        }
+      });
   }, []);
 
   useEffect(() => {

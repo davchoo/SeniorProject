@@ -79,7 +79,6 @@ export async function login(username, password, navigate) {
       const response = await axios.get(
         '/api/auth/check-login',
       );
-      console.log(response.data);
       return response.data;
     } catch (error) {
       return false;

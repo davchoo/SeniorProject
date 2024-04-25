@@ -9,7 +9,7 @@ export function WXLegend() {
       <p className="font-notosansjp text-custom-black">Weather Forecast Legend:</p>
       <div className="mt-4 flex flex-wrap">
         {Object.entries(wxColorMap).map(([key, color]) => (
-          <div key={key} className="flex items-center mr-2 mb-2 w-1/4" >
+          <div key={key} className="flex items-center w-1/3" >
             <div className="w-4 h-4" style={{ backgroundColor: color, border: '1px solid black' }}></div>
             <p className="font-notosansjp text-custom-black ml-2 text-xs">{key}</p>
           </div>

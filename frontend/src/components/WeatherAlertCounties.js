@@ -69,8 +69,9 @@ export default function WeatherAlertCounties({ alerts }) {
     if (missingCounties.length == 0) {
       return;
     }
+    let controller = new AbortController();
     weatherApi
-      .getCounties(missingCounties.join())
+      .getCounties(missingCounties.join(), controller.signal)
       .then((counties) => {
         for (let fips in counties) {
           let features = counties[fips].map(model => createFeature(
@@ -84,6 +85,7 @@ export default function WeatherAlertCounties({ alerts }) {
         });
       })
       .catch(console.log);
+    return () => controller.abort();
   }, [uniqueCounties]);
 
   useEffect(() => {

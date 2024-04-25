@@ -87,10 +87,9 @@ const RadarTimeSlider = ({ availableTimes, setSelectedTime }) => {
 
 const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availableLayers, selectedLayerName, setSelectedLayerName, setSelectedLayerTime, setShowRadar }) => {
   const [selectedOption, setSelectedOption] = useState('radar');
-  const [showLegend, setShowLegend] = useState(false);
+  const [showLegend, setShowLegend] = useState(true);
   const [selectedRadar, setSelectedRadar] = useState('weather');
   const [expandedAlert, setExpandedAlert] = useState(null);
-  const [showLegendButton, setShowLegendButton] = useState(false);
   const [sortedAlerts, setSortedAlerts] = useState([])
 
   const availableTimes = useMemo(() => {
@@ -122,7 +121,6 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
   const handleOptionChange = (value) => {
     setSelectedOption(value);
     setShowLegend(false);
-    setShowLegendButton(value === 'forecasted-route' || (value === 'radar' && selectedRadar !== ''));
     if (value === 'forecasted-route') {
       setShowLegend(true);
     }
@@ -194,7 +192,6 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
                 onClick={() => {
                   setSelectedRadar(value);
                   setShowLegend(true);
-                  setShowLegendButton(true);
                 }}
               >
                 {value.substring(0, 1).toUpperCase() + value.substring(1)}
@@ -275,7 +272,7 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
 export const weatherApi = {
   checkRoute: async (polyline, durations, date) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/check_route`, {
+      const response = await axios.post('/api/weather/check_route', {
         polyline: polyline,
         durations: durations,
         startTime: date,
@@ -290,7 +287,7 @@ export const weatherApi = {
 
   getFeatures: async (fileDate, day) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/features`, {
+      const response = await axios.get('/api/weather/features', {
         params: {
           file_date: fileDate,
           day: day
@@ -305,7 +302,7 @@ export const weatherApi = {
 
   getAvailableFileDates: async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/features/file_dates`);
+      const response = await axios.get('/api/weather/features/file_dates');
       return response.data;
     } catch (error) {
       console.error('Error in getAvailableFileDates:', error);
@@ -315,7 +312,7 @@ export const weatherApi = {
 
   checkRouteAlerts: async (polyline, durations, date) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/alerts/check_route`, {
+      const response = await axios.post('/api/weather/alerts/check_route', {
         polyline: polyline,
         durations: durations,
         startTime: date
@@ -328,24 +325,27 @@ export const weatherApi = {
     }
   },
 
-  getCounties: async (fipsCodes) => {
+  getCounties: async (fipsCodes, signal) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/weather/county`, {
+      const response = await axios.get('/api/weather/county', {
         params: {
           fips_codes: fipsCodes
-        }
+        },
+        signal
       });
       return response.data;
     } catch (error) {
-      console.error('Error in getCounties:', error);
-      throw error;
+      if (!axios.isCancel(error)) {
+        console.error('Error in getCounties:', error);
+        throw error;
+      }
     }
   },
 
   checkRouteRaster: async (polyline, durations, date) => {
     try {
       console.log(durations)
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/weather/raster/check_route`, {
+      const response = await axios.post('/api/weather/raster/check_route', {
         polyline: polyline,
         durations: durations,
         startTime: new Date()
