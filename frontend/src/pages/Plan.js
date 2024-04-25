@@ -169,7 +169,7 @@ function Plan() {
               {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
               {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setRouteStartTime={setChosenTime}
                 availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}
-                opacity={radarOpacity} setRadarOpacity={setRadarOpacity} />}
+                radarOpacity={radarOpacity} setRadarOpacity={setRadarOpacity} />}
             </div>
           </div>
         </div>
