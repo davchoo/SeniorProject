@@ -399,19 +399,20 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
                 </ul>
                 <p><u>Rating:</u> <ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={24} edit={false} /></p>
                 <p><u>Reviews:</u></p>
+                {selectedGasMarker.reviews && selectedGasMarker.reviews.length > 0 ?  (
                 <div style={{ maxHeight: '100px', overflowY: 'auto' }}>
-                  {selectedGasMarker.reviews && (
+                  {selectedGasMarker?.reviews && (
                     <ul>
-                      {selectedGasMarker.reviews.map((review, index) => (
+                      {selectedGasMarker?.reviews.map((review, index) => (
 
                         <li key={index}>
-                          <p>Rating {index}:<ReactStars value={selectedGasMarker.rating} count={5} activeColor="#ffd700" size={12} edit={false} /></p>
-                          <p>{review.text.text}</p>
+                          <p>Rating {index}:<ReactStars value={selectedGasMarker?.rating} count={5} activeColor="#ffd700" size={12} edit={false} /></p>
+                          <p>{review?.text?.text}</p>
                         </li>
                       ))}
                     </ul>
                   )}
-                </div>
+                </div>) : <p>There are no reviews for this gas station yet.</p>}
               </div>
             </InfoWindowF>
           )}
