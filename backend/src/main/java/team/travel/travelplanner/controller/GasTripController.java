@@ -5,7 +5,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import team.travel.travelplanner.entity.GasTrip;
 import team.travel.travelplanner.entity.User;
@@ -42,7 +41,7 @@ public class GasTripController {
     }
 
     @PostMapping("/gas")
-    public GasTripModel getGasTrip(@RequestBody @Valid GasRequestModel gasRequestModel, @AuthenticationPrincipal Authentication authentication) throws IOException {
+    public GasTripModel getGasTrip(@RequestBody @Valid GasRequestModel gasRequestModel, Authentication authentication) throws IOException {
         boolean save = authentication != null;
         LineString lineString = gasRequestModel.geometry(geometryFactory);
         double travelersMeterCapacity = calculateMetersFromGallons(gasRequestModel.tankSizeInGallons(), gasRequestModel.milesPerGallon());
@@ -65,7 +64,7 @@ public class GasTripController {
     }
 
     @GetMapping("/gas/myTrips")
-    public List<GasTripModel> getSavedGasTrips(@AuthenticationPrincipal Authentication authentication) {
+    public List<GasTripModel> getSavedGasTrips(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName());
         List<GasTrip> gasTrips = gasTripRepository.findAllByUser(user);
         return gasTrips.stream()
