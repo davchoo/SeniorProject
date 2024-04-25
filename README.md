@@ -31,3 +31,17 @@ TripEase is required to work on the Google Chrome and Firefox browsers. Addition
 TripEase is not designed to work on Edge, Internet Explorer, or other browsers except those specified above.
 TripEase is not designed to be a native mobile application. 
 
+## Supporting References
+[1] "Fuel Economy API." U.S. Department of Energy. https://www.fueleconomy.gov/feg/ws/index.shtml (Accessed March 4, 2024)<br>
+[2] "Google Maps Platform: Places API Overview." Google. https://developers.google.com/maps/documentation/places/web-service/overview (Accessed March 4, 2024)<br>
+[3] "Google Maps Platform: Decoding Polylines." Google. https://developers.google.com/maps/documentation/javascript/reference/geometry#encoding.decodePath (Accessed March 4, 2024)<br>
+[4] "Google Maps Platform: Directions API." Google. https://developers.google.com/maps/documentation/directions/overview (Accessed March 4, 2024)<br>
+[5] "Google Maps Platform: Places API." Google. https://developers.google.com/maps/documentation/places/web-service/overview (Accessed March 4, 2024)<br>
+[6] "Pexels License."  Pexels. https://www.pexels.com/license/ (Accessed March 2, 2024)<br>
+[7] "Places API: FuelOptions Object." Google. from https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places#fueloptions (Accessed March 4, 2024)<br>
+[8] "National Weather Service Web Services." National Weather Service. https://www.weather.gov/gis/cloudgiswebservices (Accessed March 4, 2024)<br>
+[9] "National Weather Service: Services Web API." National Weather Service. https://www.weather.gov/documentation/services-web-api (Accessed March 4, 2024)<br>
+[10] “NDFD Data Access and Web Map Service (WMS).” National Weather Service. https://digital.mdl.nws.noaa.gov/staticpages/mapservices.php (Accessed March 4, 2024)<br>
+[11] "React Icons License Information."  React Icons.  https://react-icons.github.io/react-icons/ (Accessed March 2, 2024)<br>
+
+
