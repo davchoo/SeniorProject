@@ -2,7 +2,7 @@
 
 ## Contributors
 Emma Zimmerman (https://github.com/EmmaZim, https://www.linkedin.com/in/emma-zimmerman-4aa317267/),<br>
-David Choo (https://github.com/davchoo),<br>
+David Choo (https://github.com/davchoo, https://www.linkedin.com/in/choo-david),<br>
 Lukas DeLoach (https://github.com/lukasdeloach, https://www.linkedin.com/in/lukas-deloach/),<br>
 Kaan Kayis (https://github.com/kaankayis22, https://www.linkedin.com/in/kaan-kayis-b6b708266/),<br>
 Yekaterina Saburova (https://github.com/KatSaburova, https://www.linkedin.com/in/yekaterina-saburova-0aa257242/)
