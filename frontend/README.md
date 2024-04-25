@@ -1,70 +1,28 @@
-# Getting Started with Create React App
+# **TripEase - Frontend **
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## User Interaction
+The user begins planning their journey by opening the web application and being directed to the Home Page. On the Home Page, they will encounter a welcome message and a Plan Your Trip button. Upon selecting the Plan Your Trip Button, the user is redirected to the Planning Page. On this page, the user provides the origin and destination locations. If the locations are invalid, the system will display an error and they will have to enter another location. If the locations are valid, the user will select the Gas or Weather button. If the user selects the Gas button, they will be able to view the gas stations on the map by selecting the Show Gas Stations Button. If the user selects the Weather button, they will be able to select Weather Overlay or Weather Radar for their route.
 
-## Available Scripts
+## Frontend Design Components
+The frontend of this application was created using JavaScript in the React framework. NGINX Version 1.25.4 serves as the frontend’s static files, and the Google Maps API is used to locate gas stations and display maps on the Frontend. TripEase can be accessed through any web browser, including Google Chrome, FireFox, Microsoft Edge, and Safari. 
 
-In the project directory, you can run:
+## Installation
+**Steps to deploy TripEase to instance:**
+1. Install Docker Engine and Docker Compose. <br>
+2. On a local machine, compile the backend and frontend from the main branch of the repository. <br>
+3. Transfer the compiled artifacts and the docker folder from the main branch to the instance. <br>
+4. Transfer configuration files for the backend and Docker to the instance. <br>
+5. Run the startup script to bring up the necessary Docker containers.<br>
 
-### `npm start`
+**Required Packages for Frontend**
+* axios<br>
+* react<br>
+* react-google-maps/api<br>
+* react-icons<br>
+* react-rating-stars-component<br>
+* react-router-dom<br>
+* react-spinners<br>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Required Configuration Files**
+The frontend requires a .env file to be present in the frontend folder during compilation. This file requires the following configuration values:
+API Key for Google Maps
