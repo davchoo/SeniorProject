@@ -11,6 +11,7 @@ import WeatherRadar from '../components/WeatherRadar';
 import axios from 'axios';
 import { TripCard } from '../components/TripCard';
 import { TripPopup } from '../components/TripPopup';
+import WeatherAlertCounties from '../components/WeatherAlertCounties';
 
 function Plan() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -139,6 +140,9 @@ function Plan() {
             {showWeatherInfo && !forecastedRoute && (
               <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
             )}
+            {showWeatherInfo && forecastedRoute && (
+              <WeatherAlertCounties alerts={weatherAlerts} />
+            )}
           </Map>
           <div className='flex flex-col w-1/5 ml-2 p-4 bg-white rounded-[8px]'>
             <div className='flex flex-row place-content-around mb-2'>
@@ -156,7 +160,7 @@ function Plan() {
               </button>
             </div>
             <div className='h-[1px] grow overflow-y-auto overscroll-contain'>
-              {showGasInfo && <Gas setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
+              {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
               {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setRouteStartTime={setChosenTime}
                 availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}/>}
             </div>

@@ -41,7 +41,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
 
   const [selectedWeatherMarker, setSelectedWeatherMarker] = useState();
-  const [segments, setSegments] = useState([]);
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
@@ -146,11 +145,9 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   useEffect(() => {
     if (!path) {
       setPolyline(null)
-      setSegments([])
       return;
     }
     setPolyline(window.google.maps.geometry.encoding.encodePath(path))
-    setSegments(getPolylineSegments(path))
   }, [path])
 
   useEffect(() => {
@@ -478,15 +475,6 @@ function decimate({ coordinates, durations }) {
   newDurations.push(currentDuration)
   return { coordinates: newCoordinates, durations: newDurations }
 }
-
-const getPolylineSegments = (path) => {
-  const segments = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const segment = [path[i], path[i + 1]];
-    segments.push(segment);
-  }
-  return segments;
-};
 
 const getColor = (rasterResponse, value) => {
   const color = wxColorMap[rasterResponse.labels[value]] // TODO handle other datasets
