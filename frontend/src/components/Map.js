@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, memo } from 'react';
+import React, { useCallback, useState, useEffect, memo, useMemo } from 'react';
 import { GoogleMap, useLoadScript, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
@@ -41,7 +41,6 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   const [selectedGasMarker, setSelectedGasMarker] = useState(null);
 
   const [selectedWeatherMarker, setSelectedWeatherMarker] = useState();
-  const [segments, setSegments] = useState([]);
 
   const [durations, setDurations] = useState();
   const [rasterResponse, setRasterResponse] = useState(null);
@@ -146,11 +145,9 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   useEffect(() => {
     if (!path) {
       setPolyline(null)
-      setSegments([])
       return;
     }
     setPolyline(window.google.maps.geometry.encoding.encodePath(path))
-    setSegments(getPolylineSegments(path))
   }, [path])
 
   useEffect(() => {
@@ -480,15 +477,6 @@ function decimate({ coordinates, durations }) {
   return { coordinates: newCoordinates, durations: newDurations }
 }
 
-const getPolylineSegments = (path) => {
-  const segments = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const segment = [path[i], path[i + 1]];
-    segments.push(segment);
-  }
-  return segments;
-};
-
 const getColor = (rasterResponse, value) => {
   const color = wxColorMap[rasterResponse.labels[value]] // TODO handle other datasets
   return color;
@@ -522,21 +510,24 @@ const calculateDurationUpToPoint = (durations, index, chosenTime) => {
 }
 
 const ForecastRoute = memo(({ path, rasterResponse }) => {
-  let paths = []
-  let coordinates = [path[0]]
-  let lastValue = rasterResponse.data[0]
-  let startI = 0
-  for (let i = 1; i < rasterResponse.data.length; i++) {
-    if (lastValue != rasterResponse.data[i]) {
+  let paths = useMemo(() => {
+    let result = []
+    let coordinates = [path[0]]
+    let lastValue = rasterResponse.data[0]
+    let startI = 0
+    for (let i = 1; i < rasterResponse.data.length; i++) {
+      if (lastValue != rasterResponse.data[i]) {
+        coordinates.push(path[i])
+        result.push({coordinates, value: lastValue, startI})
+        coordinates = []
+        lastValue = rasterResponse.data[i]
+        startI = i
+      }
       coordinates.push(path[i])
-      paths.push({coordinates, value: lastValue, startI})
-      coordinates = []
-      lastValue = rasterResponse.data[i]
-      startI = i
     }
-    coordinates.push(path[i])
-  }
-  paths.push({coordinates, value: lastValue, startI})
+    result.push({coordinates, value: lastValue, startI})
+    return result
+  }, [path, rasterResponse])
 
   return paths.map((path, index) => 
     <PolylineF
