@@ -85,7 +85,26 @@ const RadarTimeSlider = ({ availableTimes, setSelectedTime }) => {
   )
 }
 
-const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availableLayers, selectedLayerName, setSelectedLayerName, setSelectedLayerTime, setShowRadar }) => {
+const RadarOpacitySlider = ({ opacity, setOpacity }) => {
+  return (
+    <div className="mt-4">
+      <p className="font-notosansjp text-custom-black font-semibold">Radar Opacity:</p>
+      <div className='flex flex-row'>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={opacity}
+          onChange={(e) => setOpacity(parseFloat(e.target.value))}
+          className='w-full'
+        />
+      </div>
+    </div>
+  )
+}
+
+const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availableLayers, selectedLayerName, setSelectedLayerName, setSelectedLayerTime, radarOpacity, setRadarOpacity }) => {
   const [selectedOption, setSelectedOption] = useState('radar');
   const [showLegend, setShowLegend] = useState(true);
   const [selectedRadar, setSelectedRadar] = useState('weather');
@@ -179,7 +198,12 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
       </div>
 
       {selectedOption === 'forecasted-route' && <RouteStartSlider setRouteStartTime={setRouteStartTime} />}
-      {selectedOption === 'radar' && <RadarTimeSlider availableTimes={availableTimes} setSelectedTime={setSelectedLayerTime} />}
+      {selectedOption === 'radar' && (
+        <>
+          <RadarTimeSlider availableTimes={availableTimes} setSelectedTime={setSelectedLayerTime} />
+          <RadarOpacitySlider opacity={radarOpacity} setOpacity={setRadarOpacity}/>
+        </>
+      )}
 
       {selectedOption === 'radar' && (
         <div className="mt-8">

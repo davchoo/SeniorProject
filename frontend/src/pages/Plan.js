@@ -37,6 +37,7 @@ function Plan() {
   const [availableLayers, setAvailableLayers] = useState()
   const [selectedLayerName, setSelectedLayerName] = useState()
   const [selectedLayerTime, setSelectedLayerTime] = useState()
+  const [radarOpacity, setRadarOpacity] = useState(1.0)
 
   const bodyRef = useRef(null);
 
@@ -143,7 +144,7 @@ function Plan() {
         <div className="font-notosansjp text-custom-black font-semibold flex flex-row m-2 p-2 justify-between h-full">
           <Map showGasInfo={showGasInfo} data={data} setPolyline={setPolyline} setStartAddress={setStartAddress} setEndAddress={setEndAddress} setPlanDuration={setDuration} setPlanDistance={setDistance} setDistanceBetweenStops={setDistanceBetweenStops} forecastedRoute={forecastedRoute} setWeatherAlerts={setWeatherAlerts} chosenTime={chosenTime}>
             {showWeatherInfo && !forecastedRoute && (
-              <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} />
+              <WeatherRadar setAvailableLayers={setAvailableLayers} layerName={selectedLayerName} time={selectedLayerTime} opacity={radarOpacity} />
             )}
             {showWeatherInfo && forecastedRoute && (
               <WeatherAlertCounties alerts={weatherAlerts} />
@@ -167,7 +168,8 @@ function Plan() {
             <div className='h-[1px] grow overflow-y-auto overscroll-contain'>
               {showGasInfo && <Gas showGasInfo={showGasInfo} setSelectedGasStations={setSelectedData} getPolyline={polyline} origin={startAddress} destination={endAddress} distance={distance} duration={duration} distanceBetweenStops={distanceBetweenStops}/>}
               {showWeatherInfo && <Weather setForecastedRoute={setForecastedRoute} weatherAlerts={weatherAlerts} setRouteStartTime={setChosenTime}
-                availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}/>}
+                availableLayers={availableLayers} selectedLayerName={selectedLayerName} setSelectedLayerName={setSelectedLayerName} setSelectedLayerTime={setSelectedLayerTime}
+                opacity={radarOpacity} setRadarOpacity={setRadarOpacity} />}
             </div>
           </div>
         </div>
