@@ -64,7 +64,7 @@ const RadarTimeSlider = ({ availableTimes, setSelectedTime }) => {
 
   return (
     <div className="mt-4">
-      <p className="font-notosansjp text-custom-black font-semibold">Radar time:</p>
+      <p className="font-notosansjp text-custom-black font-semibold">Radar Time:</p>
       <div className='flex flex-row'>
         <input
           type="range"
