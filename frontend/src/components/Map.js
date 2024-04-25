@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, memo } from 'react';
+import React, { useCallback, useState, useEffect, memo, useMemo } from 'react';
 import { GoogleMap, useLoadScript, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
 import { AutoComplete } from './AutoComplete';
 import axios from "axios";
@@ -509,21 +509,24 @@ const calculateDurationUpToPoint = (durations, index, chosenTime) => {
 }
 
 const ForecastRoute = memo(({ path, rasterResponse }) => {
-  let paths = []
-  let coordinates = [path[0]]
-  let lastValue = rasterResponse.data[0]
-  let startI = 0
-  for (let i = 1; i < rasterResponse.data.length; i++) {
-    if (lastValue != rasterResponse.data[i]) {
+  let paths = useMemo(() => {
+    let result = []
+    let coordinates = [path[0]]
+    let lastValue = rasterResponse.data[0]
+    let startI = 0
+    for (let i = 1; i < rasterResponse.data.length; i++) {
+      if (lastValue != rasterResponse.data[i]) {
+        coordinates.push(path[i])
+        result.push({coordinates, value: lastValue, startI})
+        coordinates = []
+        lastValue = rasterResponse.data[i]
+        startI = i
+      }
       coordinates.push(path[i])
-      paths.push({coordinates, value: lastValue, startI})
-      coordinates = []
-      lastValue = rasterResponse.data[i]
-      startI = i
     }
-    coordinates.push(path[i])
-  }
-  paths.push({coordinates, value: lastValue, startI})
+    result.push({coordinates, value: lastValue, startI})
+    return result
+  }, [path, rasterResponse])
 
   return paths.map((path, index) => 
     <PolylineF

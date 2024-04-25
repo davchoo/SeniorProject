@@ -58,6 +58,7 @@ export default function WeatherAlertCounties({ alerts }) {
         delete newCachedCounties[fips];
       }
     }
+    setCachedCounties(newCachedCounties);
     // Find all of the counties we're missing
     let missingCounties = [];
     for (let fips of uniqueCounties) {
@@ -65,7 +66,9 @@ export default function WeatherAlertCounties({ alerts }) {
         missingCounties.push(fips);
       }
     }
-    setCachedCounties(newCachedCounties);
+    if (missingCounties.length == 0) {
+      return;
+    }
     weatherApi
       .getCounties(missingCounties.join())
       .then((counties) => {
