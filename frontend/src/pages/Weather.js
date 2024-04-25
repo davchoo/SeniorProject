@@ -88,7 +88,7 @@ const RadarTimeSlider = ({ availableTimes, setSelectedTime }) => {
 const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availableLayers, selectedLayerName, setSelectedLayerName, setSelectedLayerTime, setShowRadar }) => {
   const [selectedOption, setSelectedOption] = useState('radar');
   const [showLegend, setShowLegend] = useState(false);
-  const [selectedRadar, setSelectedRadar] = useState('');
+  const [selectedRadar, setSelectedRadar] = useState('weather');
   const [expandedAlert, setExpandedAlert] = useState(null);
   const [showLegendButton, setShowLegendButton] = useState(false);
   const [sortedAlerts, setSortedAlerts] = useState([])

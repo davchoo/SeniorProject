@@ -19,7 +19,7 @@ export function WXLegend() {
   )
 }
 
-function ColorRampLegend({ colorMap, min, max }) {
+function ColorRampLegend({ colorMap, min, max, title }) {
   const numDivisions = 4;
   let divisions = useMemo(() => {
     let range = max - min
@@ -32,7 +32,7 @@ function ColorRampLegend({ colorMap, min, max }) {
 
   return (
     <div className="mt-4">
-      <p className="font-notosansjp text-custom-black">Quantitative Precipitation Forecast (QPF) Legend (inches):</p>
+      <p className="font-notosansjp text-custom-black">{title}</p>
       <div className="mt-4 flex items-center">
         <div className="w-full flex justify-between">
           <div className="w-1/12 font-notosansjp text-custom-black">{min}</div>
@@ -58,9 +58,9 @@ function ColorRampLegend({ colorMap, min, max }) {
 }
 
 export function PrecipitationLegend() {
-  return <ColorRampLegend colorMap={qpfColorMap.slice(1, -1)} min={0} max={10} />
+  return <ColorRampLegend colorMap={qpfColorMap.slice(1, -1)} min={0} max={10} title={'Quantitative Precipitation Forecast (QPF) Legend (inches):'} />
 }
 
 export function TemperatureLegend() {
-  return <ColorRampLegend colorMap={tempColorMap.slice(1, -1)} min={-10} max={110} />
+  return <ColorRampLegend colorMap={tempColorMap.slice(1, -1)} min={-10} max={110} title={'Temperature Legend (°F):'} />
 }
