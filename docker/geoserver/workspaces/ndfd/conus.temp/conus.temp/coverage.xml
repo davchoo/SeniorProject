@@ -1,0 +1,151 @@
+<coverage>
+  <id>CoverageInfoImpl--9c88e17:18ea6156a3e:-7e6b</id>
+  <name>conus.temp</name>
+  <nativeName>conus.temp</nativeName>
+  <namespace>
+    <id>NamespaceInfoImpl--9c88e17:18ea6156a3e:-7fe3</id>
+  </namespace>
+  <title>conus.temp</title>
+  <description>Generated from NetCDF</description>
+  <keywords>
+    <string>Temperature_height_above_ground</string>
+    <string>WCS</string>
+    <string>NetCDF</string>
+  </keywords>
+  <nativeCRS class="projected">PROJCS[&quot;lambert_conformal_conic_1SP&quot;, 
+  GEOGCS[&quot;unknown&quot;, 
+    DATUM[&quot;unknown&quot;, 
+      SPHEROID[&quot;unknown&quot;, 6371200.0, 0.0]], 
+    PRIMEM[&quot;Greenwich&quot;, 0.0], 
+    UNIT[&quot;degree&quot;, 0.017453292519943295], 
+    AXIS[&quot;Geodetic longitude&quot;, EAST], 
+    AXIS[&quot;Geodetic latitude&quot;, NORTH]], 
+  PROJECTION[&quot;Lambert_Conformal_Conic_1SP&quot;], 
+  PARAMETER[&quot;central_meridian&quot;, -95.0], 
+  PARAMETER[&quot;latitude_of_origin&quot;, 25.0], 
+  PARAMETER[&quot;scale_factor&quot;, 1.0], 
+  PARAMETER[&quot;false_easting&quot;, 0.0], 
+  PARAMETER[&quot;false_northing&quot;, 0.0], 
+  UNIT[&quot;km&quot;, 1000.0], 
+  AXIS[&quot;Easting&quot;, EAST], 
+  AXIS[&quot;Northing&quot;, NORTH]]</nativeCRS>
+  <srs>EPSG:3857</srs>
+  <nativeBoundingBox>
+    <minx>-2764.4744413005774</minx>
+    <maxx>2683.1883084880765</maxx>
+    <miny>-265.0592801737231</miny>
+    <maxy>3232.1116483377855</maxy>
+    <crs class="projected">PROJCS[&quot;lambert_conformal_conic_1SP&quot;, 
+  GEOGCS[&quot;unknown&quot;, 
+    DATUM[&quot;unknown&quot;, 
+      SPHEROID[&quot;unknown&quot;, 6371200.0, 0.0]], 
+    PRIMEM[&quot;Greenwich&quot;, 0.0], 
+    UNIT[&quot;degree&quot;, 0.017453292519943295], 
+    AXIS[&quot;Geodetic longitude&quot;, EAST], 
+    AXIS[&quot;Geodetic latitude&quot;, NORTH]], 
+  PROJECTION[&quot;Lambert_Conformal_Conic_1SP&quot;], 
+  PARAMETER[&quot;central_meridian&quot;, -95.0], 
+  PARAMETER[&quot;latitude_of_origin&quot;, 25.0], 
+  PARAMETER[&quot;scale_factor&quot;, 1.0], 
+  PARAMETER[&quot;false_easting&quot;, 0.0], 
+  PARAMETER[&quot;false_northing&quot;, 0.0], 
+  UNIT[&quot;km&quot;, 1000.0], 
+  AXIS[&quot;Easting&quot;, EAST], 
+  AXIS[&quot;Northing&quot;, NORTH]]</crs>
+  </nativeBoundingBox>
+  <latLonBoundingBox>
+    <minx>-130.12294572199514</minx>
+    <maxx>-60.86610071841526</maxx>
+    <miny>20.30301772484031</miny>
+    <maxy>53.00201589026697</maxy>
+    <crs>EPSG:4326</crs>
+  </latLonBoundingBox>
+  <projectionPolicy>REPROJECT_TO_DECLARED</projectionPolicy>
+  <enabled>true</enabled>
+  <metadata>
+    <entry key="elevation">
+      <dimensionInfo>
+        <enabled>false</enabled>
+      </dimensionInfo>
+    </entry>
+    <entry key="time">
+      <dimensionInfo>
+        <enabled>true</enabled>
+        <presentation>LIST</presentation>
+        <units>ISO8601</units>
+        <defaultValue>
+          <strategy>MINIMUM</strategy>
+        </defaultValue>
+        <nearestMatchEnabled>true</nearestMatchEnabled>
+        <rawNearestMatchEnabled>false</rawNearestMatchEnabled>
+        <startValue></startValue>
+        <endValue></endValue>
+        <nearestFailBehavior>EXCEPTION</nearestFailBehavior>
+      </dimensionInfo>
+    </entry>
+    <entry key="cachingEnabled">false</entry>
+    <entry key="dirName">conus.temp_Temperature_height_above_ground</entry>
+  </metadata>
+  <store class="coverageStore">
+    <id>CoverageStoreInfoImpl--9c88e17:18ea6156a3e:-7f1e</id>
+  </store>
+  <serviceConfiguration>false</serviceConfiguration>
+  <simpleConversionEnabled>false</simpleConversionEnabled>
+  <nativeFormat>NetCDF</nativeFormat>
+  <grid dimension="2">
+    <range>
+      <low>0 0</low>
+      <high>2145 1377</high>
+    </range>
+    <transform>
+      <scaleX>2.5397029136543843</scaleX>
+      <scaleY>-2.5397029255711754</scaleY>
+      <shearX>0.0</shearX>
+      <shearY>0.0</shearY>
+      <translateX>-2763.20458984375</translateX>
+      <translateY>3230.841796875</translateY>
+    </transform>
+    <crs>EPSG:3857</crs>
+  </grid>
+  <supportedFormats>
+    <string>GEOTIFF</string>
+    <string>GIF</string>
+    <string>PNG</string>
+    <string>JPEG</string>
+    <string>TIFF</string>
+  </supportedFormats>
+  <interpolationMethods>
+    <string>nearest neighbor</string>
+    <string>bilinear</string>
+    <string>bicubic</string>
+  </interpolationMethods>
+  <defaultInterpolationMethod>nearest neighbor</defaultInterpolationMethod>
+  <dimensions>
+    <coverageDimension>
+      <name>temp</name>
+      <description>GridSampleDimension(K)[-Infinity,Infinity]</description>
+      <range>
+        <min>-inf</min>
+        <max>inf</max>
+      </range>
+      <nullValues>
+        <double>NaN</double>
+      </nullValues>
+      <unit>K</unit>
+      <dimensionType>
+        <name>REAL_32BITS</name>
+      </dimensionType>
+    </coverageDimension>
+  </dimensions>
+  <parameters>
+    <entry>
+      <string>Bands</string>
+      <null/>
+    </entry>
+    <entry>
+      <string>Filter</string>
+      <null/>
+    </entry>
+  </parameters>
+  <nativeCoverageName>temp</nativeCoverageName>
+</coverage>

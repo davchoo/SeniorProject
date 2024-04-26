@@ -1,0 +1,17 @@
+<layer>
+  <name>conus.wx</name>
+  <id>LayerInfoImpl--9c88e17:18ea6156a3e:-7f61</id>
+  <type>RASTER</type>
+  <defaultStyle>
+    <id>StyleInfoImpl--4f3277ca:18ea4ef8900:-7de8</id>
+  </defaultStyle>
+  <resource class="coverage">
+    <id>CoverageInfoImpl--9c88e17:18ea6156a3e:-7f62</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2024-04-03 22:36:35.522 UTC</dateCreated>
+  <dateModified>2024-04-12 02:39:56.814 UTC</dateModified>
+</layer>
