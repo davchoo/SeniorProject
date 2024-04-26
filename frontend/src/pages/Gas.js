@@ -87,7 +87,7 @@ const Gas = ({ setSelectedGasStations, getPolyline, origin, destination, distanc
                 {distance}
                 {index === 0 && gasStations[0] ? ` From ${origin} to ${gasStations[0].name}: ${gasStations[0].formattedAddress}` : ''}
                 {index > 0 && index < gasStations.length ? ` From ${gasStations[index - 1].name} to ${gasStations[index].name}: ${gasStations[index].formattedAddress}` : ''}
-                {index === gasStations.length && gasStations[gasStations.length - 1] ? ` From ${gasStations[gasStations.length - 1].name} to ${destination}:` : ''}
+                {index === gasStations.length && gasStations[gasStations.length - 1] ? ` From ${gasStations[gasStations.length - 1].name} to ${destination}` : ''}
               </li>
             ))}
           </ul>

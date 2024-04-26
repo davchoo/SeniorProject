@@ -87,17 +87,33 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
       case 'Midsize Station Wagons':
         return 16; // Estimated tank size for Midsize Station Wagons: 16 gallons
       case 'Minicompact Cars':
-        return 10; // Estimated tank size for Minicompact Cars: 10 gallons
+        // 2024 Aston Martin DB11 V8: 19.8 gal
+        // 2024 Subaru BRZ: 13.2 gal
+        return 15; // Estimated tank size for Minicompact Cars: 10 gallons
       case 'Subcompact Cars':
-        return 10; // Estimated tank size for Subcompact Cars: 10 gallons
+        // 2024 Ford Mustang (2.3L): 15.9 gal
+        // 2024 Ford Mustang (5.0L): 15.98 gal
+        // 2024 Chevrolet Camero: 19 gal
+        // 2024 Nissan GT-R: 19.5 gal
+        return 17; // Estimated tank size for Subcompact Cars: 10 gallons
+      case 'Small Sport Utility Vehicle 2WD':
+      case 'Small Sport Utility Vehicle 4WD':
+        // 2024 Ford Bronco AWD: 21.1 gal (Long wheelbase)
+        // 2024 Ford Bronco AWD: 17.4 gal (Short wheelbase)
+        return 19
+      case 'Standard Sport Utility Vehicle 2WD':
+      case 'Standard Sport Utility Vehicle 4WD':
+        // 2024 Ford Explorer AWD (2.3L): 17.9 gal
+        // 2024 Ford Explorer AWD (3.0L): 20.2 gal
+        // 2024 Ford Explorer AWD (3.3L): 20.2 gal
+        // 2024 Ford Explorer AWD (3.3L, HEV): 18.0 gal
+        return 19;
       case 'Small Station Wagons':
         return 12; // Estimated tank size for Small Station Wagons: 12 gallons
       case 'Small Pickup Trucks':
         return 16; // Estimated tank size for Small Pickup Trucks: 16 gallons
       case 'Standard Pickup Trucks':
         return 20; // Estimated tank size for Standard Pickup Trucks: 20 gallons
-      case 'Sport Utility Vehicle (SUV)':
-        return 18; // Estimated tank size for SUVs: 18 gallons
       case 'Minivan':
         return 20; // Estimated tank size for Minivans: 20 gallons
       case 'Special Purpose Vehicles':
@@ -107,9 +123,11 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
       case 'Vans, Passenger Type':
         return 20; // Estimated tank size for Passenger Vans: 20 gallons
       case 'Two Seaters':
-        return 8; // Estimated tank size for Two Seaters: 8 gallons
-      case 'Sport Utility Vehicle - 4WD':
-        return 18; // Estimated tank size for SUVs: 18 gallons
+        // 2024 Chevrolet Corvette: 18.5 gal
+        // 2024 Nissan Z: 16.375 gal
+        // 2021 Audi TT: 14.5 gal
+        // 2020 Ford GT: 15.2 gal
+        return 16;
       default:
         return 14; // Default estimated tank size: 14 gallons
     }
