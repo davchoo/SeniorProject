@@ -62,10 +62,6 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
       case 'Regular Gasoline':
         return "REGULAR_UNLEADED"
       case 'Midgrade Gasoline':
-        return "REGULAR_UNLEADED"
-      case 'Natural Gas':
-        return "REGULAR_UNLEADED"
-      case 'Midgrade Gasoline':
         return 'MIDGRADE'
       case 'Diesel':
         return 'DIESEL'
@@ -133,33 +129,6 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
     }
   };
 
-
-  const getRangeEstimation = (vehicleClass, year) => {
-    switch (vehicleClass) {
-      case 'Compact Cars':
-        return 350;
-      case 'Large Cars':
-      case 'Midsize Cars':
-      case 'Midsize Station Wagons':
-        return 400;
-      case 'Minicompact Cars':
-      case 'Subcompact Cars':
-      case 'Small Station Wagons':
-      case 'Small Pickup Trucks':
-      case 'Standard Pickup Trucks':
-      case 'Sport Utility Vehicle (SUV)':
-      case 'Minivan':
-      case 'Special Purpose Vehicles':
-      case 'Vans, Cargo Type':
-      case 'Vans, Passenger Type':
-        return 300;
-      case 'Two Seaters':
-        return 250;
-      default:
-        return 350;
-    }
-  };
-
   const handleYearChange = (event) => {
     setYear(event.target.value);
     setMake('')
@@ -199,7 +168,7 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
         <div className="mt-4 border light-gray p-4 rounded-md bg-white shadow-md">
           <h2 className="text-custom-black text-lg font-semibold mb-2 text-center">Vehicle Details</h2>
           <hr />
-          <p>
+          <div>
             <strong>{year} {make} {model} Information:</strong>
             <ul>
               {vehicleInfo.fuelType !== 'Electricity' && (
@@ -210,7 +179,7 @@ const Car = ({ setFuelType, setTankSizeInGallons, setMilesPerGallon, setSelected
               )}
               <li>Fuel Type: {vehicleInfo.fuelType}</li>
             </ul>
-          </p>
+          </div>
         </div>
       )}
     </div>

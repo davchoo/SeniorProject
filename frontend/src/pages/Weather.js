@@ -153,17 +153,11 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
     setExpandedAlert(expandedAlert === alert ? null : alert);
   };
 
-  const qpfRange = (index) => {
-    const min = index * 0.05;
-    const max = (index + 1) * 0.05;
-    return `${min}in - ${max}in`;
-  };
-
   return (
     <div>
       <div>
         <p className="font-notosansjp text-custom-black font-semibold text-sm">Select Weather View:</p>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center justify-around">
           <div className="mr-4">
             <input
               type="radio"
@@ -206,7 +200,7 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
       )}
 
       {selectedOption === 'radar' && (
-        <div className="mt-8">
+        <div className="mt-4">
           <p className="font-notosansjp text-custom-black font-semibold">Select Radar:</p>
           <div className="flex">
             {['weather', 'temperature', 'precipitation'].map((value) => (
@@ -229,8 +223,8 @@ const Weather = ({ setForecastedRoute, weatherAlerts, setRouteStartTime, availab
       {selectedOption && (
         <div>
           <button
-            className={`font-notosansjp text-custom-black font-semibold py-1 px-2 rounded-md mb-2 mt-20 ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'
-              } hover:bg-custom-green4`}
+            className={`font-notosansjp text-custom-black font-semibold py-1 px-2 rounded-md mb-2 mt-8 ${showLegend ? 'bg-custom-green4' : 'bg-custom-green3'}
+              hover:bg-custom-green4`}
             onClick={toggleLegend}
           >
             {showLegend ? 'Hide' : 'Show'} Legend

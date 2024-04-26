@@ -114,7 +114,7 @@ function Plan() {
   return (
     <div ref={bodyRef} className='bg-custom-green'>
       <div className=' h-lvh flex flex-col'>
-        <button onClick={toggleSidebar} className="absolute z-0 text-xl text-custom-black" style={{ marginLeft: '5px', marginTop: '20px' }}>
+        <button onClick={toggleSidebar} className="absolute z-0 text-xl text-custom-black flex items-center aspect-square ml-4 mt-3">
           <GiHamburgerMenu />
         </button>
         <TripPopup isVisible={openTrip} trip={clickedTrip} setIsVisible={setOpenTrip}/>
@@ -132,7 +132,7 @@ function Plan() {
           </div>
           : 
           <div className="flex flex-col items-center pt-24">
-            <p className="text-center">You have to be logged in to an account to see saved trips.</p>
+            <p className="font-notosansjp font-semibold text-center">You have to be logged in to an account to see saved trips.</p>
             <button onClick={() => navigate("/login")} className="mt-4 bg-custom-green3 text-custom-green3 border border-custom-green2 rounded-md px-3 py-1 hover:bg-custom-green hover:text-white transition duration-300 ease-in-out text-lg">
               Login
             </button>
