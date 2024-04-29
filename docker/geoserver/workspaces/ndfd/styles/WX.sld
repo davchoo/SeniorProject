@@ -34,9 +34,9 @@
 				<ColorMapEntry color="#00deef" quantity="13" opacity="1" label="HiProb Mix" />
 				<ColorMapEntry color="#000000" quantity="14" opacity="0" label="None" />
               	<!-- Severe -->
-				<ColorMapEntry color="#ff0000" quantity="15" opacity="1" label="Severe" />
-				<ColorMapEntry color="#ff0000" quantity="16" opacity="1" label="Severe" />
-				<ColorMapEntry color="#ff0000" quantity="17" opacity="1" label="Severe"/>
+				<ColorMapEntry color="#8B0000" quantity="15" opacity="1" label="Severe" />
+				<ColorMapEntry color="#8B0000" quantity="16" opacity="1" label="Severe" />
+				<ColorMapEntry color="#8B0000" quantity="17" opacity="1" label="Severe"/>
               	<!-- Fog -->
 				<ColorMapEntry color="#ffff00" quantity="18" opacity="1" label="Fog" />
 				<ColorMapEntry color="#ffff00" quantity="19" opacity="1" label="Fog" />
