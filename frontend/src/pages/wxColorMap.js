@@ -8,7 +8,7 @@ const wxColorMap = {
     "HiProb Snow": "#0031ff",
     "LoProb Mix": "#c5fffe",
     "HiProb Mix": "#00deef",
-    "Severe": "#ff0000",
+    "Severe": "#8B0000",
     "Fog": "#ffff00",
     "Smoke": "#949494",
     "Blowing": "#e88112",
