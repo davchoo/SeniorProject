@@ -143,7 +143,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   }, [origin, destination, JSON.stringify(data)]);
 
   useEffect(() => {
-    if (!path) {
+    if (!path || path.length == 0) {
       setPolyline(null)
       return;
     }
@@ -180,7 +180,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   }, [map, directions])
 
   useEffect(() => {
-    if (!window.google || !path || !durations) {
+    if (!window.google || !path || path.length == 0 || !durations) {
       return
     }
   
@@ -204,7 +204,7 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
   }, [path, durations, chosenTime]);
   
   useEffect(() => {
-    if (!window.google || !path || !durations) {
+    if (!window.google || !path || path.length == 0 || !durations) {
       return
     }
     const date = chosenTime ? chosenTime : new Date(); // set this from emma/kat calendar
@@ -227,10 +227,10 @@ const Map = ({ data, setPolyline, setStartAddress, setEndAddress, setPlanDistanc
     setMapAlerts([])
     getAlerts();
   
-    // Fetch data every 5 minutes
+    // Fetch data every 2.5 minutes
     const interval = setInterval(() => {
       getAlerts()
-    }, 5 * 60 * 1000);
+    }, 2.5 * 60 * 1000);
   
     // Cleanup function
     return () => clearInterval(interval);
@@ -454,6 +454,9 @@ function getFullRoute(route) {
 }
 
 function decimate({ coordinates, durations }) {
+  if (!coordinates || coordinates.length <= 2) {
+    return {coordinates, durations}
+  }
   const maxDistance = 0.15 // km
   let newCoordinates = [coordinates[0]]
   let newDurations = []
